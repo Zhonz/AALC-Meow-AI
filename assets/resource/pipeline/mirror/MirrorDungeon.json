@@ -4,17 +4,17 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "teams/identify_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1122,
+        129,
+        158,
+        98
+      ]
     },
     "action": "DoNothing",
     "next": [
       "ClearCurrentTeam"
-    ],
-    "roi": [
-      1122,
-      129,
-      158,
-      98
     ]
   },
   "ClearCurrentTeam": {
@@ -22,19 +22,19 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "teams/clear_selection_confirm_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        608,
+        448,
+        336,
+        95
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 600,
     "next": [
       "SelectSinnerSlot1",
       "TeamFormationConfirm"
-    ],
-    "roi": [
-      608,
-      448,
-      336,
-      95
     ]
   },
   "SelectSinnerSlot1": {
@@ -42,7 +42,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "teams/identify_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1122,
+        129,
+        158,
+        98
+      ]
     },
     "action": "Click",
     "post_delay": 400,
@@ -54,12 +60,6 @@
       65,
       0,
       0
-    ],
-    "roi": [
-      1122,
-      129,
-      158,
-      98
     ]
   },
   "SelectSinnerSlot2": {
@@ -67,7 +67,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "teams/identify_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1122,
+        129,
+        158,
+        98
+      ]
     },
     "action": "Click",
     "post_delay": 200,
@@ -79,12 +85,6 @@
       65,
       0,
       0
-    ],
-    "roi": [
-      1122,
-      129,
-      158,
-      98
     ]
   },
   "SelectSinnerSlot3": {
@@ -92,7 +92,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "teams/identify_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1122,
+        129,
+        158,
+        98
+      ]
     },
     "action": "Click",
     "post_delay": 200,
@@ -104,12 +110,6 @@
       65,
       0,
       0
-    ],
-    "roi": [
-      1122,
-      129,
-      158,
-      98
     ]
   },
   "SelectSinnerSlot4": {
@@ -117,7 +117,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "teams/identify_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1122,
+        129,
+        158,
+        98
+      ]
     },
     "action": "Click",
     "post_delay": 200,
@@ -129,12 +135,6 @@
       65,
       0,
       0
-    ],
-    "roi": [
-      1122,
-      129,
-      158,
-      98
     ]
   },
   "SelectSinnerSlot5": {
@@ -142,7 +142,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "teams/identify_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1122,
+        129,
+        158,
+        98
+      ]
     },
     "action": "Click",
     "post_delay": 200,
@@ -154,12 +160,6 @@
       65,
       0,
       0
-    ],
-    "roi": [
-      1122,
-      129,
-      158,
-      98
     ]
   },
   "SelectSinnerSlot6": {
@@ -167,7 +167,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "teams/identify_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1122,
+        129,
+        158,
+        98
+      ]
     },
     "action": "Click",
     "post_delay": 200,
@@ -179,12 +185,6 @@
       65,
       0,
       0
-    ],
-    "roi": [
-      1122,
-      129,
-      158,
-      98
     ]
   },
   "SelectSinnerSlot7": {
@@ -192,7 +192,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "teams/identify_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1122,
+        129,
+        158,
+        98
+      ]
     },
     "action": "Click",
     "post_delay": 200,
@@ -204,12 +210,6 @@
       315,
       0,
       0
-    ],
-    "roi": [
-      1122,
-      129,
-      158,
-      98
     ]
   },
   "SelectSinnerSlot8": {
@@ -217,7 +217,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "teams/identify_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1122,
+        129,
+        158,
+        98
+      ]
     },
     "action": "Click",
     "post_delay": 200,
@@ -229,12 +235,6 @@
       315,
       0,
       0
-    ],
-    "roi": [
-      1122,
-      129,
-      158,
-      98
     ]
   },
   "SelectSinnerSlot9": {
@@ -242,7 +242,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "teams/identify_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1122,
+        129,
+        158,
+        98
+      ]
     },
     "action": "Click",
     "post_delay": 200,
@@ -254,12 +260,6 @@
       315,
       0,
       0
-    ],
-    "roi": [
-      1122,
-      129,
-      158,
-      98
     ]
   },
   "SelectSinnerSlot10": {
@@ -267,7 +267,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "teams/identify_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1122,
+        129,
+        158,
+        98
+      ]
     },
     "action": "Click",
     "post_delay": 200,
@@ -279,12 +285,6 @@
       315,
       0,
       0
-    ],
-    "roi": [
-      1122,
-      129,
-      158,
-      98
     ]
   },
   "SelectSinnerSlot11": {
@@ -292,7 +292,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "teams/identify_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1122,
+        129,
+        158,
+        98
+      ]
     },
     "action": "Click",
     "post_delay": 200,
@@ -304,12 +310,6 @@
       315,
       0,
       0
-    ],
-    "roi": [
-      1122,
-      129,
-      158,
-      98
     ]
   },
   "SelectSinnerSlot12": {
@@ -317,7 +317,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "teams/identify_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1122,
+        129,
+        158,
+        98
+      ]
     },
     "action": "Click",
     "post_delay": 200,
@@ -329,12 +335,6 @@
       315,
       0,
       0
-    ],
-    "roi": [
-      1122,
-      129,
-      158,
-      98
     ]
   },
   "TeamFormationConfirm": {
@@ -342,7 +342,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "battle/chaim_to_battle_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1030,
+        539,
+        250,
+        98
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 800,
@@ -350,12 +356,6 @@
       "MirrorLevelConfirm",
       "MirrorInDungeon",
       "BattleAutoCombat"
-    ],
-    "roi": [
-      1030,
-      539,
-      250,
-      98
     ]
   },
   "MirrorDungeonEntry": {
@@ -384,17 +384,17 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/claim_reward/clear_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        276,
+        315,
+        146,
+        118
+      ]
     },
     "action": "DoNothing",
     "next": [
       "MirrorClaimReward"
-    ],
-    "roi": [
-      276,
-      315,
-      146,
-      118
     ]
   },
   "MirrorCheckShopCoins": {
@@ -402,17 +402,17 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/shop/shop_coins_assets.png",
-      "threshold": 0.88
+      "threshold": 0.88,
+      "roi": [
+        428,
+        81,
+        346,
+        112
+      ]
     },
     "action": "DoNothing",
     "next": [
       "MirrorLeaveShop"
-    ],
-    "roi": [
-      428,
-      81,
-      346,
-      112
     ]
   },
   "MirrorCheckLegend": {
@@ -420,17 +420,17 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_in_mir/legend_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1158,
+        55,
+        122,
+        92
+      ]
     },
     "action": "DoNothing",
     "next": [
       "MirrorInDungeon"
-    ],
-    "roi": [
-      1158,
-      55,
-      122,
-      92
     ]
   },
   "MirrorClickResume": {
@@ -438,7 +438,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_to_mir/resume_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        429,
+        345,
+        522,
+        107
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 1000,
@@ -447,12 +453,6 @@
       "MirrorCheckDreamingStar",
       "MirrorCheckInitEgoGift",
       "MirrorSelectTeamScreen"
-    ],
-    "roi": [
-      429,
-      345,
-      522,
-      107
     ]
   },
   "MirrorClickEnterMirror": {
@@ -460,7 +460,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_to_mir/enter_mirror_assets.png",
-      "threshold": 0.78
+      "threshold": 0.78,
+      "roi": [
+        614,
+        435,
+        340,
+        98
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 1000,
@@ -470,12 +476,6 @@
       "MirrorLevelConfirm",
       "MirrorCheckDreamingStar",
       "MirrorCheckInitEgoGift"
-    ],
-    "roi": [
-      614,
-      435,
-      340,
-      98
     ]
   },
   "MirrorConfirmEnterMirror": {
@@ -499,7 +499,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_to_mir/infinity_mirror_enter_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        939,
+        333,
+        341,
+        88
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 1000,
@@ -508,12 +514,6 @@
       "MirrorCheckDreamingStar",
       "MirrorCheckInitEgoGift",
       "MirrorLevelConfirm"
-    ],
-    "roi": [
-      939,
-      333,
-      341,
-      88
     ]
   },
   "MirrorClickEnterRoadToMir": {
@@ -521,7 +521,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_to_mir/enter_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        994,
+        441,
+        286,
+        108
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 1000,
@@ -530,12 +536,6 @@
       "MirrorSelectTeamScreen",
       "MirrorCheckDreamingStar",
       "MirrorCheckInitEgoGift"
-    ],
-    "roi": [
-      994,
-      441,
-      286,
-      108
     ]
   },
   "MirrorClickMirrorDungeons": {
@@ -543,7 +543,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "home/mirror_dungeons_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        328,
+        269,
+        246,
+        102
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 1000,
@@ -552,30 +558,24 @@
       "MirrorClickEnterRoadToMir",
       "MirrorClickEnterMirror",
       "MirrorCheckDreamingStar"
-    ],
-    "roi": [
-      328,
-      269,
-      246,
-      102
     ]
   },
   "MirrorClickDrive": {
     "recognition": {
       "type": "TemplateMatch",
       "template": "home/drive.png",
-      "threshold": 0.72
+      "threshold": 0.72,
+      "roi": [
+        700,
+        500,
+        580,
+        220
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 600,
     "next": [
       "MirrorDungeonEntry"
-    ],
-    "roi": [
-      700,
-      500,
-      580,
-      220
     ]
   },
   "MirrorDismissFirstPrompt": {
@@ -607,17 +607,17 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/theme_pack/feature_theme_pack_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1126,
+        60,
+        154,
+        117
+      ]
     },
     "action": "DoNothing",
     "next": [
       "MirrorInDungeon"
-    ],
-    "roi": [
-      1126,
-      60,
-      154,
-      117
     ]
   },
   "MirrorLeaveShop": {
@@ -625,18 +625,18 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/shop/leave_shop_confirm_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        610,
+        444,
+        336,
+        97
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 800,
     "next": [
       "MirrorDungeonEntry"
-    ],
-    "roi": [
-      610,
-      444,
-      336,
-      97
     ]
   },
   "MirrorSelectTeamScreen": {
@@ -644,19 +644,19 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_to_mir/select_team_stars_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1078,
+        490,
+        202,
+        97
+      ]
     },
     "action": "DoNothing",
     "post_delay": 500,
     "next": [
       "MirrorOpenTeamPanel",
       "MirrorClickConfirmTeamButton"
-    ],
-    "roi": [
-      1078,
-      490,
-      202,
-      97
     ]
   },
   "MirrorOpenTeamPanel": {
@@ -693,7 +693,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_to_mir/select_team_confirm_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1041,
+        529,
+        239,
+        114
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 1000,
@@ -702,12 +708,6 @@
       "MirrorCheckInitEgoGift",
       "TeamFormationStart",
       "MirrorLevelConfirm"
-    ],
-    "roi": [
-      1041,
-      529,
-      239,
-      114
     ]
   },
   "MirrorCheckDreamingStar": {
@@ -715,19 +715,19 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_to_mir/dreaming_star/coins_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1060,
+        0,
+        220,
+        91
+      ]
     },
     "action": "DoNothing",
     "post_delay": 500,
     "next": [
       "MirrorConfirmDreamingStar",
       "MirrorEnterDreamingStar"
-    ],
-    "roi": [
-      1060,
-      0,
-      220,
-      91
     ]
   },
   "MirrorConfirmDreamingStar": {
@@ -735,19 +735,19 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_to_mir/dreaming_star/select_star_confirm_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        598,
+        483,
+        331,
+        96
+      ]
     },
     "action": "Click",
     "post_delay": 800,
     "next": [
       "MirrorEnterDreamingStar",
       "MirrorCheckInitEgoGift"
-    ],
-    "roi": [
-      598,
-      483,
-      331,
-      96
     ]
   },
   "MirrorEnterDreamingStar": {
@@ -755,7 +755,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_to_mir/dreaming_star/dreaming_star_enter_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1078,
+        602,
+        202,
+        91
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 1000,
@@ -763,12 +769,6 @@
       "MirrorCheckInitEgoGift",
       "TeamFormationStart",
       "MirrorLevelConfirm"
-    ],
-    "roi": [
-      1078,
-      602,
-      202,
-      91
     ]
   },
   "MirrorCheckInitEgoGift": {
@@ -776,18 +776,18 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_to_mir/activate_gift_search_on_assets.png",
-      "threshold": 0.72
+      "threshold": 0.72,
+      "roi": [
+        1052,
+        115,
+        228,
+        90
+      ]
     },
     "action": "DoNothing",
     "next": [
       "MirrorPickInitGiftsFirstThree",
       "MirrorConfirmInitGifts"
-    ],
-    "roi": [
-      1052,
-      115,
-      228,
-      90
     ]
   },
   "MirrorPickInitGiftsFirstThree": {
@@ -809,7 +809,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_to_mir/select_init_ego_gifts_confirm_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        971,
+        541,
+        309,
+        92
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 1200,
@@ -817,12 +823,6 @@
       "TeamFormationStart",
       "MirrorLevelConfirm",
       "MirrorInDungeon"
-    ],
-    "roi": [
-      971,
-      541,
-      309,
-      92
     ]
   },
   "MirrorLevelConfirm": {
@@ -830,19 +830,19 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_to_mir/level_confirm_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        625,
+        447,
+        335,
+        98
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 1000,
     "next": [
       "MirrorInDungeon",
       "BattleAutoCombat"
-    ],
-    "roi": [
-      625,
-      447,
-      335,
-      98
     ]
   },
   "MirrorInDungeon": {
@@ -850,7 +850,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_in_mir/legend_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1158,
+        55,
+        122,
+        92
+      ]
     },
     "action": "DoNothing",
     "next": [
@@ -860,12 +866,6 @@
       "MirrorClaimReward",
       "BattleAutoCombat",
       "MirrorInDungeon"
-    ],
-    "roi": [
-      1158,
-      55,
-      122,
-      92
     ]
   },
   "MirrorClickNode": {
@@ -873,18 +873,18 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_in_mir/enter_assets.png",
-      "threshold": 0.72
+      "threshold": 0.72,
+      "roi": [
+        1026,
+        488,
+        254,
+        109
+      ]
     },
     "action": "Click",
     "post_delay": 1500,
     "next": [
       "MirrorInDungeon"
-    ],
-    "roi": [
-      1026,
-      488,
-      254,
-      109
     ]
   },
   "MirrorEgoGiftGetConfirm": {
@@ -892,18 +892,18 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_in_mir/ego_gift_get_confirm_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        483,
+        478,
+        338,
+        107
+      ]
     },
     "action": "Click",
     "post_delay": 800,
     "next": [
       "MirrorInDungeon"
-    ],
-    "roi": [
-      483,
-      478,
-      338,
-      107
     ]
   },
   "MirrorAcquireEgoGiftCard": {
@@ -951,18 +951,18 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_in_mir/acquire_ego_gift_box_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        13,
+        1,
+        151,
+        122
+      ]
     },
     "action": "Click",
     "post_delay": 600,
     "next": [
       "MirrorInDungeon"
-    ],
-    "roi": [
-      13,
-      1,
-      151,
-      122
     ]
   },
   "MirrorClaimReward": {
@@ -970,19 +970,19 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/claim_reward/claim_rewards_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        1005,
+        553,
+        275,
+        89
+      ]
     },
     "action": "Click",
     "post_delay": 1000,
     "next": [
       "MirrorUseEnkephalinConfirm",
       "MirrorRewardAcquiredDone"
-    ],
-    "roi": [
-      1005,
-      553,
-      275,
-      89
     ]
   },
   "MirrorUseEnkephalinConfirm": {
@@ -990,18 +990,18 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/use_enkephalin.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        698,
+        495,
+        333,
+        97
+      ]
     },
     "action": "Click",
     "post_delay": 1500,
     "next": [
       "MirrorInDungeon"
-    ],
-    "roi": [
-      698,
-      495,
-      333,
-      97
     ]
   },
   "MirrorRewardAcquiredDone": {
@@ -1009,15 +1009,15 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/claim_reward/rewards_acquired_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        488,
+        427,
+        324,
+        88
+      ]
     },
     "action": "Click",
-    "post_delay": 1000,
-    "roi": [
-      488,
-      427,
-      324,
-      88
-    ]
+    "post_delay": 1000
   }
 }

@@ -11,6 +11,7 @@
   4. next 引用的节点存在
   5. template 指向的图片存在
   6. OCR 必须用 expected（不是 text）
+  7. 对象式 recognition 的识别参数必须写在对象内（顶层会被引擎忽略）
 
 用法: python3 scripts/validate_pipelines.py
 """
@@ -38,6 +39,8 @@ TOP_KEYS = {
     'preset', 'enabled', 'direction', 'distance', 'begin', 'end', 'while', 'body',
     # 流转
     'next', 'next_touch', 'on_error', 'reset', 'reset_recognition', 'reset_action',
+    # 手势时长/轨迹（Swipe / LongPress，v5 起 begin/end 支持 2 元与 4 元坐标）
+    'duration', 'begin_offset', 'end_offset', 'end_hold',
     'reset_next', 'rerun', 'refresh_interval', 'run', 'timeout', 'trans_offset',
     'trans_touch', 'pre_wait_freezes', 'post_wait_freezes', 'pre_delay', 'post_delay',
     'action_delay',
@@ -115,6 +118,11 @@ def check():
         for k in node:
             if k in BANNED:
                 errs.append(f"{where}: 非法字段 '{k}' —— {BANNED[k]}")
+            elif is_v2 and k in RECOGNITION_KEYS and k not in ('type', 'recognition'):
+                # 引擎（PipelineParser.cpp:405-410）对对象式 recognition 只把该对象
+                # 本身（或其中的 param）当参数来源，写在顶层会被静默忽略。
+                errs.append(f"{where}: 对象式 recognition 下顶层 '{k}' 会被引擎忽略，"
+                            f"请写进 recognition 对象内")
             elif k not in TOP_KEYS and not (is_v1 and k in V1_RECOGNITION_PARAMS):
                 errs.append(f"{where}: 未知顶层字段 '{k}'")
 

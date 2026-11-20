@@ -13,7 +13,7 @@
 
 [![License](https://img.shields.io/badge/license-AGPL%203.0-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Android-green.svg)](https://developer.android.com)
-[![MaaFramework](https://img.shields.io/badge/MaaFramework-v5.14.0-orange.svg)](https://github.com/MaaXYZ/MaaFramework)
+[![MaaFramework](https://img.shields.io/badge/MaaFramework-v5.16.1-orange.svg)](https://github.com/MaaXYZ/MaaFramework)
 [![AALC Upstream](https://img.shields.io/badge/AALC-Upstream-brightgreen.svg)](https://github.com/KIYI671/AhabAssistantLimbusCompany)
 
 </div>
@@ -30,6 +30,7 @@
 - **🔄 首期核心闭环**：
   1. **体力全换脑啡肽模块（自动换饼）**：主界面一键全换模块。
   2. **战斗自动胜率连线**：自动 P 键胜率连线与齿轮回合推进，直至战斗胜利结算。
+  3. **通行证与邮件奖励**：日常 / 周常 / 赛季任务（含赛季第二页）逐条领取经验，再领战斗通行证奖励与邮箱附件。
 
 ---
 

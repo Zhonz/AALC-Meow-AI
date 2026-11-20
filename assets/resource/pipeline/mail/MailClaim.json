@@ -13,19 +13,19 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "home/mail.png",
-      "threshold": 0.72
+      "threshold": 0.72,
+      "roi": [
+        1043,
+        77,
+        237,
+        95
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 500,
     "next": [
       "MailClaimAll",
       "MailClose"
-    ],
-    "roi": [
-      1043,
-      77,
-      237,
-      95
     ]
   },
   "MailClaimAll": {

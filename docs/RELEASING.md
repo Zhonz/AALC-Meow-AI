@@ -53,16 +53,22 @@ release keystore 已生成并接入 CI：
 
 ```bash
 python3 scripts/regen_templates.py --check   # 审计尺寸偏差
-python3 scripts/regen_templates.py --apply   # 按官方链路重导
+python3 scripts/regen_templates.py --apply   # 按官方链路重导（尺寸不一致才写回）
+python3 scripts/regen_templates.py --apply --force   # 上游换了图片时全量重写
 python3 scripts/audit_templates.py           # 逐张列出可疑模板
 ```
 
 **改动截图归一化尺寸后，必须重跑 `regen_templates.py --apply`。**
 
+**上游更新了图片资源（AALC 会随游戏 UI 更新整批重导 `assets/images`）时，必须加
+`--force`。** 默认逻辑只在「裁剪后尺寸与本地文件不一致」时才写回；游戏 UI 换图后
+模板尺寸往往毫厘不变、像素却已不同，不加 `--force` 会静默留着旧图，表现为
+「模板明明存在却一直匹配不上」。
+
 ## 三、流程逻辑必须对齐官方
 
 业务流以 `upstream/aalc/tasks/` 为唯一权威（submodule 指向
-`KIYI671/AhabAssistantLimbusCompany`，当前 V1.6.1-beta.2）。
+`KIYI671/AhabAssistantLimbusCompany`，当前 V1.6.2 @ `ec8aa17`）。
 
 已按官方重建的部分：
 
@@ -113,8 +119,18 @@ gh release view v0.3.0-beta.1 -R qi-1021/AALC-Meow
 推 tag 前务必跑一次全量校验：
 
 ```bash
-python3 scripts/validate_pipelines.py
+python3 scripts/validate_pipelines.py        # 键名白名单 + 跳转目标 + 对象式 recognition 作用域
+python3 scripts/check_pipeline_schema.py     # 官方 JSON Schema（tools/*.schema.json，需 pip install jsonschema）
 MAA_CLI=/path/to/MaaPiCli python3 scripts/verify_with_engine.py
+```
+
+前两个是纯静态检查、秒级完成，CI 的 *Validate pipelines against MaaFramework schema* 步骤也会跑；
+第三个要真实引擎（MaaPiCli + libMaaFramework）。本机没有 MaaPiCli 时，`verify_with_engine.py`
+会回退到官方 Python 绑定（aarch64 / x86_64 都有 wheel，无需下载 Release 包）：
+
+```bash
+pip install "maafw==<与 UPSTREAM_VERSIONS.json 相同的版本>"
+python3 scripts/verify_with_engine.py        # 自动走绑定回退，加载 assets/resource
 ```
 
 ## 六、从 MAAend-Meow 学到的经验（2026-09-27）

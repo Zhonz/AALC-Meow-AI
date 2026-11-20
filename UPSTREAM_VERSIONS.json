@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "AALC-Meow",
+  "description": "Upstream component versions, pinned commits, and build baseline",
+  "components": {
+    "aalc": {
+      "name": "AALC (AhabAssistantLimbusCompany)",
+      "repository": "https://github.com/KIYI671/AhabAssistantLimbusCompany",
+      "path": "upstream/aalc",
+      "pinned_commit": "ec8aa1750f823f2c5daf76d1807282b17b968a30",
+      "pinned_tag": "V1.6.2",
+      "description": "上游业务资源仓库，提供 interface.json、tasks、resource、teams/mirror/event 等全量识别模板与流程逻辑（唯一权威参考）"
+    },
+    "maa_framework": {
+      "name": "MaaFramework",
+      "repository": "https://github.com/MaaXYZ/MaaFramework",
+      "pinned_release": "v5.14.0",
+      "compatible_releases": [
+        "v5.13.1",
+        "v5.14.0"
+      ],
+      "description": "自动化与图像识别底层核心库，提供 libMaaFramework.so、libMaaUtils.so 及 AndroidNativeControlUnit；截图按 SCREENSHOT_TARGET_SHORT_SIDE=720 归一化，模板比例必须为 0.5x"
+    },
+    "maa_common_assets": {
+      "name": "MaaCommonAssets (OCR)",
+      "repository": "https://github.com/MaaXYZ/MaaCommonAssets",
+      "model_path": "OCR/ppocr_v6/small",
+      "files": [
+        "det.onnx",
+        "rec.onnx",
+        "keys.txt"
+      ],
+      "description": "轻量级 PP-OCR v6 文字识别 ONNX 模型"
+    },
+    "host_platform": {
+      "name": "MaaFwApp (MAA-Meow 通用架构)",
+      "repository": "https://github.com/Aliothmoon/MaaFwApp",
+      "source_reference": "https://github.com/Aliothmoon/MAA-Meow",
+      "description": "Android 宿主工程、Jetpack Compose 界面、Shizuku/Root 特权进程桥、虚拟显示屏与多点触控层"
+    }
+  },
+  "build_toolchain": {
+    "jdk": "17 (Temurin)",
+    "compile_sdk": 37,
+    "target_sdk": 36,
+    "min_sdk": 28,
+    "ndk": "27.2.12479018 (r27c)",
+    "cmake": "3.22.1",
+    "agp": "9.2.1",
+    "kotlin": "2.3.21",
+    "ksp": "2.3.9"
+  },
+  "asset_rules": {
+    "screenshot_short_side": 720,
+    "template_scale": 0.5,
+    "note": "上游资源为 2560x1440 全屏透明图；本项目截图归一化到短边 720p，故所有模板必须按 0.5x 重新导出。改动归一化尺寸后必须重跑 scripts/regen_templates.py --apply",
+    "regen_command": "python3 scripts/regen_templates.py --apply"
+  }
+}

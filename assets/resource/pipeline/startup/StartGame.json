@@ -1,0 +1,39 @@
+{
+  "StartLimbusCompany": {
+    "doc": "启动边狱公司游戏。action 和包名由 GamePackageName option 的 pipeline_override 注入，此处为默认官服配置。",
+    "action": "StartApp",
+    "package": "com.ProjectMoon.LimbusCompany",
+    "next": [
+      "WaitLimbusHomeScreen"
+    ]
+  },
+  "WaitLimbusHomeScreen": {
+    "doc": "等待游戏主界面出现。识别大厅的体力槽图标，最多等待 120 秒。",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "home/enkephalin_box.png",
+      "threshold": 0.7
+    },
+    "timeout": 120000,
+    "on_error": [
+      "StartGameFailed"
+    ],
+    "next": [
+      "StartGameSuccess"
+    ],
+    "roi": [
+      246,
+      589,
+      138,
+      104
+    ]
+  },
+  "StartGameSuccess": {
+    "doc": "游戏大厅已就绪，任务完成。",
+    "action": "DoNothing"
+  },
+  "StartGameFailed": {
+    "doc": "等待超时，游戏未能进入主界面。任务结束并上报失败。",
+    "action": "DoNothing"
+  }
+}

@@ -1,0 +1,75 @@
+name: Auto-Sync Upstream AALC
+
+on:
+  schedule:
+    # 每天北京时间 10:00 与 22:00 自动检查上游更新
+    - cron: '0 2 * * *'
+    - cron: '0 14 * * *'
+  workflow_dispatch:
+    inputs:
+      force_build:
+        description: '即使上游无新提交也强制重新打包 (Force APK Rebuild)'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  check-and-sync:
+    name: Check & Sync Upstream AALC
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository with Submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python Build Dependencies
+        run: |
+          python -m pip install --upgrade pip pillow
+
+      - name: Check Upstream Changes
+        id: sync
+        env:
+          FORCE_BUILD: ${{ github.event.inputs.force_build || 'false' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python scripts/sync_upstream.py
+
+      - name: Commit & Push Updates
+        if: steps.sync.outputs.has_changes == 'true'
+        env:
+          SUMMARY: ${{ steps.sync.outputs.summary }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add upstream/aalc UPSTREAM_VERSIONS.json assets/resource/image
+
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(auto-sync): ${SUMMARY}"
+            git push origin HEAD:master
+            echo "[INFO] Successfully pushed upstream sync commit."
+          else
+            echo "[INFO] Working tree clean, nothing to commit."
+          fi
+
+      - name: Trigger APK Cloud Build
+        if: steps.sync.outputs.has_changes == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "[INFO] Triggering build-apk.yml on master..."
+          gh workflow run build-apk.yml --ref master
+          echo "[INFO] Build workflow triggered successfully!"

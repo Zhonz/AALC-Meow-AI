@@ -1,0 +1,1023 @@
+{
+  "TeamFormationStart": {
+    "doc": "官方 team_formation.py:58 用 identify_assets 作锚点，定位罪人网格原点",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "teams/identify_assets.png",
+      "threshold": 0.75
+    },
+    "action": "DoNothing",
+    "next": [
+      "ClearCurrentTeam"
+    ],
+    "roi": [
+      1122,
+      129,
+      158,
+      98
+    ]
+  },
+  "ClearCurrentTeam": {
+    "doc": "官方 clean_team():39 点击清队确认",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "teams/clear_selection_confirm_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_wait_freezes": 600,
+    "next": [
+      "SelectSinnerSlot1",
+      "TeamFormationConfirm"
+    ],
+    "roi": [
+      608,
+      448,
+      336,
+      95
+    ]
+  },
+  "SelectSinnerSlot1": {
+    "doc": "slot 1 = YiSang（第一排）。官方 team_formation.py:59-77：first_sinner = anchor + (-1800, +130)*scale，本格再 + (270*i, 0) 或 (270*(i-6), +500)*scale；scale=720/1440=0.5 -> offset(-900, 65)",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "teams/identify_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_delay": 400,
+    "next": [
+      "SelectSinnerSlot2"
+    ],
+    "target_offset": [
+      -900,
+      65,
+      0,
+      0
+    ],
+    "roi": [
+      1122,
+      129,
+      158,
+      98
+    ]
+  },
+  "SelectSinnerSlot2": {
+    "doc": "slot 2 = Faust（第一排）。官方 team_formation.py:59-77：first_sinner = anchor + (-1800, +130)*scale，本格再 + (270*i, 0) 或 (270*(i-6), +500)*scale；scale=720/1440=0.5 -> offset(-765, 65)",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "teams/identify_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_delay": 200,
+    "next": [
+      "SelectSinnerSlot3"
+    ],
+    "target_offset": [
+      -765,
+      65,
+      0,
+      0
+    ],
+    "roi": [
+      1122,
+      129,
+      158,
+      98
+    ]
+  },
+  "SelectSinnerSlot3": {
+    "doc": "slot 3 = DonQuixote（第一排）。官方 team_formation.py:59-77：first_sinner = anchor + (-1800, +130)*scale，本格再 + (270*i, 0) 或 (270*(i-6), +500)*scale；scale=720/1440=0.5 -> offset(-630, 65)",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "teams/identify_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_delay": 200,
+    "next": [
+      "SelectSinnerSlot4"
+    ],
+    "target_offset": [
+      -630,
+      65,
+      0,
+      0
+    ],
+    "roi": [
+      1122,
+      129,
+      158,
+      98
+    ]
+  },
+  "SelectSinnerSlot4": {
+    "doc": "slot 4 = Ryoshu（第一排）。官方 team_formation.py:59-77：first_sinner = anchor + (-1800, +130)*scale，本格再 + (270*i, 0) 或 (270*(i-6), +500)*scale；scale=720/1440=0.5 -> offset(-495, 65)",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "teams/identify_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_delay": 200,
+    "next": [
+      "SelectSinnerSlot5"
+    ],
+    "target_offset": [
+      -495,
+      65,
+      0,
+      0
+    ],
+    "roi": [
+      1122,
+      129,
+      158,
+      98
+    ]
+  },
+  "SelectSinnerSlot5": {
+    "doc": "slot 5 = Meursault（第一排）。官方 team_formation.py:59-77：first_sinner = anchor + (-1800, +130)*scale，本格再 + (270*i, 0) 或 (270*(i-6), +500)*scale；scale=720/1440=0.5 -> offset(-360, 65)",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "teams/identify_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_delay": 200,
+    "next": [
+      "SelectSinnerSlot6"
+    ],
+    "target_offset": [
+      -360,
+      65,
+      0,
+      0
+    ],
+    "roi": [
+      1122,
+      129,
+      158,
+      98
+    ]
+  },
+  "SelectSinnerSlot6": {
+    "doc": "slot 6 = HongLu（第一排）。官方 team_formation.py:59-77：first_sinner = anchor + (-1800, +130)*scale，本格再 + (270*i, 0) 或 (270*(i-6), +500)*scale；scale=720/1440=0.5 -> offset(-225, 65)",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "teams/identify_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_delay": 200,
+    "next": [
+      "SelectSinnerSlot7"
+    ],
+    "target_offset": [
+      -225,
+      65,
+      0,
+      0
+    ],
+    "roi": [
+      1122,
+      129,
+      158,
+      98
+    ]
+  },
+  "SelectSinnerSlot7": {
+    "doc": "slot 7 = Heathcliff（第二排）。官方 team_formation.py:59-77：first_sinner = anchor + (-1800, +130)*scale，本格再 + (270*i, 0) 或 (270*(i-6), +500)*scale；scale=720/1440=0.5 -> offset(-900, 315)",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "teams/identify_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_delay": 200,
+    "next": [
+      "SelectSinnerSlot8"
+    ],
+    "target_offset": [
+      -900,
+      315,
+      0,
+      0
+    ],
+    "roi": [
+      1122,
+      129,
+      158,
+      98
+    ]
+  },
+  "SelectSinnerSlot8": {
+    "doc": "slot 8 = Ishmael（第二排）。官方 team_formation.py:59-77：first_sinner = anchor + (-1800, +130)*scale，本格再 + (270*i, 0) 或 (270*(i-6), +500)*scale；scale=720/1440=0.5 -> offset(-765, 315)",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "teams/identify_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_delay": 200,
+    "next": [
+      "SelectSinnerSlot9"
+    ],
+    "target_offset": [
+      -765,
+      315,
+      0,
+      0
+    ],
+    "roi": [
+      1122,
+      129,
+      158,
+      98
+    ]
+  },
+  "SelectSinnerSlot9": {
+    "doc": "slot 9 = Rodion（第二排）。官方 team_formation.py:59-77：first_sinner = anchor + (-1800, +130)*scale，本格再 + (270*i, 0) 或 (270*(i-6), +500)*scale；scale=720/1440=0.5 -> offset(-630, 315)",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "teams/identify_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_delay": 200,
+    "next": [
+      "SelectSinnerSlot10"
+    ],
+    "target_offset": [
+      -630,
+      315,
+      0,
+      0
+    ],
+    "roi": [
+      1122,
+      129,
+      158,
+      98
+    ]
+  },
+  "SelectSinnerSlot10": {
+    "doc": "slot 10 = Sinclair（第二排）。官方 team_formation.py:59-77：first_sinner = anchor + (-1800, +130)*scale，本格再 + (270*i, 0) 或 (270*(i-6), +500)*scale；scale=720/1440=0.5 -> offset(-495, 315)",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "teams/identify_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_delay": 200,
+    "next": [
+      "SelectSinnerSlot11"
+    ],
+    "target_offset": [
+      -495,
+      315,
+      0,
+      0
+    ],
+    "roi": [
+      1122,
+      129,
+      158,
+      98
+    ]
+  },
+  "SelectSinnerSlot11": {
+    "doc": "slot 11 = Outis（第二排）。官方 team_formation.py:59-77：first_sinner = anchor + (-1800, +130)*scale，本格再 + (270*i, 0) 或 (270*(i-6), +500)*scale；scale=720/1440=0.5 -> offset(-360, 315)",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "teams/identify_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_delay": 200,
+    "next": [
+      "SelectSinnerSlot12"
+    ],
+    "target_offset": [
+      -360,
+      315,
+      0,
+      0
+    ],
+    "roi": [
+      1122,
+      129,
+      158,
+      98
+    ]
+  },
+  "SelectSinnerSlot12": {
+    "doc": "slot 12 = Gregor（第二排）。官方 team_formation.py:59-77：first_sinner = anchor + (-1800, +130)*scale，本格再 + (270*i, 0) 或 (270*(i-6), +500)*scale；scale=720/1440=0.5 -> offset(-225, 315)",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "teams/identify_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_delay": 200,
+    "next": [
+      "TeamFormationConfirm"
+    ],
+    "target_offset": [
+      -225,
+      315,
+      0,
+      0
+    ],
+    "roi": [
+      1122,
+      129,
+      158,
+      98
+    ]
+  },
+  "TeamFormationConfirm": {
+    "doc": "官方 team_formation.py:359 chain_to_battle 确认出战",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "battle/chaim_to_battle_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_wait_freezes": 800,
+    "next": [
+      "MirrorLevelConfirm",
+      "MirrorInDungeon",
+      "BattleAutoCombat"
+    ],
+    "roi": [
+      1030,
+      539,
+      250,
+      98
+    ]
+  },
+  "MirrorDungeonEntry": {
+    "doc": "官方 road_to_mir() 入口路由：按原版候选顺序自愈推进",
+    "recognition": "DirectHit",
+    "action": "DoNothing",
+    "next": [
+      "MirrorCheckClaimClear",
+      "MirrorCheckLegend",
+      "MirrorClickResume",
+      "MirrorClickEnterRoadToMir",
+      "MirrorClickEnterMirror",
+      "MirrorClickMirrorDungeons",
+      "MirrorClickDrive",
+      "MirrorCheckShopCoins",
+      "MirrorClickInfinityEnter",
+      "MirrorSelectTeamScreen",
+      "MirrorCheckDreamingStar",
+      "MirrorCheckInitEgoGift",
+      "MirrorCheckThemePack",
+      "MirrorDismissFirstPrompt"
+    ]
+  },
+  "MirrorCheckClaimClear": {
+    "doc": "已在镜牢结算页（上局遗留），直接进入领奖",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/claim_reward/clear_assets.png",
+      "threshold": 0.75
+    },
+    "action": "DoNothing",
+    "next": [
+      "MirrorClaimReward"
+    ],
+    "roi": [
+      276,
+      315,
+      146,
+      118
+    ]
+  },
+  "MirrorCheckShopCoins": {
+    "doc": "卡在镜牢商店内，退出",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/shop/shop_coins_assets.png",
+      "threshold": 0.88
+    },
+    "action": "DoNothing",
+    "next": [
+      "MirrorLeaveShop"
+    ],
+    "roi": [
+      428,
+      81,
+      346,
+      112
+    ]
+  },
+  "MirrorCheckLegend": {
+    "doc": "已在镜牢图例/说明页",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/legend_assets.png",
+      "threshold": 0.75
+    },
+    "action": "DoNothing",
+    "next": [
+      "MirrorInDungeon"
+    ],
+    "roi": [
+      1158,
+      55,
+      122,
+      92
+    ]
+  },
+  "MirrorClickResume": {
+    "doc": "官方 mirror.py:152 resume_assets —— 继续上次未完成的镜牢",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_to_mir/resume_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_wait_freezes": 1000,
+    "next": [
+      "MirrorInDungeon",
+      "MirrorCheckDreamingStar",
+      "MirrorCheckInitEgoGift",
+      "MirrorSelectTeamScreen"
+    ],
+    "roi": [
+      429,
+      345,
+      522,
+      107
+    ]
+  },
+  "MirrorClickEnterMirror": {
+    "doc": "官方 mirror.py:154 enter_mirror_assets，阈值 0.78",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_to_mir/enter_mirror_assets.png",
+      "threshold": 0.78
+    },
+    "action": "Click",
+    "post_wait_freezes": 1000,
+    "next": [
+      "MirrorConfirmEnterMirror",
+      "MirrorInDungeon",
+      "MirrorLevelConfirm",
+      "MirrorCheckDreamingStar",
+      "MirrorCheckInitEgoGift"
+    ],
+    "roi": [
+      614,
+      435,
+      340,
+      98
+    ]
+  },
+  "MirrorConfirmEnterMirror": {
+    "doc": "进入镜牢后的确认弹窗",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_to_mir/enter_mirror_confirm.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_wait_freezes": 800,
+    "next": [
+      "MirrorSelectTeamScreen",
+      "MirrorCheckDreamingStar",
+      "MirrorCheckInitEgoGift",
+      "MirrorLevelConfirm"
+    ]
+  },
+  "MirrorClickInfinityEnter": {
+    "doc": "官方 mirror.py:164 无限镜牢入口（配合 infinity_mirror_bbox 文本判定）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_to_mir/infinity_mirror_enter_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_wait_freezes": 1000,
+    "next": [
+      "MirrorSelectTeamScreen",
+      "MirrorCheckDreamingStar",
+      "MirrorCheckInitEgoGift",
+      "MirrorLevelConfirm"
+    ],
+    "roi": [
+      939,
+      333,
+      341,
+      88
+    ]
+  },
+  "MirrorClickEnterRoadToMir": {
+    "doc": "官方 mirror.py:165 enter_assets —— 镜牢道路入口（主入口）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_to_mir/enter_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_wait_freezes": 1000,
+    "next": [
+      "MirrorDungeonEntry",
+      "MirrorSelectTeamScreen",
+      "MirrorCheckDreamingStar",
+      "MirrorCheckInitEgoGift"
+    ],
+    "roi": [
+      994,
+      441,
+      286,
+      108
+    ]
+  },
+  "MirrorClickMirrorDungeons": {
+    "doc": "官方 mirror.py:168 home/mirror_dungeons —— 驾驶页上的镜牢图标（本次失败的关键缺失分支）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "home/mirror_dungeons_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_wait_freezes": 1000,
+    "next": [
+      "MirrorDungeonEntry",
+      "MirrorClickEnterRoadToMir",
+      "MirrorClickEnterMirror",
+      "MirrorCheckDreamingStar"
+    ],
+    "roi": [
+      328,
+      269,
+      246,
+      102
+    ]
+  },
+  "MirrorClickDrive": {
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "home/drive.png",
+      "threshold": 0.72
+    },
+    "action": "Click",
+    "post_wait_freezes": 600,
+    "next": [
+      "MirrorDungeonEntry"
+    ],
+    "roi": [
+      700,
+      500,
+      580,
+      220
+    ]
+  },
+  "MirrorDismissFirstPrompt": {
+    "doc": "官方 mirror.py:140-143 首次引导弹窗 + 返回键同时出现才点（与原版 find_element 两个条件一致）",
+    "recognition": "And",
+    "all_of": [
+      {
+        "sub_name": "first_prompt",
+        "recognition": "TemplateMatch",
+        "template": "home/first_prompt_assets.png",
+        "threshold": 0.75
+      },
+      {
+        "sub_name": "back",
+        "recognition": "TemplateMatch",
+        "template": "home/back.png",
+        "threshold": 0.75
+      }
+    ],
+    "box_index": 1,
+    "action": "Click",
+    "post_wait_freezes": 600,
+    "next": [
+      "MirrorDungeonEntry"
+    ]
+  },
+  "MirrorCheckThemePack": {
+    "doc": "官方 mirror.py:194 防止卡死在主题包页",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/theme_pack/feature_theme_pack_assets.png",
+      "threshold": 0.75
+    },
+    "action": "DoNothing",
+    "next": [
+      "MirrorInDungeon"
+    ],
+    "roi": [
+      1126,
+      60,
+      154,
+      117
+    ]
+  },
+  "MirrorLeaveShop": {
+    "doc": "官方 mirror.py:448 离开商店",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/shop/leave_shop_confirm_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_wait_freezes": 800,
+    "next": [
+      "MirrorDungeonEntry"
+    ],
+    "roi": [
+      610,
+      444,
+      336,
+      97
+    ]
+  },
+  "MirrorSelectTeamScreen": {
+    "doc": "检测到镜牢队伍选择界面（select_team_stars_assets）后，进入编队选择流程",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_to_mir/select_team_stars_assets.png",
+      "threshold": 0.75
+    },
+    "action": "DoNothing",
+    "post_delay": 500,
+    "next": [
+      "MirrorOpenTeamPanel",
+      "MirrorClickConfirmTeamButton"
+    ],
+    "roi": [
+      1078,
+      490,
+      202,
+      97
+    ]
+  },
+  "MirrorOpenTeamPanel": {
+    "doc": "点击「编队」按钮打开队伍列表面板",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "battle/teams.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_wait_freezes": 800,
+    "next": [
+      "MirrorSelectTeamByOCR",
+      "MirrorOpenTeamPanel"
+    ]
+  },
+  "MirrorSelectTeamByOCR": {
+    "doc": "用 OCR 找到对应编队名称（如「编队#1」）并点击。编队号由 MirrorTeamPreset option 的 pipeline_override 注入。",
+    "recognition": {
+      "type": "OCR",
+      "expected": [
+        "编队#1"
+      ]
+    },
+    "action": "Click",
+    "post_wait_freezes": 600,
+    "next": [
+      "MirrorClickConfirmTeamButton",
+      "MirrorSelectTeamByOCR"
+    ]
+  },
+  "MirrorClickConfirmTeamButton": {
+    "doc": "点击队伍确认按钮（select_team_confirm_assets）完成队伍选定",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_to_mir/select_team_confirm_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_wait_freezes": 1000,
+    "next": [
+      "MirrorCheckDreamingStar",
+      "MirrorCheckInitEgoGift",
+      "TeamFormationStart",
+      "MirrorLevelConfirm"
+    ],
+    "roi": [
+      1041,
+      529,
+      239,
+      114
+    ]
+  },
+  "MirrorCheckDreamingStar": {
+    "doc": "检测到开局星光选择界面（dreaming_star/coins_assets.png）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_to_mir/dreaming_star/coins_assets.png",
+      "threshold": 0.75
+    },
+    "action": "DoNothing",
+    "post_delay": 500,
+    "next": [
+      "MirrorConfirmDreamingStar",
+      "MirrorEnterDreamingStar"
+    ],
+    "roi": [
+      1060,
+      0,
+      220,
+      91
+    ]
+  },
+  "MirrorConfirmDreamingStar": {
+    "doc": "点击确认选定星光增益",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_to_mir/dreaming_star/select_star_confirm_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_delay": 800,
+    "next": [
+      "MirrorEnterDreamingStar",
+      "MirrorCheckInitEgoGift"
+    ],
+    "roi": [
+      598,
+      483,
+      331,
+      96
+    ]
+  },
+  "MirrorEnterDreamingStar": {
+    "doc": "点击进入梦境星光确定按钮",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_to_mir/dreaming_star/dreaming_star_enter_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_wait_freezes": 1000,
+    "next": [
+      "MirrorCheckInitEgoGift",
+      "TeamFormationStart",
+      "MirrorLevelConfirm"
+    ],
+    "roi": [
+      1078,
+      602,
+      202,
+      91
+    ]
+  },
+  "MirrorCheckInitEgoGift": {
+    "doc": "检测到开局自选3饰品界面（activate_gift_search_on/off）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_to_mir/activate_gift_search_on_assets.png",
+      "threshold": 0.72
+    },
+    "action": "DoNothing",
+    "next": [
+      "MirrorPickInitGiftsFirstThree",
+      "MirrorConfirmInitGifts"
+    ],
+    "roi": [
+      1052,
+      115,
+      228,
+      90
+    ]
+  },
+  "MirrorPickInitGiftsFirstThree": {
+    "doc": "点击前3个初始藏品并确认",
+    "action": "Click",
+    "target": [
+      400,
+      450,
+      50,
+      50
+    ],
+    "post_delay": 400,
+    "next": [
+      "MirrorConfirmInitGifts"
+    ]
+  },
+  "MirrorConfirmInitGifts": {
+    "doc": "点击初始藏品选定确认按钮（select_init_ego_gifts_confirm_assets）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_to_mir/select_init_ego_gifts_confirm_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_wait_freezes": 1200,
+    "next": [
+      "TeamFormationStart",
+      "MirrorLevelConfirm",
+      "MirrorInDungeon"
+    ],
+    "roi": [
+      971,
+      541,
+      309,
+      92
+    ]
+  },
+  "MirrorLevelConfirm": {
+    "doc": "确认难度选择（快速开始难度确认弹窗）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_to_mir/level_confirm_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_wait_freezes": 1000,
+    "next": [
+      "MirrorInDungeon",
+      "BattleAutoCombat"
+    ],
+    "roi": [
+      625,
+      447,
+      335,
+      98
+    ]
+  },
+  "MirrorInDungeon": {
+    "doc": "镜牢内主循环入口：识别地图（legend_assets），进入探索状态机",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/legend_assets.png",
+      "threshold": 0.75
+    },
+    "action": "DoNothing",
+    "next": [
+      "MirrorClickNode",
+      "MirrorEgoGiftGetConfirm",
+      "MirrorAcquireEgoGiftCard",
+      "MirrorClaimReward",
+      "BattleAutoCombat",
+      "MirrorInDungeon"
+    ],
+    "roi": [
+      1158,
+      55,
+      122,
+      92
+    ]
+  },
+  "MirrorClickNode": {
+    "doc": "点击「进入」按钮前进到下一节点",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/enter_assets.png",
+      "threshold": 0.72
+    },
+    "action": "Click",
+    "post_delay": 1500,
+    "next": [
+      "MirrorInDungeon"
+    ],
+    "roi": [
+      1026,
+      488,
+      254,
+      109
+    ]
+  },
+  "MirrorEgoGiftGetConfirm": {
+    "doc": "确认获取 EGO 饰品",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/ego_gift_get_confirm_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_delay": 800,
+    "next": [
+      "MirrorInDungeon"
+    ],
+    "roi": [
+      483,
+      478,
+      338,
+      107
+    ]
+  },
+  "MirrorAcquireEgoGiftCard": {
+    "doc": "遇到饰品卡选择界面：按 MirrorTheme option 选对应体系饰品，默认选第一个（最左）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/acquire_ego_gift_card.png",
+      "threshold": 0.75
+    },
+    "action": "DoNothing",
+    "next": [
+      "MirrorPickEgoGiftBleed",
+      "MirrorPickEgoGiftFirst"
+    ]
+  },
+  "MirrorPickEgoGiftBleed": {
+    "doc": "选择流血体系饰品（被 MirrorTheme=bleed 时通过 pipeline_override 激活）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/acquire_ego_gift/bleed.png",
+      "threshold": 0.78
+    },
+    "action": "Click",
+    "post_delay": 800,
+    "next": [
+      "MirrorRefuseOrConfirmGift"
+    ]
+  },
+  "MirrorPickEgoGiftFirst": {
+    "doc": "无匹配体系时，直接点击第一个饰品（屏幕固定坐标，通用 fallback）",
+    "action": "Click",
+    "target": [
+      650,
+      540,
+      50,
+      50
+    ],
+    "post_delay": 800,
+    "next": [
+      "MirrorRefuseOrConfirmGift"
+    ]
+  },
+  "MirrorRefuseOrConfirmGift": {
+    "doc": "弹出拒绝/接受饰品确认时，点击接受",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/acquire_ego_gift_box_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_delay": 600,
+    "next": [
+      "MirrorInDungeon"
+    ],
+    "roi": [
+      13,
+      1,
+      151,
+      122
+    ]
+  },
+  "MirrorClaimReward": {
+    "doc": "识别到镜牢奖励领取界面，点击领取",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/claim_reward/claim_rewards_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_delay": 1000,
+    "next": [
+      "MirrorUseEnkephalinConfirm",
+      "MirrorRewardAcquiredDone"
+    ],
+    "roi": [
+      1005,
+      553,
+      275,
+      89
+    ]
+  },
+  "MirrorUseEnkephalinConfirm": {
+    "doc": "如果出现「使用脑啡肽」弹窗，点击确认（续命）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/use_enkephalin.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_delay": 1500,
+    "next": [
+      "MirrorInDungeon"
+    ],
+    "roi": [
+      698,
+      495,
+      333,
+      97
+    ]
+  },
+  "MirrorRewardAcquiredDone": {
+    "doc": "镜牢奖励已全部领取，任务完成",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/claim_reward/rewards_acquired_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_delay": 1000,
+    "roi": [
+      488,
+      427,
+      324,
+      88
+    ]
+  }
+}

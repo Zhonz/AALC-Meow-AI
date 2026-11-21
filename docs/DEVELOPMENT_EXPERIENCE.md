@@ -504,3 +504,12 @@ AALC 的镜牢代码混用了两套基准，移植时**不能一把尺子量到�
 - **第二体系时序**：`second_system_setting == 0` 表示"本体系合出四级之后"才开始买/升第二体系，所以 `fuseIvDone` 是门控；两个体系都合出四级后（`fuse_second_IV`）激进合成收手。
 
 仍留着的差异（写进 README「还差什么」表）：白棉花的 OCR 跳过、`sort_points` 的坐标网格缓存（现在每轮重新识别，买过的东西从架子上消失所以不会重复点）、`return_assets`（上游素材本身不存在，那一步在 AALC 里是空操作）。
+## 13. 观测 EGO 饰品：一张 bbox 图 + 一格网格
+
+AALC 的 `select_observe_ego_gift`（`mirror.py:965`）是少数几个完全靠「bbox 素材 + 固定网格」定位的界面，正好适合搬到脚本里：
+
+- `observe_bbox.png` 是整页范围的非黑区域，只用来限定「体系图标在哪一行」；其中的 `burn.png` / `bleed.png` 两个图标既做识别锚点，也用来算体系之间的间距 `system_distance = bleed.x - burn.x`。
+- 体系顺序按 `tasks/__init__.py` 的 `observe_system`：burn/bleed/tremor/rupture/**sinking/poise**/charge/slash/pierce/blunt，注意 sinking 与 poise 在观测页上与商店页顺序互换，`general` 排在第 11 个。
+- 格点：`(level.x, level.y + 80*scale)` 是首格，列距 `165*scale`、行距 `160*scale`；目标在 `gift_box_bbox` 下沿之外时，按 `300*scale` 分步向上拖，最后点的 y 要减去累计拖动距离——否则会点到拖动后的错误格子。
+- 收尾三步是「选择 → 获得饰品确认 ×5 → 拒绝领取」；两个按钮都是点 bbox 中心（AALC 用 OCR 只做存在性判断，坐标照样取 bbox 中心），所以脚本只需要 `readText` 判存在，不需要文字坐标。
+- 素材统一按 720p 缩放：bbox 素材是 1440 高基准，`SCALE = 0.5`；`gift_box` 在 720p 下是 `(78,225,792,624)`。

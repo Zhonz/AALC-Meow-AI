@@ -1,0 +1,222 @@
+name: Build AALC-Meow APK
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build Type'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - debug
+      abi:
+        description: 'Target Architecture'
+        required: true
+        default: 'arm64-v8a'
+        type: choice
+        options:
+          - arm64-v8a
+          - universal
+      maafw_tag:
+        description: 'MaaFramework Tag (empty = latest)'
+        required: false
+        default: ''
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository with Submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Android NDK & SDK Tools
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r27c
+          link-to-sdk: true
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python Build Dependencies
+        run: |
+          python -m pip install --upgrade pip packaging pillow jsonschema
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle.kts', '**/gradle-wrapper.properties', '**/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Prepare AALC Assets & OCR Models
+        run: |
+          python scripts/prepare_aalc.py
+
+      - name: Setup MaaFramework Libraries
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          MAAFW_ARGS=""
+          if [ -n "${{ github.event.inputs.maafw_tag }}" ]; then
+            MAAFW_ARGS="--tag ${{ github.event.inputs.maafw_tag }}"
+          fi
+
+          if [ "${{ github.event.inputs.abi }}" = "universal" ]; then
+            python scripts/setup_maa_framework.py $MAAFW_ARGS
+            echo "build.debugAbi=arm64-v8a,x86_64" > local.properties
+            echo "build.releaseAbi=arm64-v8a,x86_64" >> local.properties
+          else
+            python scripts/setup_maa_framework.py --abi arm64-v8a $MAAFW_ARGS
+            echo "build.debugAbi=arm64-v8a" > local.properties
+            echo "build.releaseAbi=arm64-v8a" >> local.properties
+          fi
+          echo "pi.profile=pi-profile.yaml" >> local.properties
+
+      - name: Validate pipelines against MaaFramework schema
+        # 非法字段（recognition_and / timeout_next / OCR 用 text 等）不会静默忽略，
+        # 而是让资源加载整体失败、App 启动即崩。必须在出包前拦住三道：
+        #   1) 键名白名单校验（validate_pipelines.py，报错信息最友好）
+        #   2) 官方 JSON Schema 校验（check_pipeline_schema.py，按引擎语义折叠对象式
+        #      recognition / action，能抓出「写在顶层却被引擎忽略」的参数）
+        #   3) 真实引擎加载（verify_with_engine.py，用官方 MaaPiCli）
+        run: |
+          python scripts/validate_pipelines.py
+          python scripts/check_pipeline_schema.py
+          python -c "
+          import json, glob
+          for p in glob.glob('assets/**/*.json', recursive=True):
+              json.load(open(p, encoding='utf-8'))
+          print('assets JSON 全部可解析')"
+
+      - name: Verify resources load with real MaaFramework engine
+        # 引擎版本与 UPSTREAM_VERSIONS.json 同源，避免升级 MaaFramework 时
+        # 这里仍挂着旧版本，校验结果与实际打包的 .so 不一致。
+        run: |
+          MFW_VER="${{ runner.temp }}/maa"
+          mkdir -p "$MFW_VER"
+          MAAFW_TAG="${{ github.event.inputs.maafw_tag }}"
+          if [ -z "$MAAFW_TAG" ]; then
+            MAAFW_TAG=$(python -c "import json;print(json.load(open('UPSTREAM_VERSIONS.json'))['components']['maa_framework']['pinned_release'])")
+          fi
+          echo "校验用 MaaFramework 版本: $MAAFW_TAG"
+          curl -sL -o "$MFW_VER/maa.zip" \
+            "https://github.com/MaaXYZ/MaaFramework/releases/download/$MAAFW_TAG/MAA-linux-x86_64-$MAAFW_TAG.zip"
+          unzip -oq "$MFW_VER/maa.zip" -d "$MFW_VER"
+          chmod +x "$MFW_VER/bin/MaaPiCli"
+          MAA_CLI="$MFW_VER/bin/MaaPiCli" MAA_LIB="$MFW_VER/bin" \
+            python scripts/verify_with_engine.py
+
+      - name: Set up release signing keystore
+        # signingSetting() 优先读环境变量，local.properties 仅作本地兜底，
+        # 所以这里导出环境变量即可。未配置 Secrets 时回退 debug 签名，CI 永远能出包。
+        # 配置方法见 docs/RELEASING.md。
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            # 注意：Gradle 的 file(keystorePath) 相对 app/ 模块目录解析，
+            # 因此 keystore 必须落在 app/.signing/，而 KEYSTORE_PATH 保持
+            # 相对路径 .signing/release.jks。
+            mkdir -p app/.signing
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/.signing/release.jks
+            {
+              echo "KEYSTORE_PATH=.signing/release.jks"
+              echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}"
+              echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}"
+              echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}"
+            } >> "$GITHUB_ENV"
+            echo "release keystore configured from secrets"
+          else
+            echo "::warning::KEYSTORE_BASE64 secret not set; falling back to debug signing"
+          fi
+
+      - name: Build APK via Gradle
+        run: |
+          chmod +x ./gradlew
+          BUILD_TYPE="${{ github.event.inputs.build_type || 'release' }}"
+          
+          REF_NAME="${{ github.ref_name }}"
+          if [ -n "$REF_NAME" ] && [[ "$REF_NAME" == v* ]]; then
+            export BUILD_VERSION_NAME="${REF_NAME#v}"
+          fi
+          
+          if [ "$BUILD_TYPE" = "release" ]; then
+            ./gradlew assembleRelease --stacktrace
+          else
+            ./gradlew assembleDebug --stacktrace
+          fi
+
+      - name: Prepare APK Output
+        id: apk_prep
+        run: |
+          mkdir -p output_apks
+          ABI_NAME="${{ github.event.inputs.abi || 'arm64-v8a' }}"
+          BUILD_TYPE="${{ github.event.inputs.build_type || 'release' }}"
+          TAG_OR_REF="${{ github.ref_name }}"
+          
+          if [ -n "$TAG_OR_REF" ] && [[ "$TAG_OR_REF" == v* ]]; then
+            VER="$TAG_OR_REF"
+          else
+            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.1.0")
+            VER="${LATEST_TAG}"
+          fi
+          
+          for apk in $(find app/build/outputs/apk -name "*.apk"); do
+            base=$(basename "$apk")
+            if [ "$BUILD_TYPE" = "release" ]; then
+              new_name="AALC-Meow-${VER}-${ABI_NAME}.apk"
+            else
+              new_name="AALC-Meow-${VER}-${ABI_NAME}-debug.apk"
+            fi
+            cp "$apk" "output_apks/${new_name}"
+            echo "Packaged: output_apks/${new_name}"
+          done
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AALC-Meow-APKs
+          path: output_apks/*.apk
+          retention-days: 14
+
+      - name: Publish GitHub Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: output_apks/*.apk
+          draft: false
+          # 功能开发完成前，所有 tag 一律按 beta 预发布（用户 2026-09-27 规定）。
+          # 开发完成后把这里改回 false，并同步把应用内默认更新通道切回 STABLE。
+          prerelease: true
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

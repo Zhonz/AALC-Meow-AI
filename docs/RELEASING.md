@@ -276,3 +276,46 @@ python3 scripts/pack_pi.py --code 202611211200                  # 手动指定�
 4. 上游截图是**涂黑的**，只能证明「元素在哪」，不能证明「整屏里只有它匹配」；
    小图标（例如 `pass/pass_coin.png`）如果没有任何一张截图包含它，它的位置就是未知量，
    发布前必须在真机上补一次。
+
+## 七、资源包热更新（不发 APK 也能换 AALC 资源）
+
+APK 里打包的 PI 只是发布那一刻的快照。上游 AALC 换图、改流程后，不必等下一次发版：
+App 启动时会读仓库根目录的 `pi-manifest.json`，比版本、下新的 `pi.zip`、校验后原子替换。
+
+### 自动发布链路
+
+`.github/workflows/publish-pi.yml`：改到 `assets/**`、`pi-profile.yaml` 或该工作流本身并推到 main 时触发
+
+1. `scripts/pack_pi.py` 按 `pi-profile.yaml` 的白名单把 `assets/` 打成 `pi.zip`
+   （zip 根目录直接是 `interface.json`/`tasks/`/`resource/`，**不能套一层目录**，
+   否则 App 的解包校验 `requireInterfaceJson` 会拒），同时算出 sha256 与体积；
+2. `gh release create pi-<versionCode>` 发布 `pi.zip` + `pi-manifest.json`
+   （`--latest=false`，不抢 APK release 的 latest 标记）；
+3. 把 `pi-manifest.json` 提交回 main。它不在 `assets/` 下，所以不会自触发。
+
+`versionCode` 默认取 `YYMMDDHHmm`（例如 `2611211158`），要手动加号时：
+
+```bash
+python scripts/pack_pi.py --version-code 2611220001 --version v0.3.2
+```
+
+### App 侧行为
+
+- 开关：设置 → 更新 → 「自动检查资源包更新」，默认**开**（`resourceAutoUpdate`）。
+  关掉后启动不再发网络请求，但手动检查仍然可用。
+- 流程在 `PiRemoteUpdater.checkAndInstall()`：取清单（raw 直连 → gh-proxy → jsDelivr）
+  → 比 `versionCode` → 下载（直连失败按 `gh-proxy`/`ghfast` 前缀重试）→ 校验 sha256
+  → `PiInstaller.installPackage()` 解到 `pi.staging`、校验 `interface.json`、
+  旧目录改名 `pi.previous`、新版上位、最后删备份。
+- **失败一律保留旧版**：解包或校验不通过时 `pi` 目录根本没动过。
+- 三个标记文件（都在 `AppPaths.ROOT` 下）：
+  `pi.version`（当前资源版本号）、`pi.bundle`（APK 自带快照对应的 APK VERSION_CODE）、
+  `pi.remote`（当前这份是远程装的）。**没有 `pi.remote` 时任何有效清单都比包里新**，
+  因为 APK 自带的 `pi.version` 是几万的 VERSION_CODE，与 PI 修订号不同标尺。
+
+### 回滚
+
+把 `pi-manifest.json` 的 `versionCode` 改回旧值（或删掉 `url`/`sha256`）再推一次即可：
+已装新版的设备不会降级，但新装/重装设备会拿到旧包。真要强制回退，
+得同时把 `versionCode` 号段提高并指向旧内容——**PI 修订号必须严格递增**。
+

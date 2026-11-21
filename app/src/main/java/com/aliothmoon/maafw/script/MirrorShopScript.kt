@@ -165,10 +165,20 @@ object MirrorShopScript : ScriptTask {
     @Volatile
     private var fuseIvDone: Boolean = false
 
+    /** 本次商店已做过几次技能替换（AALC in_shop.py:1291-1327 每次加一，330-332 只在少于 3 次时再跑） */
+    @Volatile
+    private var replacements: Int = 0
+
+    /** 第二体系也合出四级了（AALC fuse_second_IV）：此时不再追第二体系，激进合成收手 */
+    @Volatile
+    private var fuseSecondIvDone: Boolean = false
+
     override fun resetSession() {
         skipShopsAfterIv = false
         firstLineY = null
         fuseIvDone = false
+        replacements = 0
+        fuseSecondIvDone = false
     }
 
     // ── 入口 ──
@@ -207,6 +217,7 @@ object MirrorShopScript : ScriptTask {
 
         try {
             if (plan.skillReplacement) skillReplacement(host, plan)
+            firstLineY = null
             if (plan.heal) heal(host)
             // AALC 只在"不合成"时才卖：合成模式下低价值饰品是合成材料
             if (!plan.fuseEnabled && plan.sell) sell(host, plan)
@@ -285,18 +296,21 @@ object MirrorShopScript : ScriptTask {
             host.sleep(500)
             host.clickTemplate(SKILL_CONFIRM, 0.8)
             host.clickTemplate(SKILL_CONFIRM, 0.8)
+            replacements++
             host.sleep(400)
         }
     }
 
     // ── 治疗 ──
 
+    /**
+     * 治疗：AALC in_shop.py:962 heal_sinner()
+     *
+     * 顺序是「先全体治疗，再按剩余经费决定要不要逐个治疗」——
+     * 先点 heal_all（只点一次，多点会多花一份经费），再从第 5 圈起用治疗页上的经费栏判钱，
+     * 钱 < 100 就停，否则继续点 heal_sinner 逐个治疗，最后点返回。
+     */
     private fun heal(host: ScriptHost) {
-        val before = readMoney(host, inHeal = false)
-        if (before != null && before < 100) {
-            host.log("[商店] 经费不足 100，跳过治疗")
-            return
-        }
         host.clickBlank(2)
         if (!host.clickTemplate(HEAL_ONE, 0.8)) {
             host.log("[商店] 没找到治疗入口，跳过治疗")
@@ -305,12 +319,43 @@ object MirrorShopScript : ScriptTask {
         host.log("[商店] 打开治疗页")
         host.sleep(700)
 
-        // 「全体治疗」点一次就够：再点一次会多花一份经费
-        if (host.clickTemplate(HEAL_ALL, 0.8)) {
-            host.log("[商店] 全体治疗")
-            host.sleep(900)
-        } else {
-            host.log("[商店] 没找到全体治疗按钮")
+        var healed = false
+        var loop = 10
+        var individual = 0
+        while (!host.cancelled && loop > 0) {
+            loop--
+            // 点过治疗之后才点返回：没治疗就点返回等于白进一次
+            if (healed && host.clickTemplate(HEAL_RETURN, 0.8)) {
+                host.sleep(700)
+                if (host.find(COINS, 0.8) != null) {
+                    host.log("[商店] 治疗完成，已回到商店（逐个治疗 " + individual + " 次）")
+                    return
+                }
+                if (host.find(HEAL_ALL, 0.8) != null || host.find(HEAL_ONE, 0.8) != null) continue
+                return
+            }
+            // 全体治疗只点一次：再点会多花一份经费
+            if (host.clickTemplate(HEAL_ALL, 0.8)) {
+                if (!healed) host.log("[商店] 全体治疗")
+                healed = true
+                host.sleep(800)
+                continue
+            }
+            // AALC 从第 5 圈起才读治疗页上的经费（正常商店的经费栏位置不同）
+            if (loop < 5) {
+                val money = readMoney(host, inHeal = true)
+                if (money != null && money < 100) {
+                    host.log("[商店] 剩余经费 " + money + " < 100，停止治疗")
+                    break
+                }
+            }
+            if (host.clickTemplate(HEAL_ONE, 0.8)) {
+                healed = true
+                individual++
+                host.sleep(600)
+                continue
+            }
+            break
         }
 
         var attempt = 0
@@ -320,7 +365,6 @@ object MirrorShopScript : ScriptTask {
                 host.sleep(600)
                 return
             }
-            host.log("[商店] 治疗页没找到返回（第 " + attempt + " 次）")
             host.sleep(400)
         }
         host.clickBlank(2)
@@ -447,7 +491,9 @@ object MirrorShopScript : ScriptTask {
             if (system != null && keywordRefreshUsed < plan.maxKeywordRefresh && money >= KEYWORD_REFRESH_COST) {
                 if (refreshKeyword(host, system)) {
                     keywordRefreshUsed++
-                    if (plan.skillReplacement) skillReplacement(host, plan)
+                    if (plan.skillReplacement && replacements < MAX_SKILL_REPLACEMENTS) {
+                        skillReplacement(host, plan)
+                    }
                     continue
                 }
                 break
@@ -455,7 +501,9 @@ object MirrorShopScript : ScriptTask {
             if (normalRefreshUsed < plan.maxNormalRefresh && money >= NORMAL_REFRESH_COST) {
                 if (refreshNormal(host)) {
                     normalRefreshUsed++
-                    if (plan.skillReplacement) skillReplacement(host, plan)
+                    if (plan.skillReplacement && replacements < MAX_SKILL_REPLACEMENTS) {
+                        skillReplacement(host, plan)
+                    }
                     continue
                 }
                 break
@@ -595,7 +643,8 @@ object MirrorShopScript : ScriptTask {
                     fuseOn = false
                 }
                 ShopPlan.AfterIv.CALM -> aggressive = false
-                ShopPlan.AfterIv.SECOND -> aggressive = plan.secondSystem != null && plan.secondProtect
+                ShopPlan.AfterIv.SECOND ->
+                    aggressive = plan.secondSystem != null && plan.secondProtect && !fuseSecondIvDone
                 ShopPlan.AfterIv.SKIP -> {
                     aggressive = false
                     fuseOn = false
@@ -610,21 +659,22 @@ object MirrorShopScript : ScriptTask {
             if (enterFuse(host, plan)) aggressivePass(host, plan, onIv)
             host.clickBlank(3)
         }
-        if (!fuseOn) return false
+        // after_level_IV_select == 3：合成四级后跳过后续商店，但"当店"还要再升一次饰品
+        if (!fuseOn) return plan.afterIv == ShopPlan.AfterIv.SKIP
 
         // ② 普通合成（把废品凑三件）
         if (!plan.onlyAggressiveFuse && !plan.onlySystemFuse) {
             if (enterFuse(host, plan)) normalPass(host, plan, onIv)
             host.clickBlank(3)
         }
-        if (!fuseOn) return false
+        if (!fuseOn) return plan.afterIv == ShopPlan.AfterIv.SKIP
 
-        // ③ 还没合出四级就再激进一次
-        if (aggressive && !plan.onlySystemFuse) {
+        // ③ 还没合出四级就再激进一次（AALC in_shop.py:946 要 !fuse_IV）
+        if (aggressive && !fuseIvDone && !plan.onlySystemFuse) {
             if (enterFuse(host, plan)) aggressivePass(host, plan, onIv)
             host.clickBlank(3)
         }
-        if (!fuseOn) return false
+        if (!fuseOn) return plan.afterIv == ShopPlan.AfterIv.SKIP
 
         // ④ 体系公式合成
         if (!plan.onlyAggressiveFuse && !plan.noSystemFuse) {
@@ -637,7 +687,15 @@ object MirrorShopScript : ScriptTask {
 
     /** 进入合成页并选好关键词（AALC enter_fuse） */
     private fun enterFuse(host: ScriptHost, plan: ShopPlan): Boolean {
-        val system = plan.system ?: return false
+        // AALC in_shop.py:884：本体系四级已合出、要追第二体系时，合成关键词换成第二体系
+        val system = if (
+            fuseIvDone && !fuseSecondIvDone && plan.afterIv == ShopPlan.AfterIv.SECOND &&
+            plan.secondSystem != null && plan.fuseAggressive
+        ) {
+            plan.secondSystem
+        } else {
+            plan.system
+        } ?: return false
         var guard = 0
         while (!host.cancelled && guard < 15) {
             guard++
@@ -789,6 +847,8 @@ object MirrorShopScript : ScriptTask {
     /** 体系公式合成：找 fusion_result 里本体系的成品图标，没有成品就随便拿本体系饰品凑 */
     private fun systemPass(host: ScriptHost, plan: ShopPlan) {
         val system = plan.system ?: return
+        // AALC in_shop.py:748-763 用 fusion_pos 轮换成品图标：合成失败就换下一个，本轮试完就收手
+        val tried = mutableSetOf<String>()
         var round = 0
         while (!host.cancelled && round < MAX_FUSE_ROUNDS) {
             round++
@@ -806,11 +866,14 @@ object MirrorShopScript : ScriptTask {
             val dividing = anchors.maxOf { it.centerY }
 
             var clicked = false
+            var clickedTpl: String? = null
             for (tpl in fusionResultIcons(system)) {
+                if (tpl in tried) continue
                 val m = host.find(tpl, 0.8) ?: continue
                 if (m.centerY > dividing) continue
                 host.click(m)
                 clicked = true
+                clickedTpl = tpl
                 break
             }
             if (!clicked) {
@@ -839,6 +902,12 @@ object MirrorShopScript : ScriptTask {
             }
             if (!done) {
                 host.log("[商店] 公式合成没等到确认框，换一件")
+                clickedTpl?.let { tried += it }
+                if (tried.size >= fusionResultIcons(system).size) {
+                    host.log("[商店] 公式合成的成品都试过了，结束")
+                    host.clickBlank(3)
+                    return
+                }
                 host.clickBlank(2)
                 continue
             }
@@ -861,6 +930,11 @@ object MirrorShopScript : ScriptTask {
             if (confirm != null) {
                 if (host.find(FUSION_IV, 0.9) != null) {
                     fuseIvDone = true
+                    val second = plan.secondSystem
+                    if (fuseIvDone && second != null && host.find(levelIvIcon(second), 0.8) != null) {
+                        fuseSecondIvDone = true
+                        host.log("[商店] 两个体系都合出四级了，激进合成收手")
+                    }
                     onIv()
                 }
                 host.click(confirm)
@@ -945,21 +1019,20 @@ object MirrorShopScript : ScriptTask {
             val gifts = host.findAll(listGiftIcon(system), 0.8)
                 .filter { it.box.centerX in ENHANCE_LEFT..ENHANCE_RIGHT && it.box.centerY in ENHANCE_TOP..ENHANCE_BOTTOM }
                 .sortedWith(compareBy<ScriptMatch> { it.box.y / GIFT_ROW_BUCKET }.thenBy { it.box.x })
+            // AALC in_shop.py:1126-1136 是一轮里把可见列表逐个升完再 break，不是只升一件
+            var upgraded = 0
             for (g in gifts) {
                 if (isEnhanced(enhanced, g.centerX, g.centerY)) continue
                 host.click(g)
-                if (!powerUp(host)) {
-                    did = true
-                    break
-                }
+                if (!powerUp(host)) break
                 enhanced.add(Point(g.centerX, g.centerY))
-                did = true
-                break
+                upgraded++
             }
+            if (upgraded > 0) did = true
 
             if (!did) {
                 stale++
-                if (stale >= 2) {
+                if (stale > 2) {
                     host.log("[商店] 没有可升级的饰品了")
                     break
                 }
@@ -1055,13 +1128,25 @@ object MirrorShopScript : ScriptTask {
             if (coins != null) anchor = ScriptMatch(coins.box.grow(coins.box.w, 0), 0.0)
         }
         val match = anchor ?: return null
-        val roi = match.box.grow(12, 8)
-        val lines = host.readText(roi)
-        val money = ScriptText.firstNumber(lines)
-        if (money == null && lines.isNotEmpty()) {
-            host.log("[商店] 经费 OCR 读不出数字：" + lines.joinToString("|"))
+        // AALC in_shop.py:1474 读不到钱会把裁剪区域放大一倍再 OCR。
+        // 脚本层没有"对图上采样"的接口，这里退化成「换三种裁切 + 放宽 OCR 阈值」重试，
+        // 效果等价于把同一块像素喂三遍识别器。
+        val attempts = listOf(
+            match.box to ScriptHost.DEFAULT_OCR_THRESHOLD,
+            match.box.grow(12, 8) to 0.2,
+            match.box.grow(24, 14) to 0.2,
+        )
+        var last: List<String> = emptyList()
+        for ((roi, threshold) in attempts) {
+            val lines = host.readText(roi, threshold)
+            if (lines.isNotEmpty()) last = lines
+            val money = ScriptText.firstNumber(lines)
+            if (money != null) return money
         }
-        return money
+        if (last.isNotEmpty()) {
+            host.log("[商店] 经费 OCR 读不出数字：" + last.joinToString("|"))
+        }
+        return null
     }
 
     // ── 饰品栏坐标 ──
@@ -1123,12 +1208,16 @@ object MirrorShopScript : ScriptTask {
     private const val GIFT_DRAG = 250
     private const val SORT_OFFSET_Y = 100
     private const val STARLIGHT_CHANCES = 5
+
+    /** AALC in_shop.py:330-332：一个商店里最多做 3 次技能替换 */
+    private const val MAX_SKILL_REPLACEMENTS = 3
     private const val MAX_FUSE_ROUNDS = 8
     private const val MAX_ENHANCE_ROUNDS = 30
     private const val MAX_SELL_ROUNDS = 20
     private const val MAX_BUY_ROUNDS = 8
     private const val MAX_SYSTEM_GIFTS = 6
-    private const val MUST_PURCHASE_ATTEMPTS = 4
+    /** AALC buy_chance = 10（重点商品最多 5 件，所以每次必买都重试 10 次） */
+    private const val MUST_PURCHASE_ATTEMPTS = 10
     private const val MAX_LEAVE_ROUNDS = 12
 
     /** 同一行的判定桶高：AALC 是 40（1440 基准），720p 下折半 */

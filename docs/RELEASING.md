@@ -319,3 +319,21 @@ python scripts/pack_pi.py --version-code 2611220001 --version v0.3.2
 已装新版的设备不会降级，但新装/重装设备会拿到旧包。真要强制回退，
 得同时把 `versionCode` 号段提高并指向旧内容——**PI 修订号必须严格递增**。
 
+---
+
+## 八、版本号：每次更新只 +0.0.1
+
+发版节奏约定为**补丁位递增**，不跳次版本号：`v0.6.0` 之后的下一次更新是 `v0.6.1`，再下一次 `v0.6.2`。
+
+- App 的 `versionName` 由 git tag 推导（`build-logic/.../GitVersion.kt`）：tag 就在 HEAD 上是 `x.y.z`，落后一个提交会自动变成 `x.y.(z+1)-alpha.N`。所以**打 tag 就是发版**，不要手改 Gradle。
+- 资源清单版本在 `assets/interface.json` 的 `"version"`，用脚本对齐：
+
+  ```bash
+  python3 scripts/bump_version.py          # 打印下一个补丁版本
+  python3 scripts/bump_version.py --apply  # 写进 assets/interface.json
+  git tag -a v0.6.2 -m 'v0.6.2'
+  git push origin v0.6.2
+  ```
+
+- 触发 `build-apk.yml` 出包并按 tag 发布 Release；`publish-pi.yml` 的 `pi-<code>` tag **不是**版本号，别拿它当发版依据（APK 命名同理，CI 里已用 `--match 'v[0-9]*'` 过滤）。
+

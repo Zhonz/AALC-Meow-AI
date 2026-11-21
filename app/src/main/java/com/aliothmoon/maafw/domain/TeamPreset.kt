@@ -85,6 +85,7 @@ object TeamOptionScope {
         "avoid_skill_3",
         "prioritize_skill_3",
         "defense_first_round",
+        "re_formation_each_floor",
     )
 
     val ORDER_SLOT_NAMES: List<String> = (1..SINNER_ORDER.size).map { ORDER_SLOT_PREFIX + it }

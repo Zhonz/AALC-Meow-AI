@@ -277,6 +277,7 @@ object ScriptRegistry {
             MirrorStarScript,
             MirrorInitGiftScript,
             MirrorObserveScript,
+            MirrorTeamScript,
         )
 
     fun byId(id: String): ScriptTask? = all.firstOrNull { it.id == id }

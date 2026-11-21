@@ -53,8 +53,6 @@ object AalcTeamImport {
     private val UNSUPPORTED_KEYS = listOf(
         // 小指良单通（AALC 的 defense_for_solo）：本引擎没有对应的连续防御状态机
         "defense_for_solo", "defense_for_solo_turns",
-        // 每层重新编队：管线目前只用一次编队
-        "re_formation_each_floor",
         // 固定队伍用途（困难/普通）与开局道具体系：没有对应选项
         "fixed_team_use", "fixed_team_use_select",
         // 编队码自动组队：尚未实现
@@ -214,6 +212,7 @@ object AalcTeamImport {
             "aggressive_save_systems" to "shop_fuse_save_system",
             "skill_replacement" to "shop_skill_replacement",
             "prioritize_skill_3" to "prioritize_skill_3",
+            "re_formation_each_floor" to "re_formation_each_floor",
         ).forEach { (from, to) ->
             bool(data[from])?.let { values[to] = OptionValue.SingleCase(if (it) YES else NO) }
         }

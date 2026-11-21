@@ -650,7 +650,7 @@
     "next": []
   },
   "MirrorHandleBattle": {
-    "doc": "战斗交棒：交给脚本 mirror.battle（对应 AALC 的 to_battle + fight；首回合是否全员防御由 defense_first_round 决定）",
+    "doc": "战斗交棒：交给脚本 mirror.battle（对应 AALC 的 to_battle + fight；首回合是否全员防御由 defense_first_round 决定）。编队页也有 chaim_to_battle，所以先让 MirrorHandleTeam 认「编队」标题——认到就是编队页，交棒给 mirror.team，认不到才轮到下面的子识别，仍按战斗处理",
     "recognition": {
       "type": "Or",
       "any_of": [
@@ -659,7 +659,11 @@
       ]
     },
     "action": "DoNothing",
-    "next": []
+    "next": [
+      "MirrorHandleTeam",
+      "MirrorBattleEntryNormal",
+      "MirrorBattleEntryChain"
+    ]
   },
   "MirrorBattleEntryNormal": {
     "doc": "子识别：地图节点上的「普通战斗」按钮（只被 MirrorHandleBattle 的 Or 引用，不单独走流程）",

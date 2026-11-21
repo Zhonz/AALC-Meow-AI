@@ -4,6 +4,7 @@ import com.aliothmoon.maafw.domain.OptionDefinition
 import com.aliothmoon.maafw.domain.OptionValue
 import com.aliothmoon.maafw.domain.ProjectDefinition
 import com.aliothmoon.maafw.domain.TaskDefinition
+import com.aliothmoon.maafw.domain.TeamOptionScope
 import com.aliothmoon.maafw.runner.TaskScript
 
 /**
@@ -22,6 +23,9 @@ object ShopScriptBinding {
         "burn", "bleed", "tremor", "rupture", "poise",
         "sinking", "charge", "slash", "pierce", "blunt",
     )
+
+    /** 12 个顺位槽全空置时的兜底顺位：AALC 默认队伍的前 6 人 */
+    private const val DEFAULT_SINNER_ORDER = "1,2,3,4,5,6"
 
     fun scriptsFor(
         task: TaskDefinition,
@@ -147,6 +151,19 @@ object ShopScriptBinding {
                         flag(definition, values, "prioritize_skill_3", default = false),
                 ),
             ),
+            // 编队：管线认到镜牢编队页（MirrorHandleTeam）就交棒；顺位取 12 个 slot option，
+            // 编过一次之后才做存活检查，能打的人不够 5 个就按 AALC re_start 重开整局
+            TaskScript(
+                scriptId = MirrorTeamScript.id,
+                entry = MirrorTeamScript.entry,
+                resumeEntry = MirrorTeamScript.resumeEntry,
+                maxRounds = MirrorTeamScript.maxRounds,
+                params = mapOf(
+                    MirrorTeamScript.KEY_SINNER_ORDER to sinnerOrder(definition, values),
+                    MirrorTeamScript.KEY_REFORM to
+                        flag(definition, values, "re_formation_each_floor", default = false),
+                ),
+            ),
         )
     }
 
@@ -223,6 +240,25 @@ object ShopScriptBinding {
             MirrorShopScript.KEY_SKIP_WHITE_GOSSYPIUM to
                 if (leaveOnly) "0" else flag(definition, values, "shop_skip_whitegossypium", default = true),
         )
+    }
+
+    /**
+     * 出战顺位：编队页的 12 个顺位槽，槽 N = 第 N 个被点选的罪人（点选顺序就是出场顺序，
+     * 与 AALC team_formation.py:65-77 的 sinner_team 同义），空槽（none）跳过。
+     * 槽位与罪人编号都取 [TeamOptionScope] 那一份定义，免得和 SelectSinnerSlot1..12 的坐标顺序走偏。
+     * 一个槽都没填时用 AALC 默认队伍的前 6 人（游戏里前 6 位出战）。
+     */
+    private fun sinnerOrder(
+        definition: ProjectDefinition,
+        values: Map<String, OptionValue>,
+    ): String {
+        val order =
+            TeamOptionScope.ORDER_SLOT_NAMES.mapNotNull { name ->
+                val sinner = singleCase(definition, values, name) ?: return@mapNotNull null
+                val index = TeamOptionScope.SINNER_ORDER.indexOf(sinner)
+                if (index >= 0) index + 1 else null
+            }
+        return if (order.isEmpty()) DEFAULT_SINNER_ORDER else order.joinToString(",")
     }
 
     /** input 型 option 取某字段的文本；没存过就用 PI 的默认值 */

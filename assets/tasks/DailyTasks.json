@@ -85,6 +85,7 @@
         "avoid_skill_3",
         "prioritize_skill_3",
         "defense_first_round",
+        "re_formation_each_floor",
         "sinner_selection",
         "sinner_order_slot_1",
         "sinner_order_slot_2",
@@ -4326,6 +4327,22 @@
         {
           "name": "No",
           "label": "照买"
+        }
+      ]
+    },
+    "re_formation_each_floor": {
+      "type": "switch",
+      "label": "每层重新编队",
+      "description": "每层开始时重打一遍编队页（AALC 的 re_formation_each_floor）",
+      "default_case": "No",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "每层重编"
+        },
+        {
+          "name": "No",
+          "label": "不重编"
         }
       ]
     },

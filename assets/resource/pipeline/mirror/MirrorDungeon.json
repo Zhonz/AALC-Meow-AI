@@ -1092,5 +1092,21 @@
     },
     "action": "DoNothing",
     "next": []
+  },
+  "MirrorHandleTeam": {
+    "doc": "镜牢编队页（AALC mirror.py:370-401 编队分支 / team_formation.py:52-77）——交棒节点：在右上「编队」标题处认到 identify_assets 就交给脚本 mirror.team，由脚本清队、按配置的顺位点罪人、点出战；编过一次之后人不够 5 个则按 re_start 重开本局。管线由 MirrorHandleBattle 先分到这里的，免得编队页的 chaim_to_battle 被当成地图上的战斗按钮",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "teams/identify_assets.png",
+      "threshold": 0.75,
+      "roi": [
+        1122,
+        129,
+        158,
+        98
+      ]
+    },
+    "action": "DoNothing",
+    "next": []
   }
 }

@@ -99,7 +99,7 @@ private val SECTIONS: List<Pair<Int, List<String>>> = listOf(
             "mirror_observe_gifts",
         ),
     R.string.teams_section_battle to
-        listOf("avoid_skill_3", "prioritize_skill_3", "defense_first_round"),
+        listOf("avoid_skill_3", "prioritize_skill_3", "defense_first_round", "re_formation_each_floor"),
 )
 
 /**

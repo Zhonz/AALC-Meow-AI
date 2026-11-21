@@ -201,3 +201,24 @@ succeeded = True
 事件：`EventHandling` 的 6 个新节点只做了静态校验（`validate_pipelines.py` 378 节点 0 错、Schema 12 管线 + 197 覆盖片段全过）；没有把每个事件页模板都贴到画布上分别验证——事件是「一个界面多种按钮」的结构，单模板贴图只能证明那个模板能被认到，证明不了优先级顺序对不对，等真机反馈。
 
 仍然未验证的四点同第 9.4 节：OCR 读数、点击后界面变化、不可逆操作判定、一个任务里多次交棒。
+
+## 11. 领奖交棒与战斗死局处理（v0.6.6）
+
+### 11.1 领奖链路可达
+
+`tools/` 之外的临时脚本把 `mirror/claim_reward/clear_assets.png` 贴到 (300, 340)、`claim_rewards_assets.png` 贴到 (1030, 575)，
+用真实引擎（maafw 5.16.1 + CustomController）跑 `MirrorCheckClaimClear`：
+
+```
+claim->handoff succeeded = True path = ['MirrorCheckClaimClear', 'MirrorHandleReward']
+home-done succeeded = True path = ['MirrorRewardHomeDone']
+```
+
+说明结算页的 `clear_assets` 会走到交棒节点，脚本跑完后 `MirrorRewardHomeDone`（`home/drive.png`）能正常收尾。
+
+### 11.2 仍然只能靠真机确认的部分
+
+- 领取奖励之后的每周加成弹窗坐标、通行证经验的 OCR 读数；
+- 全员阵亡时 `dead_all`（34×179 竖条）在真实画面里是否稳定出现 3 个、选中间那个之后的界面变化；
+- 阵亡 OCR（`dead.png` 中心 ±(50,15)）在真实战斗画面里的识别率；
+- 认输按钮在「设置」打开后的位置。

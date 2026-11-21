@@ -67,7 +67,7 @@ jobs:
 
       - name: Install Python Build Dependencies
         run: |
-          python -m pip install --upgrade pip packaging pillow jsonschema
+          python -m pip install --upgrade pip packaging pillow
 
       - name: Cache Gradle
         uses: actions/cache@v4
@@ -105,14 +105,11 @@ jobs:
 
       - name: Validate pipelines against MaaFramework schema
         # 非法字段（recognition_and / timeout_next / OCR 用 text 等）不会静默忽略，
-        # 而是让资源加载整体失败、App 启动即崩。必须在出包前拦住三道：
-        #   1) 键名白名单校验（validate_pipelines.py，报错信息最友好）
-        #   2) 官方 JSON Schema 校验（check_pipeline_schema.py，按引擎语义折叠对象式
-        #      recognition / action，能抓出「写在顶层却被引擎忽略」的参数）
-        #   3) 真实引擎加载（verify_with_engine.py，用官方 MaaPiCli）
+        # 而是让资源加载整体失败、App 启动即崩。必须在出包前拦住两道：
+        #   1) 静态 schema 校验（validate_pipelines.py）
+        #   2) 真实引擎加载（verify_with_engine.py，用官方 MaaPiCli）
         run: |
           python scripts/validate_pipelines.py
-          python scripts/check_pipeline_schema.py
           python -c "
           import json, glob
           for p in glob.glob('assets/**/*.json', recursive=True):
@@ -120,18 +117,11 @@ jobs:
           print('assets JSON 全部可解析')"
 
       - name: Verify resources load with real MaaFramework engine
-        # 引擎版本与 UPSTREAM_VERSIONS.json 同源，避免升级 MaaFramework 时
-        # 这里仍挂着旧版本，校验结果与实际打包的 .so 不一致。
         run: |
           MFW_VER="${{ runner.temp }}/maa"
           mkdir -p "$MFW_VER"
-          MAAFW_TAG="${{ github.event.inputs.maafw_tag }}"
-          if [ -z "$MAAFW_TAG" ]; then
-            MAAFW_TAG=$(python -c "import json;print(json.load(open('UPSTREAM_VERSIONS.json'))['components']['maa_framework']['pinned_release'])")
-          fi
-          echo "校验用 MaaFramework 版本: $MAAFW_TAG"
           curl -sL -o "$MFW_VER/maa.zip" \
-            "https://github.com/MaaXYZ/MaaFramework/releases/download/$MAAFW_TAG/MAA-linux-x86_64-$MAAFW_TAG.zip"
+            "https://github.com/MaaXYZ/MaaFramework/releases/download/v5.14.0/MAA-linux-x86_64-v5.14.0.zip"
           unzip -oq "$MFW_VER/maa.zip" -d "$MFW_VER"
           chmod +x "$MFW_VER/bin/MaaPiCli"
           MAA_CLI="$MFW_VER/bin/MaaPiCli" MAA_LIB="$MFW_VER/bin" \

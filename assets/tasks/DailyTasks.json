@@ -79,7 +79,7 @@
       "name": "get_reward",
       "label": "自动获取奖励",
       "entry": "PassPrizeStart",
-      "description": "领取邮件、通行证任务奖励（日常 / 周常 / 赛季，含赛季第二页）与战斗通行证奖励",
+      "description": "领取邮件和通行证日常与周常奖励",
       "option": [
         "set_get_prize"
       ]
@@ -1276,28 +1276,31 @@
     "set_get_prize": {
       "type": "select",
       "label": "领取奖励",
-      "description": "选择领取的奖励范围。通行证流程按 AALC V1.6.2 走「通行证任务 → 日常/周常/赛季 → 战斗通行证」全部领取。",
+      "description": "选择领取的奖励范围",
       "default_case": "0",
       "cases": [
         {
           "name": "0",
-          "label": "通行证（日常/周常/赛季/战斗通行证）+ 邮件"
+          "label": "邮件+日/周常"
         },
         {
           "name": "1",
-          "label": "仅通行证奖励（不收邮件）",
+          "label": "日/周常",
           "pipeline_override": {
-            "PassFinishCheck": {
+            "PassPrizeStart": {
               "action": "DoNothing",
               "next": [
-                "PassDone"
+                "PassClaimDailyCoin",
+                "PassEnterMissions",
+                "PassClickSeason",
+                "PassReturnHome"
               ]
             }
           }
         },
         {
           "name": "2",
-          "label": "仅领取邮件",
+          "label": "邮件",
           "pipeline_override": {
             "PassPrizeStart": {
               "action": "DoNothing",

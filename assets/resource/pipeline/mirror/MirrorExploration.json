@@ -4,13 +4,7 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_in_mir/legend_assets.png",
-      "threshold": 0.7,
-      "roi": [
-        1158,
-        55,
-        122,
-        92
-      ]
+      "threshold": 0.7
     },
     "action": "DoNothing",
     "next": [
@@ -29,6 +23,12 @@
       "MirrorHandleEvent",
       "ClaimMirrorReward",
       "MirrorDungeonExploration"
+    ],
+    "roi": [
+      1158,
+      55,
+      122,
+      92
     ]
   },
   "MirrorFloor3ExitAction": {
@@ -36,18 +36,18 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_in_mir/setting_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        1156,
-        0,
-        124,
-        108
-      ]
+      "threshold": 0.75
     },
     "action": "Click",
     "post_wait_freezes": 800,
     "next": [
       "MirrorClickForfeitButton"
+    ],
+    "roi": [
+      1156,
+      0,
+      124,
+      108
     ]
   },
   "MirrorClickForfeitButton": {
@@ -55,18 +55,18 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_in_mir/forfeit_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        413,
-        345,
-        355,
-        122
-      ]
+      "threshold": 0.75
     },
     "action": "Click",
     "post_wait_freezes": 800,
     "next": [
       "MirrorConfirmForfeitExit"
+    ],
+    "roi": [
+      413,
+      345,
+      355,
+      122
     ]
   },
   "MirrorConfirmForfeitExit": {
@@ -74,18 +74,18 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_in_mir/towindow&forfeit_confirm_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        602,
-        438,
-        339,
-        99
-      ]
+      "threshold": 0.75
     },
     "action": "Click",
     "post_wait_freezes": 1500,
     "next": [
       "ClaimMirrorReward"
+    ],
+    "roi": [
+      602,
+      438,
+      339,
+      99
     ]
   },
   "ClickEnterNode": {
@@ -93,13 +93,7 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_in_mir/enter_assets.png",
-      "threshold": 0.72,
-      "roi": [
-        1026,
-        488,
-        254,
-        109
-      ]
+      "threshold": 0.72
     },
     "action": "Click",
     "post_delay": 1500,
@@ -107,6 +101,12 @@
       "TeamFormationConfirm",
       "BattleAutoCombat",
       "MirrorDungeonExploration"
+    ],
+    "roi": [
+      1026,
+      488,
+      254,
+      109
     ]
   },
   "MirrorHandleThemePackFeature": {
@@ -114,18 +114,18 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/theme_pack/feature_theme_pack_assets.png",
-      "threshold": 0.72,
-      "roi": [
-        1126,
-        60,
-        154,
-        117
-      ]
+      "threshold": 0.72
     },
     "action": "DoNothing",
     "next": [
       "MirrorPickThemePackConfirm",
       "MirrorRefreshThemePack"
+    ],
+    "roi": [
+      1126,
+      60,
+      154,
+      117
     ]
   },
   "MirrorPickThemePackConfirm": {
@@ -147,18 +147,18 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/theme_pack/refresh_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        948,
-        0,
-        332,
-        100
-      ]
+      "threshold": 0.75
     },
     "action": "Click",
     "post_delay": 1000,
     "next": [
       "MirrorPickThemePackConfirm"
+    ],
+    "roi": [
+      948,
+      0,
+      332,
+      100
     ]
   },
   "MirrorHandleRewardCard": {
@@ -166,13 +166,7 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/get_reward_card/get_reward_card_confirm_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        671,
-        483,
-        324,
-        88
-      ]
+      "threshold": 0.75
     },
     "action": "DoNothing",
     "next": [
@@ -182,6 +176,12 @@
       "MirrorRewardCardSelectCostAndEGO",
       "MirrorRewardCardSelectEGOResource",
       "MirrorRewardCardSelectFirst"
+    ],
+    "roi": [
+      671,
+      483,
+      324,
+      88
     ]
   },
   "MirrorRewardCardSelectStarlight": {
@@ -268,19 +268,19 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/get_reward_card/get_reward_card_confirm_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        671,
-        483,
-        324,
-        88
-      ]
+      "threshold": 0.75
     },
     "action": "Click",
     "post_delay": 1000,
     "next": [
       "MirrorRewardCardContinueChoosing",
       "MirrorDungeonExploration"
+    ],
+    "roi": [
+      671,
+      483,
+      324,
+      88
     ]
   },
   "MirrorRewardCardContinueChoosing": {
@@ -288,18 +288,18 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/get_reward_card/continue_choosing_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        392,
-        422,
-        319,
-        89
-      ]
+      "threshold": 0.75
     },
     "action": "Click",
     "post_delay": 800,
     "next": [
       "MirrorDungeonExploration"
+    ],
+    "roi": [
+      392,
+      422,
+      319,
+      89
     ]
   },
   "MirrorHandleEgoGiftCard": {
@@ -424,18 +424,18 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_in_mir/acquire_ego_gift_box_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        13,
-        1,
-        151,
-        122
-      ]
+      "threshold": 0.75
     },
     "action": "Click",
     "post_delay": 800,
     "next": [
       "MirrorDungeonExploration"
+    ],
+    "roi": [
+      13,
+      1,
+      151,
+      122
     ]
   },
   "MirrorEgoGiftGetConfirm2": {
@@ -443,18 +443,18 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_in_mir/ego_gift_get_confirm_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        483,
-        478,
-        338,
-        107
-      ]
+      "threshold": 0.75
     },
     "action": "Click",
     "post_delay": 600,
     "next": [
       "MirrorDungeonExploration"
+    ],
+    "roi": [
+      483,
+      478,
+      338,
+      107
     ]
   },
   "MirrorHandleShop": {
@@ -475,19 +475,19 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/shop/heal_sinner/heal_all_sinner_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        1054,
-        283,
-        226,
-        126
-      ]
+      "threshold": 0.75
     },
     "action": "Click",
     "post_delay": 800,
     "next": [
       "MirrorShopHealReturn",
       "MirrorLeaveShopInExploration"
+    ],
+    "roi": [
+      1054,
+      283,
+      226,
+      126
     ]
   },
   "MirrorShopHealReturn": {
@@ -495,18 +495,18 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/shop/heal_sinner/heal_sinner_return_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        1028,
-        591,
-        252,
-        126
-      ]
+      "threshold": 0.75
     },
     "action": "Click",
     "post_delay": 600,
     "next": [
       "MirrorLeaveShopInExploration"
+    ],
+    "roi": [
+      1028,
+      591,
+      252,
+      126
     ]
   },
   "MirrorLeaveShopInExploration": {
@@ -514,18 +514,18 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/leave_shop_confirm.png",
-      "threshold": 0.75,
-      "roi": [
-        610,
-        444,
-        336,
-        97
-      ]
+      "threshold": 0.75
     },
     "action": "Click",
     "post_delay": 1000,
     "next": [
       "MirrorDungeonExploration"
+    ],
+    "roi": [
+      610,
+      444,
+      336,
+      97
     ]
   },
   "MirrorHandleEvent": {
@@ -546,13 +546,7 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/claim_reward/claim_rewards_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        1005,
-        553,
-        275,
-        89
-      ]
+      "threshold": 0.75
     },
     "action": "Click",
     "post_delay": 1200,
@@ -560,6 +554,12 @@
       "MirrorCheckWeeklyBonuses",
       "UseEnkephalinConfirm",
       "MirrorRewardsAcquiredConfirm"
+    ],
+    "roi": [
+      1005,
+      553,
+      275,
+      89
     ]
   },
   "MirrorCheckWeeklyBonuses": {
@@ -581,18 +581,18 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/use_enkephalin.png",
-      "threshold": 0.75,
-      "roi": [
-        698,
-        495,
-        333,
-        97
-      ]
+      "threshold": 0.75
     },
     "action": "Click",
     "post_delay": 1500,
     "next": [
       "MirrorDungeonExploration"
+    ],
+    "roi": [
+      698,
+      495,
+      333,
+      97
     ]
   },
   "MirrorRewardsAcquiredConfirm": {
@@ -600,16 +600,16 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/claim_reward/rewards_acquired_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        488,
-        427,
-        324,
-        88
-      ]
+      "threshold": 0.75
     },
     "action": "Click",
-    "post_delay": 1000
+    "post_delay": 1000,
+    "roi": [
+      488,
+      427,
+      324,
+      88
+    ]
   },
   "MirrorClickMyBus": {
     "doc": "点击镜牢当前停驻的巴士图标（若已在可直进节点上）",

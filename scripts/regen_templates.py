@@ -101,8 +101,6 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--apply', action='store_true')
     ap.add_argument('--check', action='store_true')
-    ap.add_argument('--force', action='store_true',
-                    help='忽略尺寸比对，按官方源全量重写（上游更新了图片但尺寸未变时必须用）')
     args = ap.parse_args()
 
     ours = sorted(glob.glob(f'{OUR}/**/*.png', recursive=True))
@@ -126,7 +124,7 @@ def main():
             stats['empty'] += 1
             continue
         cur = Image.open(p)
-        same = cur.size == (crop.shape[1], crop.shape[0]) and not args.force
+        same = cur.size == (crop.shape[1], crop.shape[0])
         if same:
             ok.append(rel)
             stats['ok'] += 1

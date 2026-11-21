@@ -13,19 +13,19 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "home/enkephalin_box.png",
-      "threshold": 0.72,
-      "roi": [
-        246,
-        589,
-        138,
-        104
-      ]
+      "threshold": 0.72
     },
     "action": "Click",
     "post_wait_freezes": 500,
     "next": [
       "EnkephalinClickAllIn",
       "EnkephalinClickCancel"
+    ],
+    "roi": [
+      246,
+      589,
+      138,
+      104
     ]
   },
   "EnkephalinClickAllIn": {

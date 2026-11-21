@@ -53,22 +53,16 @@ release keystore 已生成并接入 CI：
 
 ```bash
 python3 scripts/regen_templates.py --check   # 审计尺寸偏差
-python3 scripts/regen_templates.py --apply   # 按官方链路重导（尺寸不一致才写回）
-python3 scripts/regen_templates.py --apply --force   # 上游换了图片时全量重写
+python3 scripts/regen_templates.py --apply   # 按官方链路重导
 python3 scripts/audit_templates.py           # 逐张列出可疑模板
 ```
 
 **改动截图归一化尺寸后，必须重跑 `regen_templates.py --apply`。**
 
-**上游更新了图片资源（AALC 会随游戏 UI 更新整批重导 `assets/images`）时，必须加
-`--force`。** 默认逻辑只在「裁剪后尺寸与本地文件不一致」时才写回；游戏 UI 换图后
-模板尺寸往往毫厘不变、像素却已不同，不加 `--force` 会静默留着旧图，表现为
-「模板明明存在却一直匹配不上」。
-
 ## 三、流程逻辑必须对齐官方
 
 业务流以 `upstream/aalc/tasks/` 为唯一权威（submodule 指向
-`KIYI671/AhabAssistantLimbusCompany`，当前 V1.6.2 @ `ec8aa17`）。
+`KIYI671/AhabAssistantLimbusCompany`，当前 V1.6.1-beta.2）。
 
 已按官方重建的部分：
 
@@ -119,18 +113,8 @@ gh release view v0.3.0-beta.1 -R qi-1021/AALC-Meow
 推 tag 前务必跑一次全量校验：
 
 ```bash
-python3 scripts/validate_pipelines.py        # 键名白名单 + 跳转目标 + 对象式 recognition 作用域
-python3 scripts/check_pipeline_schema.py     # 官方 JSON Schema（tools/*.schema.json，需 pip install jsonschema）
+python3 scripts/validate_pipelines.py
 MAA_CLI=/path/to/MaaPiCli python3 scripts/verify_with_engine.py
-```
-
-前两个是纯静态检查、秒级完成，CI 的 *Validate pipelines against MaaFramework schema* 步骤也会跑；
-第三个要真实引擎（MaaPiCli + libMaaFramework）。本机没有 MaaPiCli 时，`verify_with_engine.py`
-会回退到官方 Python 绑定（aarch64 / x86_64 都有 wheel，无需下载 Release 包）：
-
-```bash
-pip install "maafw==<与 UPSTREAM_VERSIONS.json 相同的版本>"
-python3 scripts/verify_with_engine.py        # 自动走绑定回退，加载 assets/resource
 ```
 
 ## 六、从 MAAend-Meow 学到的经验（2026-09-27）
@@ -233,27 +217,3 @@ python3 scripts/verify_with_engine.py        # 自动走绑定回退，加载 as
    （`screenshot`/`ocr <node>` 可在任务运行时直接测各模板命中分布）。
    但它是给 App 加网络监听，即使有双闸门（BuildConfig.DEBUG + 应用内开关），
    是否引入由用户决定。
-
-
-## 六、改完怎么验（引擎级，不需要真机）
-
-真机回放需要 adb/Shizuku，本机常常没有；但**引擎级验证**已经能拦住绝大多数「模板不对 / roi 不对」
-的问题，方法记录在 [VERIFICATION.md](VERIFICATION.md)：
-
-1. `pip install maafw==<pinned_release>`（版本与 `UPSTREAM_VERSIONS.json` 一致），
-   `Resource().post_bundle('assets/resource').wait().succeeded` 必须为 True。
-2. 拿上游 `assets/images/default/**` 里的真机截图（2560×1440，0.5x 到 1280×720），
-   对每个节点做单节点识别：
-
-   ```python
-   tasker.post_task(node, {node: {'action': 'DoNothing', 'next': [], 'on_error': []}})
-   ```
-
-   命中框必须等于截图里该元素的像素位置。
-3. **同一列上的多个相似模板必须各自加 roi。** 通行证任务页的三枚竖排 tab
-   （日常/周常/赛季）纵向只隔 144px、模板高 86–92px，不带 roi 时会互相命中，
-   整条流程跑起来直接 `error handling loop detected`。三枚 tab 的窄带 roi 就是
-   按这条真机截图的像素位置定的。
-4. 上游截图是**涂黑的**，只能证明「元素在哪」，不能证明「整屏里只有它匹配」；
-   小图标（例如 `pass/pass_coin.png`）如果没有任何一张截图包含它，它的位置就是未知量，
-   发布前必须在真机上补一次。

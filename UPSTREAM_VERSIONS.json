@@ -14,12 +14,10 @@
     "maa_framework": {
       "name": "MaaFramework",
       "repository": "https://github.com/MaaXYZ/MaaFramework",
-      "pinned_release": "v5.16.1",
+      "pinned_release": "v5.14.0",
       "compatible_releases": [
-        "v5.14.0",
-        "v5.15.0",
-        "v5.16.0",
-        "v5.16.1"
+        "v5.13.1",
+        "v5.14.0"
       ],
       "description": "自动化与图像识别底层核心库，提供 libMaaFramework.so、libMaaUtils.so 及 AndroidNativeControlUnit；截图按 SCREENSHOT_TARGET_SHORT_SIDE=720 归一化，模板比例必须为 0.5x"
     },

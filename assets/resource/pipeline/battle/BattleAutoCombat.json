@@ -17,13 +17,7 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "battle/win_rate.png",
-      "threshold": 0.7,
-      "roi": [
-        934,
-        499,
-        346,
-        94
-      ]
+      "threshold": 0.7
     },
     "action": "Click",
     "post_wait_freezes": 0,
@@ -35,6 +29,12 @@
       "BattleHandleGiveUp",
       "BattleFinishCheck",
       "BattleAutoCombat"
+    ],
+    "roi": [
+      934,
+      499,
+      346,
+      94
     ]
   },
   "BattleStartTurn": {
@@ -42,13 +42,7 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "battle/gear_right.png",
-      "threshold": 0.72,
-      "roi": [
-        950,
-        180,
-        330,
-        350
-      ]
+      "threshold": 0.72
     },
     "action": "Click",
     "post_wait_freezes": 0,
@@ -59,20 +53,21 @@
       "BattleHandleGiveUp",
       "BattleFinishCheck"
     ],
-    "post_delay": 800
+    "threshold": 0.7,
+    "post_delay": 800,
+    "roi": [
+      950,
+      180,
+      330,
+      350
+    ]
   },
   "BattleChecking": {
     "doc": "回合战斗进行中检测：出现 turn 或战斗中待机时继续下回合",
     "recognition": {
       "type": "TemplateMatch",
       "template": "battle/turn.png",
-      "threshold": 0.7,
-      "roi": [
-        0,
-        28,
-        131,
-        92
-      ]
+      "threshold": 0.7
     },
     "next": [
       "BattleAutoCombat",
@@ -82,26 +77,33 @@
       "BattleFinishCheck",
       "BattleChecking"
     ],
-    "post_delay": 800
+    "threshold": 0.68,
+    "post_delay": 800,
+    "roi": [
+      0,
+      28,
+      131,
+      92
+    ]
   },
   "BattleHandleMidBattleEvent": {
     "doc": "战斗中途如果出现异常事件选项，点击第一个选项继续",
     "recognition": {
       "type": "TemplateMatch",
       "template": "event/select_first_option_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        584,
-        132,
-        326,
-        129
-      ]
+      "threshold": 0.75
     },
     "action": "Click",
     "post_delay": 800,
     "next": [
       "BattleAutoCombat",
       "BattleChecking"
+    ],
+    "roi": [
+      584,
+      132,
+      326,
+      129
     ]
   },
   "BattleHandleGiveUp": {
@@ -109,32 +111,33 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "battle/give_up_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        474,
-        375,
-        340,
-        104
-      ]
+      "threshold": 0.75
     },
     "action": "Click",
-    "post_wait_freezes": 1200
+    "post_wait_freezes": 1200,
+    "roi": [
+      474,
+      375,
+      340,
+      104
+    ]
   },
   "BattleFinishCheck": {
     "doc": "战斗结算确认（打完后点击结算弹窗）",
     "recognition": {
       "type": "TemplateMatch",
       "template": "battle/battle_finish_confirm.png",
-      "threshold": 0.72,
-      "roi": [
-        978,
-        503,
-        302,
-        110
-      ]
+      "threshold": 0.72
     },
     "action": "Click",
     "post_wait_freezes": 0,
-    "post_delay": 1000
+    "threshold": 0.7,
+    "post_delay": 1000,
+    "roi": [
+      978,
+      503,
+      302,
+      110
+    ]
   }
 }

@@ -1,11 +1,13 @@
 {
   "PassPrizeStart": {
-    "doc": "狂气通票奖励领取路由器（对齐 AALC V1.6.2 get_prize.py）",
+    "doc": "狂气通票奖励领取路由器",
     "recognition": "DirectHit",
     "action": "DoNothing",
     "next": [
+      "PassClaimDailyCoin",
+      "PassEnterMissions",
       "PassClickSeason",
-      "PassEnterMissions"
+      "PassReturnHome"
     ],
     "timeout": 30000,
     "on_error": [
@@ -13,303 +15,106 @@
     ]
   },
   "PassClickSeason": {
-    "doc": "主页点赛季通行证入口（home/season_assets.png）",
     "recognition": {
       "type": "TemplateMatch",
       "template": "home/season.png",
       "threshold": 0.72
     },
     "action": "Click",
-    "post_wait_freezes": 800,
+    "post_wait_freezes": 600,
     "next": [
       "PassEnterMissions",
-      "PassSelectDaily"
+      "PassClaimDailyCoin"
+    ],
+    "roi": [
+      950,
+      151,
+      330,
+      81
     ]
   },
   "PassEnterMissions": {
-    "doc": "通行证主页点「通行证任务」进入任务列表",
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "pass/missions.png",
-      "threshold": 0.75
-    },
-    "action": "Click",
-    "post_wait_freezes": 800,
-    "next": [
-      "PassSelectDaily",
-      "PassClaimDailyCoin"
-    ]
-  },
-  "PassSelectDaily": {
-    "doc": "任务页左侧竖排 tab（日常/周常/赛季三枚同一列，纵向间距约 144px）：roi 取自 AALC 真机截图 zh_cn/pass 的像素位置（0.5x 后 y≈212），窄带只含本 tab，避免三枚互相命中",
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "pass/daily_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        237,
-        192,
-        69,
-        132
-      ]
-    },
+    "recognition": "TemplateMatch",
+    "template": "pass/missions.png",
     "action": "Click",
     "post_wait_freezes": 600,
     "next": [
-      "PassClaimDailyCoin"
+      "PassClaimDailyCoin",
+      "PassSwitchWeekly"
     ],
-    "on_error": [
-      "PassSelectWeekly"
+    "roi": [
+      268,
+      9,
+      200,
+      94
     ]
   },
   "PassClaimDailyCoin": {
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "pass/pass_coin.png",
-      "threshold": 0.75,
-      "roi": [
-        330,
-        95,
-        950,
-        590
-      ]
-    },
+    "recognition": "TemplateMatch",
+    "template": "pass/pass_coin.png",
     "action": "Click",
     "post_wait_freezes": 400,
     "next": [
       "PassClaimDailyCoin",
-      "PassSelectWeekly"
+      "PassSwitchWeekly"
     ]
   },
-  "PassSelectWeekly": {
-    "doc": "任务页左侧竖排 tab（日常/周常/赛季三枚同一列，纵向间距约 144px）：roi 取自 AALC 真机截图 zh_cn/pass 的像素位置（0.5x 后 y≈355），窄带只含本 tab，避免三枚互相命中",
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "pass/weekly_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        237,
-        335,
-        69,
-        132
-      ]
-    },
+  "PassSwitchWeekly": {
+    "recognition": "TemplateMatch",
+    "template": "pass/weekly.png",
     "action": "Click",
     "post_wait_freezes": 600,
     "next": [
-      "PassClaimWeeklyCoin"
+      "PassClaimWeeklyCoin",
+      "PassReturnHome"
     ],
-    "on_error": [
-      "PassSelectSeasonal"
+    "roi": [
+      211,
+      322,
+      121,
+      156
     ]
   },
   "PassClaimWeeklyCoin": {
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "pass/pass_coin.png",
-      "threshold": 0.75,
-      "roi": [
-        330,
-        95,
-        950,
-        590
-      ]
-    },
+    "recognition": "TemplateMatch",
+    "template": "pass/pass_coin.png",
     "action": "Click",
     "post_wait_freezes": 400,
     "next": [
       "PassClaimWeeklyCoin",
-      "PassSelectSeasonal"
-    ]
-  },
-  "PassSelectSeasonal": {
-    "doc": "任务页左侧竖排 tab（日常/周常/赛季三枚同一列，纵向间距约 144px）：roi 取自 AALC 真机截图 zh_cn/pass 的像素位置（0.5x 后 y≈499），窄带只含本 tab，避免三枚互相命中",
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "pass/seasonal_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        237,
-        479,
-        69,
-        132
-      ]
-    },
-    "action": "Click",
-    "post_wait_freezes": 600,
-    "next": [
-      "PassClaimSeasonalCoin"
-    ],
-    "on_error": [
-      "PassBackToPassHome"
-    ]
-  },
-  "PassClaimSeasonalCoin": {
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "pass/pass_coin.png",
-      "threshold": 0.75,
-      "roi": [
-        330,
-        95,
-        950,
-        590
-      ]
-    },
-    "action": "Click",
-    "post_wait_freezes": 400,
-    "next": [
-      "PassClaimSeasonalCoin",
-      "PassScrollSeasonalMissions"
-    ]
-  },
-  "PassScrollSeasonalMissions": {
-    "doc": "赛季任务第二页：上滑一屏（上游 dy = -5*174 = -870 @1440，720p 即 -435）",
-    "recognition": "DirectHit",
-    "action": "Swipe",
-    "begin": [
-      500,
-      600
-    ],
-    "end": [
-      500,
-      165
-    ],
-    "duration": 600,
-    "post_wait_freezes": 800,
-    "next": [
-      "PassClaimSeasonalPage2"
-    ]
-  },
-  "PassClaimSeasonalPage2": {
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "pass/pass_coin.png",
-      "threshold": 0.75,
-      "roi": [
-        330,
-        95,
-        950,
-        590
-      ]
-    },
-    "action": "Click",
-    "post_wait_freezes": 400,
-    "next": [
-      "PassClaimSeasonalPage2",
-      "PassBackToPassHome"
-    ]
-  },
-  "PassBackToPassHome": {
-    "doc": "从任务列表退回通行证主页，准备领取战斗通行证奖励",
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "home/back.png",
-      "threshold": 0.75,
-      "roi": [
-        7,
-        0,
-        178,
-        116
-      ]
-    },
-    "action": "Click",
-    "post_wait_freezes": 800,
-    "next": [
-      "PassClickBattlePass",
-      "PassReturnHome"
-    ]
-  },
-  "PassClickBattlePass": {
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "pass/battle_pass_assets.png",
-      "threshold": 0.75
-    },
-    "action": "Click",
-    "post_wait_freezes": 800,
-    "next": [
-      "PassClaimAllRewards",
-      "PassReturnHome"
-    ]
-  },
-  "PassClaimAllRewards": {
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "pass/claim_all_assets.png",
-      "threshold": 0.75
-    },
-    "action": "Click",
-    "post_wait_freezes": 800,
-    "next": [
-      "PassRewardsAcquired",
-      "PassReturnHome"
-    ],
-    "on_error": [
-      "PassReturnHome"
-    ]
-  },
-  "PassRewardsAcquired": {
-    "doc": "「已获得奖励」确认页，出现即代表全部领取成功",
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "mirror/claim_reward/rewards_acquired_assets.png",
-      "threshold": 0.75
-    },
-    "action": "DoNothing",
-    "next": [
       "PassReturnHome"
     ]
   },
   "PassReturnHome": {
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "home/back.png",
-      "threshold": 0.75,
-      "roi": [
-        7,
-        0,
-        178,
-        116
-      ]
-    },
+    "recognition": "TemplateMatch",
+    "template": "home/back.png",
     "action": "Click",
     "post_wait_freezes": 800,
     "next": [
       "PassFinishCheck"
+    ],
+    "roi": [
+      7,
+      0,
+      178,
+      116
     ]
   },
   "PassFinishCheck": {
-    "doc": "回到主页（看到驱动按钮）后转交邮件领取，对齐上游 get_prize 先领通行证再收邮件",
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "home/drive.png",
-      "threshold": 0.75,
-      "roi": [
-        894,
-        581,
-        386,
-        102
-      ]
-    },
-    "action": "DoNothing",
-    "next": [
-      "MailStart"
+    "recognition": "TemplateMatch",
+    "template": "home/drive.png",
+    "roi": [
+      894,
+      581,
+      386,
+      102
     ]
   },
   "PassTryMailFallback": {
-    "doc": "官方 get_prize.py 的 last_try 单次兜底：点主页邮件入口(+100y)后退出，不无限重试",
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "home/mail.png",
-      "threshold": 0.72,
-      "roi": [
-        1043,
-        77,
-        237,
-        95
-      ]
-    },
+    "doc": "官方 get_prize.py:46-53 last_try 单次版：路由超时后点主页邮件入口(+100y)，然后退出，不无限重试",
+    "recognition": "TemplateMatch",
+    "template": "home/mail.png",
+    "threshold": 0.72,
     "action": "Click",
     "target_offset": [
       0,
@@ -324,11 +129,12 @@
     ],
     "on_error": [
       "PassReturnHome"
+    ],
+    "roi": [
+      1043,
+      77,
+      237,
+      95
     ]
-  },
-  "PassDone": {
-    "doc": "仅领取通行证时的终点（不进入邮件流程）",
-    "recognition": "DirectHit",
-    "action": "DoNothing"
   }
 }

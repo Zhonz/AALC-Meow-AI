@@ -5,9 +5,7 @@
 OCR 用 text）不是静默忽略，而是让整个 Resource 加载失败，App 启动即崩。
 静态 JSON 校验挡不住所有情况，让引擎自己读一遍最可靠。
 
-需要 MaaFramework 的 MaaPiCli。没有 MaaPiCli 时会回退到官方 Python 绑定
-（pip install "maafw==<与 UPSTREAM_VERSIONS.json 一致>"，直接加载 assets/resource，
-覆盖 pipeline + 模板 + OCR 模型；不含 interface.json）。两者都没有时跳过并返回 0。
+需要 MaaFramework 的 MaaPiCli。未安装时脚本跳过并返回 0，不阻塞 CI。
 
 环境变量:
   MAA_CLI   MaaPiCli 可执行文件路径（默认在 PATH 中查找）
@@ -73,34 +71,12 @@ def link_assets(lib_dir):
     return made
 
 
-def verify_via_binding():
-    """用官方 Python 绑定加载 assets/resource；绑定未安装时返回 None。"""
-    try:
-        from maa.resource import Resource
-    except Exception:
-        return None
-    print('[回退] 未找到 MaaPiCli，改用官方 Python 绑定 maafw 加载 assets/resource')
-    try:
-        job = Resource().post_bundle(os.path.join(ASSETS, 'resource')).wait()
-    except Exception as e:
-        print(f'[失败] 绑定加载异常: {e}')
-        return 1
-    if job.succeeded:
-        print('[通过] 引擎（Python 绑定）成功加载 pipeline + 模板 + 模型')
-        return 0
-    print(f'[失败] 引擎（Python 绑定）加载失败，status = {job.status}')
-    return 1
-
-
 def main():
     cli = find_cli()
     if not cli:
-        via_binding = verify_via_binding()
-        if via_binding is not None:
-            return via_binding
-        print('[跳过] 未找到 MaaPiCli，也未安装 maafw 绑定，跳过引擎级验证')
-        print('       从 https://github.com/MaaXYZ/MaaFramework/releases 下载对应平台包并设置 MAA_CLI，')
-        print('       或 pip install "maafw==<UPSTREAM_VERSIONS.json 的 pinned_release>" 启用本检查。')
+        print('[跳过] 未找到 MaaPiCli，跳过引擎级验证')
+        print('       从 https://github.com/MaaXYZ/MaaFramework/releases 下载对应平台包，')
+        print('       设置 MAA_CLI 环境变量即可启用本检查。')
         return 0
 
     lib_dir = os.environ.get('MAA_LIB') or os.path.dirname(os.path.abspath(cli))

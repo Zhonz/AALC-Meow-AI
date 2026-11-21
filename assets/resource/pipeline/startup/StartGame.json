@@ -12,13 +12,7 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "home/enkephalin_box.png",
-      "threshold": 0.7,
-      "roi": [
-        246,
-        589,
-        138,
-        104
-      ]
+      "threshold": 0.7
     },
     "timeout": 120000,
     "on_error": [
@@ -26,6 +20,12 @@
     ],
     "next": [
       "StartGameSuccess"
+    ],
+    "roi": [
+      246,
+      589,
+      138,
+      104
     ]
   },
   "StartGameSuccess": {

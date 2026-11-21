@@ -20,7 +20,6 @@
    - [2.8 国内 GitHub 下载镜像并发竞速引擎](#28-国内-github-下载镜像并发竞速引擎)
    - [2.9 品牌元数据与资产隔离架构](#29-品牌元数据与资产隔离架构)
    - [2.10 纯云端 CI 编译与系统环境零污染规范](#210-纯云端-ci-编译与系统环境零污染规范)
-   - [2.11 对象式 recognition 的参数作用域陷阱（静默失效的 roi）](#211-对象式-recognition-的参数作用域陷阱静默失效的-roi)
 3. [兄弟项目移植研判：MAAend（终末地）](#3-兄弟项目移植研判maaend终末地)
 4. [异构项目破局研判：AALC（边狱巴士）](#4-异构项目破局研判aalc边狱巴士)
 5. [结论与标准化移植 Checklist](#5-结论与标准化移植-checklist)
@@ -211,31 +210,6 @@ M9A-Meow 采用的体系架构分为三层：
 
 ---
 
-### 2.11 对象式 recognition 的参数作用域陷阱（静默失效的 roi）
-
-- **现象**：
-  管线里写 `"recognition": {"type": "TemplateMatch"}` 的同时把 `roi` / `threshold` / `template` 放在节点顶层，脚本能正常加载、任务也能跑，但这些限定词**完全不生效**——识别退化成全屏找图，误匹配率飙升，且没有任何日志提示。
-
-- **根因**（MaaFramework `source/MaaFramework/Resource/PipelineParser.cpp`）：
-  ```cpp
-  json::value param_input = input;
-  if (auto reco_opt = input.find("recognition"); reco_opt && reco_opt->is_object()) {
-      param_input = reco_opt->get("param", *reco_opt);
-      reco_type_name = reco_opt->get("type", kDefaultRecognitionFlag);
-  }
-  ```
-  只有**字符串式**（v1，`"recognition": "TemplateMatch"`）才会把整个节点当参数来源；**对象式**（v2）只认 `recognition` 对象本身或其中的 `param` 子树。同一条规则对 `action` 对象同样成立。
-
-- **本项目实测**：AALC 管线迁移时累计踩到 74 处「对象式 recognition + 顶层 roi」与 3 处顶层 `threshold`（`BattleStartTurn` / `BattleChecking` / `BattleFinishCheck`），全部静默失效。
-
-- **三层防线**（现在都已接入）：
-  1. [`scripts/validate_pipelines.py`](scripts/validate_pipelines.py) 第 7 项检查：对象式 recognition 下顶层若出现 `roi` / `template` / `threshold` 等识别字段，直接报错。
-  2. [`scripts/check_pipeline_schema.py`](scripts/check_pipeline_schema.py)：用官方 `tools/pipeline.schema.json` 做 JSON Schema 校验，并**按引擎语义折叠**识别/动作对象（对象式只折叠对象自身），顶层参数无处可藏。仓库内 `tools/*.schema.json` 与 `UPSTREAM_VERSIONS.json` 的 MaaFramework 版本同源。
-  3. `.github/workflows/build-apk.yml` 依次跑白名单校验 → Schema 校验 → 真实引擎加载（`scripts/verify_with_engine.py`），出包前拦住。
-
-- **经验**：升级 MaaFramework 时把官方 `tools/pipeline.schema.json` 一并同步，Schema 校验能免费获得「新版本新增/改名/废弃字段」的告知；但 Schema 管不到作用域语义，仍需第 1 条那种带引擎源码依据的自定义检查。
-
----
 ## 3. 兄弟项目移植研判：MAAend（终末地）
 
 ### 3.1 项目技术契合度

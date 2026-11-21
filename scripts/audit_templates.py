@@ -5,19 +5,15 @@
   load_image -> 整图按 win_size/1440 缩放 -> get_bbox -> 与截图对应区域匹配
 本项目目标: 控制器把截图归一化到短边 720p，所以 scale = 720/1440 = 0.5
 """
-import os, glob, json, sys
+import os, glob, json
 import numpy as np
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(ROOT)
-sys.path.insert(0, os.path.join(ROOT, 'scripts'))
-
-from regen_templates import EXPLICIT_SOURCE_MAP  # 与重导脚本共用一份源映射
 
 UP = 'upstream/aalc/assets/images/default'
 OUR = 'assets/resource/image'
-PIPELINE = 'assets/resource/pipeline'
 SCALE = 720 / 1440  # 目标短边 720p
 
 
@@ -51,35 +47,9 @@ def build_official_index():
     return idx
 
 
-def used_by_pipeline():
-    """扫一遍管线，返回被引用的模板相对路径集合（用于区分失效素材）"""
-    used = set()
-    for f in glob.glob(f'{PIPELINE}/**/*.json', recursive=True):
-        try:
-            data = json.load(open(f, encoding='utf-8'))
-        except Exception:
-            continue
-        def walk(node):
-            if isinstance(node, dict):
-                for k, v in node.items():
-                    if k in ('template', 'template_') and isinstance(v, str):
-                        used.add(v)
-                    elif k in ('template', 'template_') and isinstance(v, list):
-                        used.update(x for x in v if isinstance(x, str))
-                    else:
-                        walk(v)
-            elif isinstance(node, list):
-                for v in node:
-                    walk(v)
-        walk(data)
-    return used
-
-
 def official_candidates(rel):
     """按完整相对路径 + 纯文件名 两种方式找官方源"""
     out = []
-    if rel in EXPLICIT_SOURCE_MAP and os.path.exists(EXPLICIT_SOURCE_MAP[rel]):
-        out.append(EXPLICIT_SOURCE_MAP[rel])
     for sub in ('share', 'zh_cn', 'en'):
         p = f'{UP}/{sub}/{rel}'
         if os.path.exists(p):
@@ -164,18 +134,10 @@ def main():
     print("\n=== SIZE_MISMATCH（尺寸对不上，疑似裁错或来源不对）===")
     for rel, det in buckets['SIZE_MISMATCH']:
         print(f"  {rel}\n      {det}")
-    used = used_by_pipeline()
     print("\n=== NO_OFFICIAL_SOURCE（官方无同名，需逐个判定）===")
-    live = [rel for rel, _ in buckets['NO_OFFICIAL_SOURCE'] if rel in used]
-    dead = [rel for rel, _ in buckets['NO_OFFICIAL_SOURCE'] if rel not in used]
-    print(f"  被管线引用（必须核验）: {len(live)} 张")
-    for rel in live:
-        print(f"    {rel}")
-    print(f"  无管线引用（历史残留，可择机清理）: {len(dead)} 张")
-    for rel in dead:
-        print(f"    {rel}")
-    buckets['USED_BY_PIPELINE'] = sorted(used & {rel for rel, _ in sum(buckets.values(), [])})
-    json.dump({k: v for k, v in buckets.items() if k != 'USED_BY_PIPELINE'},
+    for rel, det in buckets['NO_OFFICIAL_SOURCE']:
+        print(f"  {rel}")
+    json.dump({k: v for k, v in buckets.items()},
               open('/tmp/template_audit.json', 'w'), ensure_ascii=False, indent=1)
 
 

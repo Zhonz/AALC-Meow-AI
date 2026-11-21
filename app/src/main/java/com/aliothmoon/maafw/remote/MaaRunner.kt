@@ -266,7 +266,7 @@ class MaaRunner(private val agentHost: AgentHost) {
                 notify { onTaskFinished(task.taskName, success, statusText(status)) }
 
                 // Stop 之后 Tasker 会把剩余任务直接判失败，这里提前收尾避免刷一串假失败
-                if (lib.MaaTaskerStopping(currentTasker).toInt() != 0) {
+                if (isTaskerStopping(lib)) {
                     cancelled = true
                 }
             }
@@ -290,7 +290,7 @@ class MaaRunner(private val agentHost: AgentHost) {
                     if (!success) retryAllSuccess = false
                     notify { onTaskFinished(task.taskName, success, "[重试] ${statusText(status)}") }
 
-                    if (lib.MaaTaskerStopping(currentTasker).toInt() != 0) {
+                    if (isTaskerStopping(lib)) {
                         cancelled = true
                     }
                 }
@@ -382,6 +382,12 @@ class MaaRunner(private val agentHost: AgentHost) {
             if (isStopRequested()) return status
             entry = handoff.resumeEntry
         }
+    }
+
+    /** 引擎侧是否已经被要求停止（Tasker 级，区别于我们自己的 stopRequested） */
+    private fun isTaskerStopping(lib: MaaFrameworkLibrary): Boolean {
+        val handle = synchronized(lifecycleLock) { tasker } ?: return false
+        return lib.MaaTaskerStopping(handle).toInt() != 0
     }
 
     private fun postAndWait(lib: MaaFrameworkLibrary, entry: String, overrides: String): Int {

@@ -41,10 +41,17 @@
     ]
   },
   "PassSelectDaily": {
+    "doc": "任务页左侧竖排 tab（日常/周常/赛季三枚同一列，纵向间距约 144px）：roi 取自 AALC 真机截图 zh_cn/pass 的像素位置（0.5x 后 y≈212），窄带只含本 tab，避免三枚互相命中",
     "recognition": {
       "type": "TemplateMatch",
       "template": "pass/daily_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        237,
+        192,
+        69,
+        132
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 600,
@@ -59,7 +66,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "pass/pass_coin.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        330,
+        95,
+        950,
+        590
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 400,
@@ -69,10 +82,17 @@
     ]
   },
   "PassSelectWeekly": {
+    "doc": "任务页左侧竖排 tab（日常/周常/赛季三枚同一列，纵向间距约 144px）：roi 取自 AALC 真机截图 zh_cn/pass 的像素位置（0.5x 后 y≈355），窄带只含本 tab，避免三枚互相命中",
     "recognition": {
       "type": "TemplateMatch",
       "template": "pass/weekly_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        237,
+        335,
+        69,
+        132
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 600,
@@ -87,7 +107,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "pass/pass_coin.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        330,
+        95,
+        950,
+        590
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 400,
@@ -97,10 +123,17 @@
     ]
   },
   "PassSelectSeasonal": {
+    "doc": "任务页左侧竖排 tab（日常/周常/赛季三枚同一列，纵向间距约 144px）：roi 取自 AALC 真机截图 zh_cn/pass 的像素位置（0.5x 后 y≈499），窄带只含本 tab，避免三枚互相命中",
     "recognition": {
       "type": "TemplateMatch",
       "template": "pass/seasonal_assets.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        237,
+        479,
+        69,
+        132
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 600,
@@ -115,7 +148,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "pass/pass_coin.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        330,
+        95,
+        950,
+        590
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 400,
@@ -146,7 +185,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "pass/pass_coin.png",
-      "threshold": 0.75
+      "threshold": 0.75,
+      "roi": [
+        330,
+        95,
+        950,
+        590
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 400,

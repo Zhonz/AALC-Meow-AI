@@ -41,7 +41,7 @@ object AalcTeamImport {
      */
     private val REWARD_CARD_CASES = mapOf(
         0 to "starlight_first",
-        1 to "starlight_first",
+        1 to "starlight_cost_first",
         2 to "cost_first",
         3 to "ego_first",
     )
@@ -216,6 +216,11 @@ object AalcTeamImport {
             "prioritize_skill_3" to "prioritize_skill_3",
         ).forEach { (from, to) ->
             bool(data[from])?.let { values[to] = OptionValue.SingleCase(if (it) YES else NO) }
+        }
+
+        // AALC 的 not_skip_whitegossypium 语义相反：开=不跳过白棉花
+        bool(data["not_skip_whitegossypium"])?.let { notSkip ->
+            values["shop_skip_whitegossypium"] = OptionValue.SingleCase(if (notSkip) NO else YES)
         }
 
         if (bool(data["after_level_IV"]) == true) {

@@ -55,6 +55,7 @@
         "shop_shopping_strategy",
         "shop_second_setting",
         "shop_sell_abandoned",
+        "shop_skip_whitegossypium",
         "mirror_opening_bonus",
         "mirror_use_starlight",
         "shop_ignore_layers",
@@ -1524,12 +1525,12 @@
     "reward_cards": {
       "type": "select",
       "label": "奖励卡优先度",
-      "description": "镜牢战后获得奖励卡牌时的选卡偏好顺序",
+      "description": "镜牢战后获得奖励卡牌时的选卡偏好顺序（对应 AALC reward_card_model 的 0~3 号模型）",
       "default_case": "ego_first",
       "cases": [
         {
           "name": "starlight_first",
-          "label": "星光→饰品→钱→饰品/钱→罪孽",
+          "label": "星光→饰品→经费→复合→罪孽",
           "pipeline_override": {
             "MirrorHandleRewardCard": {
               "next": [
@@ -1544,13 +1545,14 @@
           }
         },
         {
-          "name": "ego_first",
-          "label": "饰品→钱→饰品/钱→罪孽→星光",
+          "name": "starlight_cost_first",
+          "label": "星光→经费→饰品→复合→罪孽",
           "pipeline_override": {
             "MirrorHandleRewardCard": {
               "next": [
-                "MirrorRewardCardSelectEGO",
+                "MirrorRewardCardSelectStarlight",
                 "MirrorRewardCardSelectCost",
+                "MirrorRewardCardSelectEGO",
                 "MirrorRewardCardSelectCostAndEGO",
                 "MirrorRewardCardSelectEGOResource",
                 "MirrorRewardCardSelectFirst"
@@ -1560,13 +1562,31 @@
         },
         {
           "name": "cost_first",
-          "label": "钱→饰品→饰品/钱→罪孽→星光",
+          "label": "经费→饰品→复合→罪孽→星光",
           "pipeline_override": {
             "MirrorHandleRewardCard": {
               "next": [
                 "MirrorRewardCardSelectCost",
                 "MirrorRewardCardSelectEGO",
                 "MirrorRewardCardSelectCostAndEGO",
+                "MirrorRewardCardSelectEGOResource",
+                "MirrorRewardCardSelectStarlight",
+                "MirrorRewardCardSelectFirst"
+              ]
+            }
+          }
+        },
+        {
+          "name": "ego_first",
+          "label": "饰品→经费→复合→罪孽→星光",
+          "pipeline_override": {
+            "MirrorHandleRewardCard": {
+              "next": [
+                "MirrorRewardCardSelectEGO",
+                "MirrorRewardCardSelectCost",
+                "MirrorRewardCardSelectCostAndEGO",
+                "MirrorRewardCardSelectEGOResource",
+                "MirrorRewardCardSelectStarlight",
                 "MirrorRewardCardSelectFirst"
               ]
             }
@@ -4290,6 +4310,22 @@
         {
           "name": "No",
           "label": "关"
+        }
+      ]
+    },
+    "shop_skip_whitegossypium": {
+      "type": "switch",
+      "label": "跳过白棉花",
+      "description": "流血体系下，识别到白棉花饰品就不买它（AALC 的 not_skip_whitegossypium 取反）",
+      "default_case": "Yes",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "跳过"
+        },
+        {
+          "name": "No",
+          "label": "照买"
         }
       ]
     },

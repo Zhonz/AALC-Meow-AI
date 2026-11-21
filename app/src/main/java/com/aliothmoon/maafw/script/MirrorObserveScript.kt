@@ -42,7 +42,7 @@ object MirrorObserveScript : ScriptTask {
     private const val GIFT_COL_STEP = 165 * SCALE
     private const val GIFT_ROW_STEP = 160 * SCALE
     private const val DRAG_STEP = 300 * SCALE
-    private const val DRAG_INSET = 100 * SCALE
+    private val DRAG_INSET = (100 * SCALE).toInt()
     private const val MAX_LOOPS = 40
 
     /** AALC tasks/__init__.py 的 observe_system：sinking 与 poise 在观测页上互换 */
@@ -113,7 +113,8 @@ object MirrorObserveScript : ScriptTask {
         while (!host.cancelled && drags < 5) {
             drags++
             val fromY = GIFT_BOX.y + GIFT_BOX.h - DRAG_INSET
-            host.swipe(GIFT_BOX.x + GIFT_BOX.w - DRAG_INSET, fromY, GIFT_BOX.x + GIFT_BOX.w - DRAG_INSET, (fromY - GIFT_BOX.h / 2).toInt(), 1500)
+            val dragX = GIFT_BOX.x + GIFT_BOX.w - DRAG_INSET
+            host.swipe(dragX, fromY, dragX, fromY - GIFT_BOX.h / 2, 1500)
             host.sleep(1500)
             host.find(template, 0.85)?.let { return it }
         }
@@ -134,10 +135,11 @@ object MirrorObserveScript : ScriptTask {
         }
         var remaining = y - bottom
         val fromY = GIFT_BOX.y + GIFT_BOX.h - DRAG_INSET
+        val dragX = GIFT_BOX.x + GIFT_BOX.w - DRAG_INSET
         var total = 0
         while (remaining > 0 && !host.cancelled) {
             val step = minOf(DRAG_STEP, remaining.toDouble()).toInt()
-            host.swipe(GIFT_BOX.x + GIFT_BOX.w - DRAG_INSET, fromY, GIFT_BOX.x + GIFT_BOX.w - DRAG_INSET, fromY - step, 1500)
+            host.swipe(dragX, fromY, dragX, fromY - step, 1500)
             host.sleep(1200)
             total += step
             remaining -= step

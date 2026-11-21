@@ -220,6 +220,8 @@ object ShopScriptBinding {
                 if (leaveOnly) "1" else (singleCase(definition, values, "shop_second_setting") ?: "0"),
             MirrorShopScript.KEY_SELL_ABANDONED to
                 if (leaveOnly) "0" else flag(definition, values, "shop_sell_abandoned", default = true),
+            MirrorShopScript.KEY_SKIP_WHITE_GOSSYPIUM to
+                if (leaveOnly) "0" else flag(definition, values, "shop_skip_whitegossypium", default = true),
         )
     }
 

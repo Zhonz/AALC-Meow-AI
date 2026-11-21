@@ -55,6 +55,9 @@ object MirrorShopScript : ScriptTask {
     /** 出售时是否连 must_be_abandoned 的废品一起清掉（AALC 无开关，默认开） */
     const val KEY_SELL_ABANDONED = "sellAbandoned"
 
+    /** 流血体系跳过白棉花（AALC 的 not_skip_whitegossypium 取反，默认开启） */
+    const val KEY_SKIP_WHITE_GOSSYPIUM = "skipWhiteGossypium"
+
     // ── 界面元素（相对 assets/resource/image） ──
     private const val SHOP_MARK = "mirror/road_in_mir/shop.png"
     private const val LEGEND = "mirror/road_in_mir/legend_assets.png"
@@ -470,12 +473,14 @@ object MirrorShopScript : ScriptTask {
             }
 
             val system = plan.system
-            if (system != null && systemAllowed) bought += buySystemGifts(host, system, MAX_SYSTEM_GIFTS)
+            if (system != null && systemAllowed) {
+                bought += buySystemGifts(host, system, MAX_SYSTEM_GIFTS, plan.skipWhiteGossypium)
+            }
             // 第二体系要等本体系四级（AALC 的 second_system_setting / fuse_IV 门控）
             val secondReady = plan.secondAlways || fuseIvDone
             if (plan.secondBuy && plan.secondSystem != null && systemAllowed) {
                 if (secondReady) {
-                    bought += buySystemGifts(host, plan.secondSystem, MAX_SYSTEM_GIFTS)
+                    bought += buySystemGifts(host, plan.secondSystem, MAX_SYSTEM_GIFTS, plan.skipWhiteGossypium)
                 } else {
                     host.log("[商店] 第二体系要等本体系合出四级，本轮先不买")
                 }
@@ -549,7 +554,7 @@ object MirrorShopScript : ScriptTask {
         return false
     }
 
-    private fun buySystemGifts(host: ScriptHost, system: String, max: Int): Int {
+    private fun buySystemGifts(host: ScriptHost, system: String, max: Int, skipWhite: Boolean): Int {
         var bought = 0
         while (!host.cancelled && bought < max) {
             val matches = host.findAll(shopGiftIcon(system), 0.85)
@@ -559,6 +564,13 @@ object MirrorShopScript : ScriptTask {
                 .first()
             host.click(target)
             host.sleep(800)
+            // AALC in_shop.py:236：流血体系下白棉花是负面饰品，识别到就点空白取消，不买它
+            if (skipWhite && system == "bleed" && seesWhiteGossypium(host)) {
+                host.log("[商店] 这一格是白棉花，跳过")
+                host.clickBlank(2)
+                host.sleep(600)
+                break
+            }
             if (host.clickTemplate(PURCHASE, 0.85)) {
                 host.sleep(600)
                 host.clickTemplate(GIFT_CONFIRM, 0.8)
@@ -574,6 +586,19 @@ object MirrorShopScript : ScriptTask {
         }
         if (bought > 0) host.log("[商店] 已买 " + system + " 体系饰品 " + bought + " 件")
         return bought
+    }
+
+    /** AALC in_shop.py:236 的白棉花检查：整屏 OCR 找「白棉花 / white / gossypium」 */
+    private fun seesWhiteGossypium(host: ScriptHost): Boolean {
+        val texts = try {
+            host.readText(ScriptRect(0, 0, host.screenWidth, host.screenHeight), 0.3)
+        } catch (t: Throwable) {
+            return false
+        }
+        return texts.any { line ->
+            val text = line.lowercase().replace(" ", "")
+            text.contains("白棉花") || text.contains("white") || text.contains("gossypium")
+        }
     }
 
     private fun refreshKeyword(host: ScriptHost, system: String): Boolean {

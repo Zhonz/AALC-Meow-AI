@@ -51,6 +51,9 @@ internal data class ShopPlan(
 
     /** 是否连 must_be_abandoned 的 19 件废品一起卖掉（AALC in_shop.py:858-866） */
     val sellAbandoned: Boolean,
+
+    /** 流血体系下是否跳过白棉花（AALC 的 not_skip_whitegossypium 取反，in_shop.py:236） */
+    val skipWhiteGossypium: Boolean,
 ) {
     /** 合成出四级饰品之后的策略（对应 AALC 的 after_level_IV / after_level_IV_select） */
     enum class AfterIv {
@@ -122,6 +125,11 @@ internal data class ShopPlan(
                     .let { if (it == "all" || it.isEmpty()) null else it.toIntOrNull()?.takeIf { v -> v in 0..5 } },
                 secondAlways = ScriptParams.int(params, MirrorShopScript.KEY_SECOND_SETTING, 0) == 1,
                 sellAbandoned = ScriptParams.flag(params, MirrorShopScript.KEY_SELL_ABANDONED, default = true),
+                skipWhiteGossypium = ScriptParams.flag(
+                    params,
+                    MirrorShopScript.KEY_SKIP_WHITE_GOSSYPIUM,
+                    default = true,
+                ),
             )
         }
     }

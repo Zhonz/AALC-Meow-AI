@@ -89,6 +89,27 @@ object ShopScriptBinding {
                         flag(definition, values, "mirror_use_starlight", default = true),
                 ),
             ),
+            // 开局三件初始饰品：认到「确认」按钮就交棒，按体系与顺序点饰品
+            TaskScript(
+                scriptId = MirrorInitGiftScript.id,
+                entry = MirrorInitGiftScript.entry,
+                resumeEntry = MirrorInitGiftScript.resumeEntry,
+                maxRounds = MirrorInitGiftScript.maxRounds,
+                params = mapOf(
+                    MirrorInitGiftScript.KEY_SYSTEM to run {
+                        val custom = singleCase(definition, values, "mirror_opening_items_system")
+                        val useCustom = flag(definition, values, "opening_items", default = false) == "1"
+                        if (useCustom && !custom.isNullOrBlank() && custom != "none") custom
+                        else singleCase(definition, values, "team_system") ?: ""
+                    },
+                    MirrorInitGiftScript.KEY_ORDER to
+                        (singleCase(definition, values, "mirror_opening_items_order") ?: "123")
+                            .filter { it in '1'..'3' }
+                            .map { it.toString() }
+                            .joinToString(",")
+                            .ifEmpty { "1,2,3" },
+                ),
+            ),
             // 事件：管线认到事件界面（event/skip_assets.png）就交棒，由脚本按 AALC 的按钮优先级处理
             TaskScript(
                 scriptId = MirrorEventScript.id,

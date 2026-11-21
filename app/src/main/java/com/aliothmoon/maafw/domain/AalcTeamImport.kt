@@ -46,6 +46,9 @@ object AalcTeamImport {
         3 to "ego_first",
     )
 
+    /** AALC 的 opening_items_select → 本 PI 的三件饰品点击顺序 */
+    private val OPENING_ITEM_ORDERS = listOf("123", "132", "213", "231", "312", "321")
+
     /** 本引擎没有对应管线的 AALC 字段：有值就统计，导入时忽略 */
     private val UNSUPPORTED_KEYS = listOf(
         // 小指良单通（AALC 的 defense_for_solo）：本引擎没有对应的连续防御状态机
@@ -54,7 +57,6 @@ object AalcTeamImport {
         "re_formation_each_floor",
         // 固定队伍用途（困难/普通）与开局道具体系：没有对应选项
         "fixed_team_use", "fixed_team_use_select",
-        "opening_items_system", "opening_items_select",
         // 观测 EGO 饰品：尚未实现
         "observe_ego_gift", "observe_ego_gift_selected",
         // 编队码自动组队：尚未实现
@@ -157,6 +159,18 @@ object AalcTeamImport {
         }
         bool(data["opening_items"])?.let {
             values["opening_items"] = OptionValue.SingleCase(if (it) YES else NO)
+            if (it) {
+                int(data["opening_items_system"])?.let { index ->
+                    SYSTEM_CASES.getOrNull(index)?.let {
+                        values["mirror_opening_items_system"] = OptionValue.SingleCase(it)
+                    }
+                }
+                int(data["opening_items_select"])?.let { index ->
+                    OPENING_ITEM_ORDERS.getOrNull(index)?.let {
+                        values["mirror_opening_items_order"] = OptionValue.SingleCase(it)
+                    }
+                }
+            }
         }
         val openingBonus = intList(data["opening_bonus"])
         if (openingBonus.any { it > 0 }) {

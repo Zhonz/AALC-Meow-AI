@@ -374,6 +374,7 @@
       "MirrorClickInfinityEnter",
       "MirrorSelectTeamScreen",
       "MirrorCheckDreamingStar",
+      "MirrorHandleInitGift",
       "MirrorCheckInitEgoGift",
       "MirrorCheckThemePack",
       "MirrorDismissFirstPrompt",
@@ -1031,5 +1032,21 @@
     },
     "action": "Click",
     "post_delay": 1000
+  },
+  "MirrorHandleInitGift": {
+    "doc": "开局三件初始 EGO 饰品（AALC mirror.py:884 select_init_ego_gift）——交棒节点：按「确认」按钮认界面，交给脚本 mirror.initgift 按体系分类与顺序点饰品，跑完从 MirrorDungeonEntry 续上",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_to_mir/select_init_ego_gifts_confirm_assets.png",
+      "threshold": 0.72,
+      "roi": [
+        971,
+        541,
+        309,
+        92
+      ]
+    },
+    "action": "DoNothing",
+    "next": []
   }
 }

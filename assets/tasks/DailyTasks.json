@@ -78,6 +78,8 @@
         "reward_cards",
         "choose_opening_bonus",
         "opening_items",
+        "mirror_opening_items_order",
+        "mirror_opening_items_system",
         "avoid_skill_3",
         "prioritize_skill_3",
         "defense_first_round",
@@ -4331,6 +4333,90 @@
         {
           "name": "No",
           "label": "否"
+        }
+      ]
+    },
+    "mirror_opening_items_order": {
+      "type": "select",
+      "label": "开局饰品选择顺序",
+      "description": "对应电脑版 AALC 的 opening_items_select：三个初始 EGO 饰品的点击顺序，先点哪一档",
+      "default_case": "123",
+      "cases": [
+        {
+          "name": "123",
+          "label": "1 → 2 → 3"
+        },
+        {
+          "name": "132",
+          "label": "1 → 3 → 2"
+        },
+        {
+          "name": "213",
+          "label": "2 → 1 → 3"
+        },
+        {
+          "name": "231",
+          "label": "2 → 3 → 1"
+        },
+        {
+          "name": "312",
+          "label": "3 → 1 → 2"
+        },
+        {
+          "name": "321",
+          "label": "3 → 2 → 1"
+        }
+      ]
+    },
+    "mirror_opening_items_system": {
+      "type": "select",
+      "label": "开局饰品的体系",
+      "description": "对应电脑版 AALC 的 opening_items_system：只有打开「自定义开局道具」时才会用它替代队伍体系去点分类图标",
+      "default_case": "none",
+      "cases": [
+        {
+          "name": "none",
+          "label": "跟队伍体系"
+        },
+        {
+          "name": "burn",
+          "label": "burn"
+        },
+        {
+          "name": "bleed",
+          "label": "bleed"
+        },
+        {
+          "name": "tremor",
+          "label": "tremor"
+        },
+        {
+          "name": "rupture",
+          "label": "rupture"
+        },
+        {
+          "name": "poise",
+          "label": "poise"
+        },
+        {
+          "name": "sinking",
+          "label": "sinking"
+        },
+        {
+          "name": "charge",
+          "label": "charge"
+        },
+        {
+          "name": "slash",
+          "label": "slash"
+        },
+        {
+          "name": "pierce",
+          "label": "pierce"
+        },
+        {
+          "name": "blunt",
+          "label": "blunt"
         }
       ]
     }

@@ -77,6 +77,8 @@ object TeamOptionScope {
         "reward_cards",
         "choose_opening_bonus",
         "opening_items",
+        "mirror_opening_items_order",
+        "mirror_opening_items_system",
         "mirror_opening_bonus",
         "mirror_use_starlight",
         "avoid_skill_3",

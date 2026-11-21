@@ -467,3 +467,26 @@ JNA 层补了 `MaaControllerPostTouchMove`。
 这些脚本都没有在真游戏里跑过：本机没有 Shizuku/ADB，装不了 APK，截图也拿不到。能证明的是：引擎（maafw 5.16.1）能加载整包资源并通过 Schema 校验；把模板贴到画布上，`MirrorDungeonEntry` 能被分发到对应的交棒节点（路径见 docs/VERIFICATION.md 第 9、10 节）；Kotlin 侧编译通过（CI 出包成功）。
 
 不能证明的是：OCR 真实读数、点击后界面的真实变化、合成/升级这类不可逆操作的判定准不准。真机上发现问题先改阈值与裁剪常量，别改流程顺序。
+
+## 11. 开局星光与初始饰品：两个必须按 0.5 / 2⁄3 分开算的坐标基准
+
+AALC 的镜牢代码混用了两套基准，移植时**不能一把尺子量到底**：
+
+| 函数 | 上游缩放 | 720p 下的系数 |
+| :--- | :--- | :--- |
+| `mirror.py:793 enter_mir_with_star` | `scale = set_win_size / 1440` | 0.5 |
+| `mirror.py:882 _click_init_gift_row` | `s = set_win_size / 1080` | 2/3 |
+| `battle.py` 的技能格 | `scale = set_win_size / 1440` | 0.5 |
+| `get_floor.py` 的楼层横带 | 1440 基准 | 0.5 |
+
+星光页（第 11 节 a）：以星光币图标中心为原点，第一格 `(-1800*s, +300*s)`，列距 `400*s`、行距 `480*s`，
+二级卡再点左侧「+」`(-80*s, +320*s)`、三级点右侧「++」。本项目把它做成 `script/MirrorStarScript.kt`，
+管线只负责把「星光加成页」认出来（`coins_assets.png`）然后 `next: []` 交棒。
+
+初始饰品页（第 11 节 b）：先按体系点分类图标，再按 `start_gift` 的顺序点三件
+`select_init_gift/{system}_ego_gift_{1,2,3}.png`；识别不到就退到「以确认按钮为锚点」的坐标兜底：
+`x = confirm.x - 340*s`、`y = confirm.y + row_dy[id]*s`，`row_dy = {1:-490, 2:-330, 3:-170}`。
+因为这里 `s` 是 2/3，锚点偏移是 `(-227, -327/-220/-113)`，若误用 0.5 会整整偏出一行。
+
+斩击/穿刺/打击三个体系的分类图标在列表下方，上游的做法是：只要还能认到 `slash_gift_1.png` 就向上拖 400，
+直到露出 `blunt_gift_1_assets.png`。这条「拖到看见目标为止」的循环必须带 guard，否则列表见底后会空转。

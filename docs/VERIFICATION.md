@@ -192,3 +192,12 @@ succeeded = True
 3. 防御连线的落点与「技能格数」算得对不对（依赖 gear_left/gear_right 同时出现在画面上）
 4. 一个任务里连续多次交棒（进地图 → 战斗 → 地图 → 商店）的稳定性，只做了单次交棒
 
+## 10. 主题包与事件的引擎级验证
+
+主题包：把 `mirror/theme_pack/feature_theme_pack_assets.png` 贴到画布 (1160,80)，`post_task('MirrorDungeonEntry')` 的节点路径是 `[MirrorDungeonEntry, MirrorCheckThemePack, MirrorHandleThemePackFeature]`。
+
+第一次接的时候路径停在 `MirrorCheckThemePack` 之后一个失败节点——因为 `MirrorCheckThemePack.next` 只写了 `MirrorInDungeon`，而地图画布不满足 `MirrorInDungeon` 的 legend 识别。把 `MirrorHandleThemePackFeature` 插到 `MirrorCheckThemePack.next` 首位后，路径才通。
+
+事件：`EventHandling` 的 6 个新节点只做了静态校验（`validate_pipelines.py` 378 节点 0 错、Schema 12 管线 + 197 覆盖片段全过）；没有把每个事件页模板都贴到画布上分别验证——事件是「一个界面多种按钮」的结构，单模板贴图只能证明那个模板能被认到，证明不了优先级顺序对不对，等真机反馈。
+
+仍然未验证的四点同第 9.4 节：OCR 读数、点击后界面变化、不可逆操作判定、一个任务里多次交棒。

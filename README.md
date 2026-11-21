@@ -42,6 +42,8 @@
 - **镜牢商店交给脚本**：新增「交棒」机制——管线跑到 `MirrorHandleShop` 就把执行权交给特权进程里的 Kotlin 脚本（`script/MirrorShopScript.kt`），按电脑版 AALC 的顺序**技能替换 → 治疗 → 出售 → 购买 → 刷新 → 合成 → 升级 → 离开**，干完回到 `MirrorDungeonEntry` 让管线继续。合成是 AALC 的三段式（激进凑 90% 梭哈四级 / 废品凑三件普通合成 / 按体系配方合成），升级走「强化」按钮，技能替换含超级商店的三处与按人格搜索；选项按 AALC 的语义拆细（共 24 项，见下表），`shop_strategy` 选「直接离开」等于 AALC 的 `ignore_shop`
 - **镜牢寻路交给脚本**：管线跑到 `MirrorHandleRoad` 交棒给 `script/MirrorRoadScript.kt`——先认地图右上 legend 确认在地图上，把巴士拖回固定高度，再对巴士右侧上/中/下三个候选按 AALC 的节点权重（商店/事件 3、普通战斗 2、精英 1、集中 0、认不出 -5）挑一个点，点完再点「进入」；全都不灵才回落到原来的盲点偏移节点
 - **镜牢战斗交给脚本**：管线认到 `MirrorHandleBattle`（普通战斗或链接战按钮）就交棒给 `script/MirrorBattleScript.kt`：进入战斗 → 清空上次出战勾选 → 每回合「点胜率卡片 + 点右侧齿轮」（等价电脑版的 P+Enter）→ 结算/认输收尾。**第一回合全员防御**这个开关以前是假的，现在按 AALC 的 `_calculate_skills_position`（技能格 161px、间距 145px）算格子、逐格点防御再按住拖连线，真的会执行
+- **镜牢主题包按权重挑**：认到主题包选择页就交棒给 `script/MirrorThemePackScript.kt`——找出三张卡包的标记图标，按图标裁出名字区做 OCR，用 AALC `theme_pack_list*.yaml` 的关键词权重打分（中英各一份），最高分没到优选阈值就点刷新（最多 3 次），最后选最高分那张；认不出卡包才回落到原来的盲点
+- **镜牢事件补齐**：事件界面新增 6 个识别（未知事件、获得 EGO、优势判定、判定结果、执行判定、跳过），按「未知 → 增益 → 判定 → 原有五档 → 继续」的顺序找，不再只认原来那几个「很好/好/普通」按钮
 - **资源热更新**：App 启动时读仓库根的 `pi-manifest.json`，有新版就下载 `pi.zip`、校验 sha256、原子替换旧资源并自动重载——上游换了图/流程不必等下一次发 APK；开关在设置页，失败一律保留旧版。发布链路见 `.github/workflows/publish-pi.yml` 与 [docs/RELEASING.md](docs/RELEASING.md) 第七节
 
 ### 和电脑版 AALC 还差什么（不做假开关）

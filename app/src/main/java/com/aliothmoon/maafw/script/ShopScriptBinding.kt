@@ -149,6 +149,8 @@ object ShopScriptBinding {
                         if (avoidSkill3) "1" else "0",
                     MirrorBattleScript.KEY_PRIORITIZE_SKILL_3 to
                         flag(definition, values, "prioritize_skill_3", default = false),
+                    MirrorBattleScript.KEY_FIGHT_TO_LAST_MAN to
+                        flag(definition, values, "fight_to_last_man", default = false),
                 ),
             ),
             // 编队：管线认到镜牢编队页（MirrorHandleTeam）就交棒；顺位取 12 个 slot option，
@@ -162,6 +164,23 @@ object ShopScriptBinding {
                     MirrorTeamScript.KEY_SINNER_ORDER to sinnerOrder(definition, values),
                     MirrorTeamScript.KEY_REFORM to
                         flag(definition, values, "re_formation_each_floor", default = false),
+                ),
+            ),
+            // 领奖：管线认到结算页（MirrorHandleReward）就交棒；每周加成/单次领取/保留奖励按开关处理
+            TaskScript(
+                scriptId = MirrorRewardScript.id,
+                entry = MirrorRewardScript.entry,
+                resumeEntry = MirrorRewardScript.resumeEntry,
+                maxRounds = MirrorRewardScript.maxRounds,
+                params = mapOf(
+                    MirrorRewardScript.KEY_SAVE_REWARDS to
+                        flag(definition, values, "save_rewards", default = false),
+                    MirrorRewardScript.KEY_NO_WEEKLY_BONUSES to
+                        flag(definition, values, "no_weekly_bonuses", default = false),
+                    MirrorRewardScript.KEY_SINGLE_BONUSES to
+                        flag(definition, values, "hard_mirror_single_bonuses", default = false),
+                    MirrorRewardScript.KEY_HARD_MODE to
+                        flag(definition, values, "hard_mirror", default = false),
                 ),
             ),
         )

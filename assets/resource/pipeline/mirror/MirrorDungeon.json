@@ -424,7 +424,7 @@
     },
     "action": "DoNothing",
     "next": [
-      "MirrorClaimReward"
+      "MirrorHandleReward"
     ]
   },
   "MirrorCheckShopCoins": {
@@ -1105,6 +1105,32 @@
         158,
         98
       ]
+    },
+    "action": "DoNothing",
+    "next": []
+  },
+  "MirrorHandleReward": {
+    "doc": "镜牢领奖：结算页出现「领取奖励」按钮就把执行权交给 script/MirrorRewardScript.kt（AALC mirror.py:538-698：判完成度、领奖、每周加成、通行证经验、脑啡肽）。action=DoNothing、next 为空，脚本跑完由 resumeEntry 收尾",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/claim_reward/claim_rewards_assets.png",
+      "threshold": 0.75,
+      "roi": [
+        1005,
+        553,
+        275,
+        89
+      ]
+    },
+    "action": "DoNothing",
+    "next": []
+  },
+  "MirrorRewardHomeDone": {
+    "doc": "领奖收尾：脚本把奖励领完点回主页后，用这个节点让任务正常结束（认不到主页就原样失败，不会乱点）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "home/drive.png",
+      "threshold": 0.8
     },
     "action": "DoNothing",
     "next": []

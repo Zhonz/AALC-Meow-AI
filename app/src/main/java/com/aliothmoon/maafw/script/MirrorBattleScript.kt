@@ -26,6 +26,7 @@ object MirrorBattleScript : ScriptTask {
     const val KEY_DEFENSE_FIRST_ROUND = "defense_first_round"
     const val KEY_AVOID_SKILL_3 = "avoid_skill_3"
     const val KEY_PRIORITIZE_SKILL_3 = "prioritize_skill_3"
+    const val KEY_FIGHT_TO_LAST_MAN = "fightToLastMan"
 
     private const val NORMAL_TO_BATTLE = "battle/normal_to_battle_assets.png"
     private const val CHAIN_TO_BATTLE = "battle/chaim_to_battle_assets.png"
@@ -37,6 +38,10 @@ object MirrorBattleScript : ScriptTask {
     private const val FINISH_CONFIRM = "battle/battle_finish_confirm.png"
     private const val GIVE_UP = "battle/give_up_assets.png"
     private const val IN_MIRROR = "battle/in_mirror.png"
+    private const val DEAD_ALL = "battle/dead_all.png"
+    private const val DEAD = "battle/dead.png"
+    private const val VIEW_STATUS = "battle/view_status_assets.png"
+    private const val SETTING = "mirror/road_in_mir/setting_assets.png"
 
     private const val ENTER_BATTLE_DELAY = 1_800L
     private const val TURN_DELAY = 800L
@@ -76,6 +81,7 @@ object MirrorBattleScript : ScriptTask {
         val defenseFirstRound = params[KEY_DEFENSE_FIRST_ROUND] == "1"
         val avoidSkill3 = params[KEY_AVOID_SKILL_3] == "1"
         val prioritizeSkill3 = params[KEY_PRIORITIZE_SKILL_3] == "1" && !avoidSkill3
+        val fightToLastMan = params[KEY_FIGHT_TO_LAST_MAN] == "1"
         var defended = false
         var chained = false
         var loop = 0
@@ -108,6 +114,46 @@ object MirrorBattleScript : ScriptTask {
                 host.log("清空上次的出战选择")
                 host.sleep(600)
                 continue
+            }
+
+            // 状态栏被折叠（点一下展开）：AALC 点 view_status 右上 +50/-250 的位置
+            val viewStatus = host.find(VIEW_STATUS, 0.72)
+            if (viewStatus != null) {
+                host.click(viewStatus.box.centerX + 50, viewStatus.box.centerY - 250)
+                host.log("点开战斗状态栏")
+                host.sleep(600)
+                continue
+            }
+            // 全员阵亡：三个复活选项里选中间那个，再点确认
+            val deadAll = host.findAll(DEAD_ALL, 0.75)
+            if (deadAll.size >= 2) {
+                val middle = deadAll.sortedBy { it.box.centerY }[deadAll.size / 2]
+                host.click(middle.box.centerX, middle.box.centerY)
+                host.log("全员阵亡，选择中间的复活选项")
+                host.sleep(1_500)
+                if (host.clickTemplate(FINISH_CONFIRM, 0.72)) {
+                    host.sleep(1_000)
+                    return
+                }
+                continue
+            }
+            // 有人阵亡且不允许战到最后一个：认输退出（AALC battle.py:309-330）
+            if (!fightToLastMan) {
+                val dead = host.find(DEAD, 0.78)
+                if (dead != null) {
+                    val band = ScriptRect(
+                        dead.box.centerX - 50,
+                        dead.box.centerY - 15,
+                        100,
+                        30,
+                    )
+                    val texts = host.readText(band, 0.3).map { it.lowercase().replace(" ", "") }
+                    if (texts.any { it.contains("阵亡") || it.contains("dead") }) {
+                        host.log("有罪人阵亡，认输退出这场战斗")
+                        giveUp(host)
+                        return
+                    }
+                }
             }
 
             val gearLeft = host.find(GEAR_LEFT, 0.8)
@@ -154,6 +200,27 @@ object MirrorBattleScript : ScriptTask {
             }
             host.sleep(400)
         }
+    }
+
+    /** 阵亡后的认输：点认输 → 不行就点设置 → 还不行点空白戳掉弹窗 */
+    private fun giveUp(host: ScriptHost) {
+        repeat(6) {
+            if (host.cancelled) return
+            if (host.clickTemplate(GIVE_UP, 0.75)) {
+                host.sleep(1_500)
+                return
+            }
+            if (host.clickTemplate(SETTING, 0.75)) {
+                host.sleep(800)
+                if (host.clickTemplate(GIVE_UP, 0.75)) {
+                    host.sleep(1_500)
+                    return
+                }
+            }
+            host.clickBlank()
+            host.sleep(600)
+        }
+        host.log("认输没点出来，交还给管线")
     }
 
     /** 常规回合：点胜率卡片（P）再点右侧齿轮（Enter） */

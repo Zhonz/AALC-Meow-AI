@@ -57,8 +57,6 @@ object AalcTeamImport {
         "re_formation_each_floor",
         // 固定队伍用途（困难/普通）与开局道具体系：没有对应选项
         "fixed_team_use", "fixed_team_use_select",
-        // 观测 EGO 饰品：尚未实现
-        "observe_ego_gift", "observe_ego_gift_selected",
         // 编队码自动组队：尚未实现
         "use_team_code", "team_code",
         // 自定义主题包权重（嵌套映射，解析器跳过）
@@ -178,6 +176,12 @@ object AalcTeamImport {
             // AALC 的 0/1/2/3（不选/一级/二级/三级）与本 PI 的输入框一一对应
             values["mirror_opening_bonus"] =
                 OptionValue.Inputs(mapOf("bonus" to openingBonus.joinToString(",")))
+        }
+        // 观测 EGO 饰品：AALC 的列表项就是 bleed_3_3_7 这种 id，直接拼成脚本要的逗号串
+        val observe = stringList(data["observe_ego_gift_selected"])
+        if (bool(data["observe_ego_gift"]) == true && observe.isNotEmpty()) {
+            values["mirror_observe_gifts"] =
+                OptionValue.Inputs(mapOf("gifts" to observe.joinToString(",")))
         }
         bool(data["use_starlight"])?.let {
             // AALC：True = 不换钱，把星光留给加成卡（点 no_convert_star_to_cost）
@@ -328,6 +332,12 @@ object AalcTeamImport {
             else -> null
         }
         else -> null
+    }
+
+    private fun stringList(value: Any?): List<String> = when (value) {
+        is List<*> -> value.mapNotNull { it?.toString()?.trim() }.filter { it.isNotEmpty() }
+        is String -> value.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        else -> emptyList()
     }
 
     private fun intList(value: Any?): List<Int> = when (value) {

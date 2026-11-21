@@ -110,6 +110,17 @@ object ShopScriptBinding {
                             .ifEmpty { "1,2,3" },
                 ),
             ),
+            // 观测 EGO 饰品：配了要观测的饰品才会接管，列表格式与 AALC 配置一致（bleed_3_3_7）
+            TaskScript(
+                scriptId = MirrorObserveScript.id,
+                entry = MirrorObserveScript.entry,
+                resumeEntry = MirrorObserveScript.resumeEntry,
+                maxRounds = MirrorObserveScript.maxRounds,
+                params = mapOf(
+                    MirrorObserveScript.KEY_SELECTED to
+                        inputText(definition, values, "mirror_observe_gifts", "gifts").trim(),
+                ),
+            ),
             // 事件：管线认到事件界面（event/skip_assets.png）就交棒，由脚本按 AALC 的按钮优先级处理
             TaskScript(
                 scriptId = MirrorEventScript.id,

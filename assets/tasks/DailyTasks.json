@@ -80,6 +80,7 @@
         "opening_items",
         "mirror_opening_items_order",
         "mirror_opening_items_system",
+        "mirror_observe_gifts",
         "avoid_skill_3",
         "prioritize_skill_3",
         "defense_first_round",
@@ -4417,6 +4418,18 @@
         {
           "name": "blunt",
           "label": "blunt"
+        }
+      ]
+    },
+    "mirror_observe_gifts": {
+      "type": "input",
+      "label": "观测 EGO 饰品",
+      "description": "AALC 的 observe_ego_gift_selected：想要观测的饰品，格式 体系_等级_行_列，逗号分隔，例如 bleed_3_3_7, general_2_1_1。体系可用 burn/bleed/tremor/rupture/sinking/poise/charge/slash/pierce/blunt/general；留空则不接管观测页。",
+      "fields": [
+        {
+          "name": "gifts",
+          "label": "饰品（体系_等级_行_列）",
+          "default": ""
         }
       ]
     }

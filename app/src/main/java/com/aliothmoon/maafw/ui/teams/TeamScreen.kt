@@ -96,6 +96,7 @@ private val SECTIONS: List<Pair<Int, List<String>>> = listOf(
             "mirror_use_starlight",
             "mirror_opening_items_order",
             "mirror_opening_items_system",
+            "mirror_observe_gifts",
         ),
     R.string.teams_section_battle to
         listOf("avoid_skill_3", "prioritize_skill_3", "defense_first_round"),

@@ -375,6 +375,7 @@
       "MirrorSelectTeamScreen",
       "MirrorCheckDreamingStar",
       "MirrorHandleInitGift",
+      "MirrorHandleObserve",
       "MirrorCheckInitEgoGift",
       "MirrorCheckThemePack",
       "MirrorDismissFirstPrompt",
@@ -1044,6 +1045,22 @@
         541,
         309,
         92
+      ]
+    },
+    "action": "DoNothing",
+    "next": []
+  },
+  "MirrorHandleObserve": {
+    "doc": "观测 EGO 饰品选择页（AALC mirror.py:965 select_observe_ego_gift）——交棒节点：在左上体系图标区认到流血图标即交给脚本 mirror.observe，按配置的饰品列表逐个选中，跑完从 MirrorDungeonEntry 续上",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_to_mir/observe_ego_gift/bleed.png",
+      "threshold": 0.85,
+      "roi": [
+        0,
+        2,
+        782,
+        227
       ]
     },
     "action": "DoNothing",

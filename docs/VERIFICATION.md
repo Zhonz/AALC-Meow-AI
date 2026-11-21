@@ -84,6 +84,25 @@ tasker = Tasker(); tasker.bind(res, ctrl)
 4. **本地构建 APK**：需要 Android SDK 37 + NDK r27c（数 GB），`ENVIRONMENT.md` 明确写的是云端构建优先，
    本机不做。
 
+### 6.1 全量模板 × 真机截图矩阵（105 × 241）
+
+把管线里 105 张模板逐张放到 241 张 0.5x 真机截图上扫描（`cv2.matchTemplate`，
+`TM_CCOEFF_NORMED`），结论：
+
+- **98 张**在自己的真机截图上能命中（最高分普遍 0.99+），说明重导后的模板与真机像素一致。
+- **7 张在任何截图里都没出现过**，真实坐标属于未知量，发布前必须在真机上采一次：
+
+  `battle/gear_right.png`、`luxcavation/exp_enter.png`、`luxcavation/thread_consume.png`、
+  `mirror/get_reward_card/gain_cost_and_ego.png`、`mirror/road_in_mir/shop.png`、
+  `mirror/claim_reward/weekly_bonuses.png`、`pass/pass_coin.png`
+
+- **确认类按钮之间互相相似**（游戏里本来就用同一套米色按钮）：`mail/confirm.png` 在另外四种
+  确认弹窗上能到 0.97–0.99，`mirror/road_to_mir/enter_mirror_confirm.png`（阈值 0.75）在
+  「退出镜牢确认」按钮上能到 **0.95**。这不是本次改动引入的问题——上游 AALC 同样靠「流程顺序」
+  而不是「像素身份」区分确认按钮。本次复核了触发路径：`MirrorConfirmEnterMirror` 只挂在
+  「点击进入镜牢」之后的 next 链上，那时不可能有退出确认弹窗，因此暂不改阈值（改高反而可能
+  让真实命中掉到阈值以下，因为语料里没有这张确认弹窗的真机样本）。
+
 因此发布前的最低要求仍然是：在开了 USB 调试/Shizuku 的真机上跑一次 `get_reward`，确认
 「日常 → 周常 → 赛季（含第二页） → 战斗通行证 → 邮件」这条路走完且不卡循环。
 

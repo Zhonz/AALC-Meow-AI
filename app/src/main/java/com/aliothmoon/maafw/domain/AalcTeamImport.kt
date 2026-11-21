@@ -49,7 +49,7 @@ object AalcTeamImport {
     /** 本引擎没有对应管线的 AALC 字段：有值就统计，导入时忽略 */
     private val UNSUPPORTED_KEYS = listOf(
         // 小指良单通（AALC 的 defense_for_solo）：本引擎没有对应的连续防御状态机
-        "prioritize_skill_3", "defense_for_solo", "defense_for_solo_turns",
+        "defense_for_solo", "defense_for_solo_turns",
         // 每层重新编队：管线目前只用一次编队
         "re_formation_each_floor",
         // 固定队伍用途（困难/普通）与开局道具体系：没有对应选项
@@ -195,6 +195,7 @@ object AalcTeamImport {
             "aggressive_also_enhance" to "shop_aggressive_also_enhance",
             "aggressive_save_systems" to "shop_fuse_save_system",
             "skill_replacement" to "shop_skill_replacement",
+            "prioritize_skill_3" to "prioritize_skill_3",
         ).forEach { (from, to) ->
             bool(data[from])?.let { values[to] = OptionValue.SingleCase(if (it) YES else NO) }
         }

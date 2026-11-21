@@ -80,6 +80,7 @@ object TeamOptionScope {
         "mirror_opening_bonus",
         "mirror_use_starlight",
         "avoid_skill_3",
+        "prioritize_skill_3",
         "defense_first_round",
     )
 

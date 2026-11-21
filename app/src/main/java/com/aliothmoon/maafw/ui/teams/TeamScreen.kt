@@ -90,7 +90,8 @@ private val SECTIONS: List<Pair<Int, List<String>>> = listOf(
     R.string.teams_section_team to listOf("team_system", "shop_strategy", "reward_cards"),
     R.string.teams_section_opening to
         listOf("choose_opening_bonus", "opening_items", "mirror_opening_bonus", "mirror_use_starlight"),
-    R.string.teams_section_battle to listOf("avoid_skill_3", "defense_first_round"),
+    R.string.teams_section_battle to
+        listOf("avoid_skill_3", "prioritize_skill_3", "defense_first_round"),
 )
 
 /**

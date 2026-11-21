@@ -29,6 +29,14 @@ object ShopScriptBinding {
         values: Map<String, OptionValue>,
     ): List<TaskScript> {
         if (task.entry != MIRROR_ENTRY) return emptyList()
+        // 任务页的「战斗操作策略」是 AALC 的同名总开关，与编队页两个细项取并集
+        val strategy = singleCase(definition, values, "BattleSkillStrategy")
+        val defenseFirst =
+            flag(definition, values, "defense_first_round", default = false) == "1" ||
+                strategy == "defense_first"
+        val avoidSkill3 =
+            flag(definition, values, "avoid_skill_3", default = false) == "1" ||
+                strategy == "avoid_s3"
         return listOf(
             TaskScript(
                 scriptId = MirrorShopScript.id,
@@ -100,9 +108,9 @@ object ShopScriptBinding {
                 maxRounds = MirrorBattleScript.maxRounds,
                 params = mapOf(
                     MirrorBattleScript.KEY_DEFENSE_FIRST_ROUND to
-                        flag(definition, values, "defense_first_round", default = false),
+                        if (defenseFirst) "1" else "0",
                     MirrorBattleScript.KEY_AVOID_SKILL_3 to
-                        flag(definition, values, "avoid_skill_3", default = false),
+                        if (avoidSkill3) "1" else "0",
                     MirrorBattleScript.KEY_PRIORITIZE_SKILL_3 to
                         flag(definition, values, "prioritize_skill_3", default = false),
                 ),

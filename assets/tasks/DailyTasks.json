@@ -79,6 +79,7 @@
         "choose_opening_bonus",
         "opening_items",
         "avoid_skill_3",
+        "prioritize_skill_3",
         "defense_first_round",
         "sinner_selection",
         "sinner_order_slot_1",
@@ -4314,6 +4315,22 @@
         {
           "name": "No",
           "label": "换成经费"
+        }
+      ]
+    },
+    "prioritize_skill_3": {
+      "type": "switch",
+      "label": "优先使用三技能",
+      "description": "对应电脑版 AALC 的 prioritize_skill_3：战斗时优先把带三技能标记的格子上排。与「避免使用三技能」二选一，两个都开时以「避免」为准",
+      "default_case": "No",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "优先三技能"
+        },
+        {
+          "name": "No",
+          "label": "否"
         }
       ]
     }

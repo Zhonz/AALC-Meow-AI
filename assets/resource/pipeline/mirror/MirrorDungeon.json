@@ -14,7 +14,8 @@
     },
     "action": "DoNothing",
     "next": [
-      "ClearCurrentTeam"
+      "ClearCurrentTeam",
+      "TeamClearPanelTail"
     ]
   },
   "ClearCurrentTeam": {
@@ -35,6 +36,32 @@
     "next": [
       "SelectSinnerSlot1",
       "TeamFormationConfirm"
+    ]
+  },
+  "TeamClearPanelTail": {
+    "doc": "官方 clean_team():42 的兜底：清队确认没出现时，点 identify 下方 300px 收起面板再继续",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "teams/identify_assets.png",
+      "threshold": 0.75,
+      "roi": [
+        1122,
+        129,
+        158,
+        98
+      ]
+    },
+    "action": "Click",
+    "target_offset": [
+      0,
+      300,
+      0,
+      0
+    ],
+    "post_wait_freezes": 500,
+    "next": [
+      "TeamFormationConfirm",
+      "SelectSinnerSlot1"
     ]
   },
   "SelectSinnerSlot1": {

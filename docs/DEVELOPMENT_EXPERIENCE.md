@@ -513,3 +513,8 @@ AALC 的 `select_observe_ego_gift`（`mirror.py:965`）是少数几个完全靠�
 - 格点：`(level.x, level.y + 80*scale)` 是首格，列距 `165*scale`、行距 `160*scale`；目标在 `gift_box_bbox` 下沿之外时，按 `300*scale` 分步向上拖，最后点的 y 要减去累计拖动距离——否则会点到拖动后的错误格子。
 - 收尾三步是「选择 → 获得饰品确认 ×5 → 拒绝领取」；两个按钮都是点 bbox 中心（AALC 用 OCR 只做存在性判断，坐标照样取 bbox 中心），所以脚本只需要 `readText` 判存在，不需要文字坐标。
 - 素材统一按 720p 缩放：bbox 素材是 1440 高基准，`SCALE = 0.5`；`gift_box` 在 720p 下是 `(78,225,792,624)`。
+## 14. 奖励卡、白棉花与清队兜底：三个小改动
+
+- **奖励卡四套顺序**：AALC 的 `reward_card_model` 是 4 个模型（0 星光优先、1 星光-经费、2 经费优先、3 饰品优先），每套都是 5 张牌的顺序表；本项目此前只写了 3 个 case 且漏了 `gain_starlight` / `gain_ego_resource`。现在 `reward_cards` 的 4 个 case 严格对应模型 0~3，每条 `next` 末尾都保留「选第一张」兜底，避免全部不匹配时卡死。
+- **流血体系的白棉花**：AALC `in_shop.py:236` 在买体系饰品前后做整屏 OCR，命中「白棉花 / white / gossypium」就点空白取消，不买那一格。脚本层没有整屏 OCR 的默认 ROI，所以显式传 `ScriptRect(0, 0, screenWidth, screenHeight)`；选项 `shop_skip_whitegossypium` 默认开，导入时由 `not_skip_whitegossypium` 取反映射。
+- **清队兜底**：AALC `clean_team()` 在清队确认按钮不在时会点 `identify` 下方 600×scale（720p = 300px）把面板收起来。管线里新增 `TeamClearPanelTail` 节点做同一件事，挂在 `TeamFormationStart` 的 `next` 第二位，只尝试一次就转去点选罪人，避免和 `ClearCurrentTeam` 形成死循环。

@@ -244,7 +244,18 @@ M9A-Meow 采用的体系架构分为三层：
 - **旧配置不改也照原样跑**：`mergedValues` 三档回退——任务没选编队、该编队没配过任何值、配了但键不在编队域——都原样返回任务自己的值。
 - **教训**：`teamPresets` 放在 `UserConfiguration` 而不是 `RunConfiguration`（一支编队对所有运行配置通用，与 `globalOptionValues` 同级）；DataStore 的 `ignoreUnknownKeys` + 字段默认值让旧数据无痛升级。编队号上限跟 PI 的 `daily_teams` 选项走（1..20），不要凭游戏内看到的队数拍一个更小的值。
 
+### 2.13 顺位由点选决定 + 直接吃 AALC 的编队 YAML
+
+- **顺位不是「12 个下拉」，是点选顺序**：AALC `tasks/teams/team_formation.py` 里 `sinner_team = TeamSetting.sinner_order` 然后 `for i in 1..12: sinner = sinner_team.index(i)` 依次点头像——**第几个被点，就是第几号位**。本项目有 `sinner_order_slot_1..12` 十二个 option，天然能表达同样的语义：点一下罪人 → 追加到队尾；再点一下 → 移出并把后面的顺位顺延（`TeamOptionScope.toggleSinner`）。
+- **顺位槽必须写满**：`applySinners` 把 12 个槽全部写死（未占用写 `none`），并同步 `sinner_selection` 多选。留空的槽会回退到任务里旧的值，多出来的点击会把队伍点乱——这类 bug 在真机上表现为「编队顺序和你点的不一样」。
+- **出战/待命**：游戏规则前 6 位出战（`DEPLOY_LIMIT = 6`），第 7 位起标「待命」。宫格固定 2 行 × 6 列，与游戏内 `all_sinners_name` 的顺序、以及 pipeline 里 `SelectSinnerSlot1..12` 的 `target_offset` 一一对应——换宫格顺序等于把点击坐标对错人。
+- **导入 AALC 的导出文件**：电脑版「导出队伍设置」是 ruamel 落盘的 YAML（`module/config/team_import_export.py`，`team_setting.model_dump()` 去掉 4 个统计字段），字段平铺。手机端不引 YAML 库，`domain/AalcTeamImport.kt` 只实现这份文件用到的子集：顶层键 + 标量 + 块序列/行内序列，嵌套映射（`custom_theme_pack_weight`）整块跳过；`#` 只有在前面是空白时才算注释（否则 `remark_name: 编队#1` 会被截断）。
+- **语义不同就别硬映射**：AALC 的 `shop_strategy` 是「出售/合成/合成四级优先」，本项目是「治疗后离开/直接离开」——同名不同义，硬映射等于给用户一个错的行为，所以归入「已忽略」并在预览里报数量。`reward_cards` 的四档只能压到本项目三档（0/1 → `starlight_first`，2 → `cost_first`，3 → `ego_first`）；`opening_bonus` 的 10 项细分压成「开局加成开/关」。
+- **导入前先预览**：解析 → `MaaPromptDialog` 列出出战顺序、待命、套用了几项、忽略了几项，确认后才覆盖**当前选中的那一队**（文件里的 `team_number` 不可信，用户可能想导进别的队）。一个罪人都没解析出来时不允许确认，直接提示「确认是用 AALC 导出的文件」。
+- **不做假开关**：AALC 有而本引擎没有管线的设置（弃置体系、不治疗/不购买/不合成/不出售/不升级、第二体系、技能替换、编队码、商店刷新次数、每层重新编队、困难楼层、EGO 饰品观测）不在 UI 里摆开关，只在编队页底部列出并说明「缺的是识别与操作流程」——能点但不生效比没有更糟。
+
 ---
+
 ## 3. 兄弟项目移植研判：MAAend（终末地）
 
 ### 3.1 项目技术契合度

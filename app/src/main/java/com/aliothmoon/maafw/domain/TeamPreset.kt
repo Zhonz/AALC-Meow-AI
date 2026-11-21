@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class TeamPreset(
-    /** 1..7，与游戏内「编队#N」序号一致 */
+    /** 1..20，与游戏内「编队#N」序号一致 */
     val teamNumber: Int,
     /** 仅本机展示的备注名，不进 pipeline */
     val remark: String = "",
@@ -37,13 +37,41 @@ object TeamOptionScope {
     /** 「使用编队」下拉：它本身留在任务面板，是选择器不是编队内容 */
     const val TEAM_SELECT = "daily_teams"
 
-    /** 罪人勾选框（多选） */
+    /** 罪人勾选框（多选）：与 12 个顺位槽保持同步，供只读 sinner_selection 的管线使用 */
     const val SINNERS = "sinner_selection"
 
-    /** 出战顺位 #1..#12 的公共前缀 */
+    /** 顺位槽的公共前缀，槽 N = 第 N 个被点选的罪人 */
     const val ORDER_SLOT_PREFIX = "sinner_order_slot_"
 
-    private val BASE_NAMES = listOf(
+    /** 游戏规则：前 6 位出战，其余待命 */
+    const val DEPLOY_LIMIT = 6
+
+    /** 空槽的 case 名（PI 里 action=DoNothing，等于不点这个人） */
+    const val NONE_CASE = "none"
+
+    /**
+     * 罪人的固定顺序：与游戏编队界面的 2 行 × 6 列一致（第一行李箱…鸿璐，第二行希斯克利夫…格里高尔）
+     *
+     * 这个顺序同时是 pipeline 里 SelectSinnerSlot1..12 的 target_offset 顺序，
+     * 换了它等于把点击坐标对应错人——只在 PI 改版时跟着改
+     */
+    val SINNER_ORDER: List<String> = listOf(
+        "YiSang",
+        "Faust",
+        "DonQuixote",
+        "Ryoshu",
+        "Meursault",
+        "HongLu",
+        "Heathcliff",
+        "Ishmael",
+        "Rodion",
+        "Sinclair",
+        "Outis",
+        "Gregor",
+    )
+
+    /** 编队页的分区顺序：体系与商店 → 开局 → 战斗 */
+    val BASE_NAMES = listOf(
         "team_system",
         "shop_strategy",
         "reward_cards",
@@ -53,8 +81,10 @@ object TeamOptionScope {
         "defense_first_round",
     )
 
-    /** 编队页的字段顺序：先三下拉，再两个战斗开关，最后罪人与顺位 */
-    val orderedNames: List<String> = BASE_NAMES + SINNERS + (1..12).map { ORDER_SLOT_PREFIX + it }
+    val ORDER_SLOT_NAMES: List<String> = (1..SINNER_ORDER.size).map { ORDER_SLOT_PREFIX + it }
+
+    /** 编队页的字段顺序：先基础设置，再罪人勾选与 12 个顺位槽 */
+    val orderedNames: List<String> = BASE_NAMES + SINNERS + ORDER_SLOT_NAMES
 
     val names: Set<String> = orderedNames.toSet()
 
@@ -63,6 +93,42 @@ object TeamOptionScope {
     /** 任务当前选的编队号；未选或不是数字 = null */
     fun selectedTeam(values: Map<String, OptionValue>): Int? =
         (values[TEAM_SELECT] as? OptionValue.SingleCase)?.case?.toIntOrNull()
+
+    /** 编队里已选的罪人，按点选顺序（= 出战顺位 1..12） */
+    fun orderedSinners(preset: TeamPreset): List<String> = ORDER_SLOT_NAMES.mapNotNull { name ->
+        val case = (preset.optionValues[name] as? OptionValue.SingleCase)?.case
+        case?.takeIf { it != NONE_CASE && it in SINNER_ORDER }
+    }
+
+    /** 第 [index]（0 基）位的身份：0..5 出战，6..11 待命 */
+    fun isDeployed(index: Int): Boolean = index < DEPLOY_LIMIT
+
+    /**
+     * 点一下罪人头像：未选 → 追加到队尾（顺位就变成「下一个」）；已选 → 移出并把后面的顺位顺延
+     *
+     * 顺位由点选顺序决定，这也是 AALC 的做法：上游 team_formation.py 按 sinner_order 的 1..12 依次点击
+     */
+    fun toggleSinner(preset: TeamPreset, sinner: String): TeamPreset {
+        val current = orderedSinners(preset)
+        val next = if (sinner in current) current - sinner else current + sinner
+        return applySinners(preset, next)
+    }
+
+    /**
+     * 把有序阵容写回 12 个顺位槽
+     *
+     * 未占用的槽显式写 "none"：留空会回退到任务里旧的顺位值，多出来的点击会把队伍点乱
+     */
+    fun applySinners(preset: TeamPreset, ordered: List<String>): TeamPreset {
+        val trimmed = ordered.filter { it in SINNER_ORDER }.distinct().take(SINNER_ORDER.size)
+        val slots = ORDER_SLOT_NAMES.mapIndexed { index, name ->
+            name to OptionValue.SingleCase(trimmed.getOrNull(index) ?: NONE_CASE)
+        }
+        return preset.copy(
+            optionValues = preset.optionValues + slots +
+                (SINNERS to OptionValue.MultipleCases(trimmed)),
+        )
+    }
 
     /**
      * 任务选项值 + 编队预设 → 实际编译用的值
@@ -78,11 +144,23 @@ object TeamOptionScope {
         val preset = presets.firstOrNull { it.teamNumber == team } ?: return values
         if (preset.optionValues.isEmpty()) return values
         val scoped = preset.optionValues.filterKeys { it in names }
-        return if (scoped.isEmpty()) values else values + scoped
+        if (scoped.isEmpty()) return values
+        val merged = values + scoped
+        // 0.4.x 之前存的编队可能只写了前几个顺位槽：补齐成 none，否则会漏用任务里的旧槽值
+        if (scoped.keys.none { it in ORDER_SLOT_NAMES }) return merged
+        val padding = ORDER_SLOT_NAMES
+            .filterNot { it in scoped }
+            .associateWith { OptionValue.SingleCase(NONE_CASE) }
+        return merged + padding
     }
 
-    /** 补全 1..20 的编队，顺序固定；越界或重复的脏数据直接丢弃 */
+    /** 补全 1..20 的编队，顺序固定；越界或重复的脏数据直接丢弃，顺位槽补成完整 12 格 */
     fun normalize(presets: List<TeamPreset>): List<TeamPreset> = TeamPreset.numbers.map { number ->
-        presets.firstOrNull { it.teamNumber == number } ?: TeamPreset(number)
+        val preset = presets.firstOrNull { it.teamNumber == number } ?: TeamPreset(number)
+        if (preset.optionValues.keys.any { it in ORDER_SLOT_NAMES }) {
+            applySinners(preset, orderedSinners(preset))
+        } else {
+            preset
+        }
     }
 }

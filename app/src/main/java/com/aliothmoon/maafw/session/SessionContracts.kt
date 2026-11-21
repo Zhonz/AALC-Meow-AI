@@ -239,6 +239,15 @@ sealed interface SessionIntent {
     data class SetTeamRemark(val teamNumber: Int, val remark: String) : SessionIntent
     data class ResetTeam(val teamNumber: Int) : SessionIntent
 
+    /** 点选顺序即出战顺位：列表第 1 个是顺位 1，超出 6 人的部分变成待命 */
+    data class SetTeamSinners(
+        val teamNumber: Int,
+        val orderedSinners: List<String>,
+    ) : SessionIntent
+
+    /** 导入 AALC 导出的编队文件后整队覆盖（队号以当前页面选中的编队为准） */
+    data class ApplyTeamPreset(val teamNumber: Int, val preset: TeamPreset) : SessionIntent
+
     /** 不属于任何运行配置：改一次对所有配置的所有任务生效 */
     data class SetGlobalOption(val optionName: String, val value: OptionValue) : SessionIntent
 

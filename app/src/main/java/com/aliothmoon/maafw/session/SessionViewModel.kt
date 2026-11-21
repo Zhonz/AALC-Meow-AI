@@ -465,6 +465,22 @@ class SessionViewModel(
                 updateTeam(intent.teamNumber) { preset -> TeamPreset(preset.teamNumber) }
             }
 
+            is SessionIntent.SetTeamSinners -> guarded {
+                updateTeam(intent.teamNumber) { preset ->
+                    TeamOptionScope.applySinners(preset, intent.orderedSinners)
+                }
+            }
+
+            is SessionIntent.ApplyTeamPreset -> guarded {
+                // 文件里的队号不可信：覆盖当前选中的那一队
+                updateTeam(intent.teamNumber) { current ->
+                    TeamOptionScope.applySinners(
+                        preset = intent.preset.copy(teamNumber = current.teamNumber),
+                        ordered = TeamOptionScope.orderedSinners(intent.preset),
+                    )
+                }
+            }
+
             is SessionIntent.SetGlobalOption -> guarded {
                 configurationStore.update {
                     it.copy(globalOptionValues = it.globalOptionValues + (intent.optionName to intent.value))

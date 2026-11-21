@@ -36,6 +36,7 @@
 - **补流程**：按上游重建通行证流程（19 节点）——日常 / 周常 / 赛季（含第二页滑动）/ 战斗通行证 / 邮件；领取选项拆成「通行证+邮件 / 只通行证 / 只邮件」三种
 - **修问题**：通行证三枚竖排 tab 在同一列、间距仅 144px，不带 roi 时会互相命中导致 `error handling loop detected`，已按真机截图像素位置加窄带 roi
 - **加校验**：三层校验进 CI——自写白名单 → 官方 JSON Schema（`tools/`）→ 真实引擎加载；验证方法与残余风险记录在 [docs/VERIFICATION.md](docs/VERIFICATION.md)
+- **资源热更新**：App 启动时读仓库根的 `pi-manifest.json`，有新版就下载 `pi.zip`、校验 sha256、原子替换旧资源并自动重载——上游换了图/流程不必等下一次发 APK；开关在设置页，失败一律保留旧版。发布链路见 `.github/workflows/publish-pi.yml` 与 [docs/RELEASING.md](docs/RELEASING.md) 第七节
 
 ---
 

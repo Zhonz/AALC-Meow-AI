@@ -183,7 +183,9 @@ jobs:
           if [ -n "$TAG_OR_REF" ] && [[ "$TAG_OR_REF" == v* ]]; then
             VER="$TAG_OR_REF"
           else
-            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.1.0")
+            # 资源包（publish-pi.yml）也会打 pi-<code> 这种 tag，describe 必须只看 v*，
+            # 否则 APK 会叫成 AALC-Meow-pi-2611211158-arm64-v8a.apk
+            LATEST_TAG=$(git describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null || echo "v0.1.0")
             VER="${LATEST_TAG}"
           fi
           

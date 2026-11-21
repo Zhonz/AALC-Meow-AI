@@ -59,6 +59,10 @@ interface AppSettingsGateway {
     val autoCheckUpdate: StateFlow<Boolean>
     suspend fun setAutoCheckUpdate(enabled: Boolean)
 
+    /** 启动时自动检查并安装 PI 资源包更新 */
+    val resourceAutoUpdate: StateFlow<Boolean>
+    suspend fun setResourceAutoUpdate(enabled: Boolean)
+
     /** 启动自检发现新版本时自动下载并拉起安装器；关闭则弹窗询问 */
     val autoDownloadUpdate: StateFlow<Boolean>
     suspend fun setAutoDownloadUpdate(enabled: Boolean)

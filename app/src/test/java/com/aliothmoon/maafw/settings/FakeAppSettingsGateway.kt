@@ -26,6 +26,13 @@ class FakeAppSettingsGateway : AppSettingsGateway {
         autoDownloadUpdate.value = enabled
     }
 
+    // 与 autoCheckUpdate 同理：默认关，避免 VM init 里顺带发网络请求
+    override val resourceAutoUpdate = MutableStateFlow(false)
+
+    override suspend fun setResourceAutoUpdate(enabled: Boolean) {
+        resourceAutoUpdate.value = enabled
+    }
+
     override val runMode = MutableStateFlow(RunMode.BACKGROUND)
 
     override suspend fun setRunMode(mode: RunMode) {

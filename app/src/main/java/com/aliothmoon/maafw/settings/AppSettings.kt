@@ -105,6 +105,14 @@ data class AppSettings(
     @PrefKey(default = "true")
     val autoCheckUpdate: String = "true",
 
+    /**
+     * 启动时顺带检查 PI 资源包（上游 AALC 换图换流程后的 pi.zip）并自动装新的那份
+     *
+     * 与 [autoCheckUpdate] 是两件事：那个管 APK，这个管 APK 里的资源
+     */
+    @PrefKey(default = "true")
+    val resourceAutoUpdate: String = "true",
+
     /** 启动自检发现新版本时自动下载并拉起安装器；关闭则弹窗询问。默认关，静默下载近 200MB 要用户先点头 */
     @PrefKey(default = "false")
     val autoDownloadUpdate: String = "false",

@@ -28,6 +28,8 @@ data class UpdatePanelState(
     val mirrorchyanCdk: String = "",
     val autoCheckUpdate: Boolean = true,
     val autoDownloadUpdate: Boolean = false,
+    /** 启动时自动换 PI 资源包；与 APK 更新相互独立 */
+    val resourceAutoUpdate: Boolean = true,
     val checking: Boolean = false,
     val checkResult: UpdateCheckResult? = null,
     /**
@@ -61,6 +63,7 @@ sealed interface SettingsIntent {
     data class SetMirrorchyanCdk(val cdk: String) : SettingsIntent
     data class SetAutoCheckUpdate(val enabled: Boolean) : SettingsIntent
     data class SetAutoDownloadUpdate(val enabled: Boolean) : SettingsIntent
+    data class SetResourceAutoUpdate(val enabled: Boolean) : SettingsIntent
     data class SetPipOnHome(val enabled: Boolean) : SettingsIntent
     data object CheckUpdate : SettingsIntent
     data object DownloadUpdate : SettingsIntent

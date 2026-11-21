@@ -9,6 +9,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
 
 /**
@@ -45,6 +46,23 @@ class AssetPiPackage(context: Context) : PiPackage {
     } catch (_: FileNotFoundException) {
         null
     }
+}
+
+/**
+ * 磁盘上的 PI 归档（远程下载的那份）
+ *
+ * 只用 [openArchive]：解包走 ZipInputStream 顺扫一遍，比逐条 [open] 少一半系统调用
+ */
+class ZipFilePiPackage(private val file: File) : PiPackage {
+
+    override fun manifest(): List<String> = emptyList()
+
+    override fun open(path: String): InputStream = ZipFile(file).use { zip ->
+        val entry = zip.getEntry(path) ?: throw FileNotFoundException(path)
+        zip.getInputStream(entry).readBytes().inputStream()
+    }
+
+    override fun openArchive(): InputStream? = file.inputStream()
 }
 
 /**
@@ -96,9 +114,75 @@ class PiInstaller(
     fun reinstall(onProgress: PiUnpackProgress = NO_PROGRESS): File =
         install(AppPaths.ROOT, onProgress)
 
+    /**
+     * 两份标记都要对得上：pi.version 是装着的那份 PI 的版本，pi.bundle 是它盖在哪个
+     * APK 资源包之上。只认前者的话，APK 升级后新的 bundled 资源永远盖不过远程更新；
+     * 只认后者的话，远程装完下次启动会被当成「还是打包那份」再解一遍
+     */
     private fun isCurrentInstall(base: File, target: File): Boolean {
-        val marker = File(base, PI_MARKER_NAME)
-        return target.isDirectory && marker.isFile && marker.readText().trim() == versionCode.toString()
+        if (!target.isDirectory) return false
+        val version = installedVersion() ?: return false
+        val bundle = File(base, PI_BASE_MARKER_NAME)
+        return version >= 0 && bundle.isFile && bundle.readText().trim() == versionCode.toString()
+    }
+
+    /** 当前这份 PI 是远程装进来的（而不是 APK 里带的）；标记在 [install] 重解时清掉 */
+    fun isRemoteInstalled(): Boolean = File(AppPaths.ROOT, PI_REMOTE_MARKER_NAME).isFile
+
+    /** 已安装 PI 的版本号；没装、读不出或非数字都返回 null */
+    fun installedVersion(): Int? {
+        val marker = File(AppPaths.ROOT, PI_MARKER_NAME)
+        if (!marker.isFile) return null
+        return marker.readText().trim().toIntOrNull()
+    }
+
+    private fun writeMarkers(base: File, version: Int) {
+        File(base, PI_MARKER_NAME).writeText(version.toString())
+        File(base, PI_BASE_MARKER_NAME).writeText(versionCode.toString())
+    }
+
+    /**
+     * 装一份外部来源的 PI（远程下载的 zip）
+     *
+     * 与 [reinstall] 的区别：先解到暂存目录、校验通过才换，换失败把旧目录挪回来。
+     * 直接复用 [reinstall] 的话，解到一半失败（网络断、包损坏）会把当前能跑的那份删掉
+     */
+    @Synchronized
+    fun installPackage(
+        remote: PiPackage,
+        version: Int,
+        onProgress: PiUnpackProgress = NO_PROGRESS,
+    ): File {
+        val base = AppPaths.ROOT
+        val target = File(base, AppFiles.PI_DIR)
+        val staging = File(base, PI_STAGING_DIR)
+        val backup = File(base, PI_BACKUP_DIR)
+
+        staging.deleteRecursively()
+        backup.deleteRecursively()
+        staging.mkdirs()
+        try {
+            unpack(remote, staging, onProgress)
+        } catch (e: Exception) {
+            staging.deleteRecursively()
+            throw e
+        }
+
+        val hadPrevious = target.isDirectory
+        if (hadPrevious && !target.renameTo(backup)) {
+            staging.deleteRecursively()
+            throw PiUnpackException("cannot move away the current PI: ${target.absolutePath}")
+        }
+        if (!staging.renameTo(target)) {
+            if (hadPrevious) backup.renameTo(target)
+            staging.deleteRecursively()
+            throw PiUnpackException("cannot activate the downloaded PI: ${target.absolutePath}")
+        }
+        ensureNoMedia(base)
+        writeMarkers(base, version)
+        File(base, PI_REMOTE_MARKER_NAME).writeText("1")
+        backup.deleteRecursively()
+        return target
     }
 
     private fun install(base: File, onProgress: PiUnpackProgress): File {
@@ -107,30 +191,33 @@ class PiInstaller(
 
         // 顺序不能换：标记先失效，解包中途掉电时残留内容不会被当成完整的一份
         marker.delete()
+        File(base, PI_BASE_MARKER_NAME).delete()
         // 换标记之前的包留在外部私有目录里的，不删会一直躺着，adb 翻这个目录时看着像还在生效
         File(base, LEGACY_MARKER_NAME).delete()
+        // 重新解打包资源，远程那份的「修订号」标尺随之作废
+        File(base, PI_REMOTE_MARKER_NAME).delete()
         target.deleteRecursively()
         target.mkdirs()
-        unpack(target, onProgress)
+        unpack(pkg, target, onProgress)
         ensureNoMedia(base)
-        marker.writeText(versionCode.toString())
+        writeMarkers(base, versionCode)
         return target
     }
 
-    private fun unpack(dest: File, onProgress: PiUnpackProgress) {
-        val archive = pkg.openArchive()
+    private fun unpack(source: PiPackage, dest: File, onProgress: PiUnpackProgress) {
+        val archive = source.openArchive()
         if (archive != null) {
             ZipInputStream(archive).use { zip -> unpackZip(dest, zip, onProgress) }
             return
         }
 
-        val entries = pkg.manifest()
+        val entries = source.manifest()
         if (entries.isEmpty()) return
         entries.mapNotNullTo(mutableSetOf()) { File(dest, it).parentFile }.forEach { it.mkdirs() }
         val buffer = ByteArray(COPY_BUFFER_BYTES)
         val done = AtomicInteger()
         for (entry in entries) {
-            pkg.open(entry).use { input ->
+            source.open(entry).use { input ->
                 File(dest, entry).outputStream().use { output ->
                     input.copyTo(output, buffer)
                 }
@@ -196,8 +283,20 @@ class PiInstaller(
     }
 
     companion object {
-        /** 提交标记：解包全部成功后才写，内容是出这个包时的 versionCode */
+        /** 提交标记：解包全部成功后才写，内容是装着的那份 PI 的版本号 */
         const val PI_MARKER_NAME = "pi.version"
+
+        /** 记这份 PI 盖在哪个 APK 资源包之上；APK 升级后两者不符即重新解包 */
+        internal const val PI_BASE_MARKER_NAME = "pi.bundle"
+
+        /** 存在即表示当前这份来自远程更新包；APK 重新解包时删除 */
+        internal const val PI_REMOTE_MARKER_NAME = "pi.remote"
+
+        /** 远程包的解包暂存目录：校验通过才换到 [AppFiles.PI_DIR] */
+        internal const val PI_STAGING_DIR = "pi.staging"
+
+        /** 换目录时旧包的临时落点，成功后立即删除 */
+        internal const val PI_BACKUP_DIR = "pi.previous"
 
         /** 按内容指纹判过期的旧包留下的标记 */
         private const val LEGACY_MARKER_NAME = "pi.fingerprint"

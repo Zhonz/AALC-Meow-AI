@@ -55,7 +55,7 @@ object ShopScriptBinding {
                     // 精确楼层优先；没填就退回 AALC 的 floor_3_exit（打完第 3 层走人 = 第 4 层起收工）
                     MirrorRoadScript.KEY_EXIT_FLOOR to inputText(definition, values, "mirror_exit_floor", "floor")
                         .ifEmpty {
-                            if (flag(definition, values, "floor_3_exit", default = false)) "4" else ""
+                            if (flag(definition, values, "floor_3_exit", default = false) == "1") "4" else ""
                         },
                 ),
             ),

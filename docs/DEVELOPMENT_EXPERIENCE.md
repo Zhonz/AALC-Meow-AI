@@ -532,3 +532,23 @@ AALC 的编队逻辑有三层语义（`team_formation.py` + `mirror.py:370-401` 
 - **first_battle 用两个开关表达**：`formed`（本局按配置编过队）与 `formedOnce`（本局至少编过一次，才有资格做存活检查）。重开成功后两者都清掉，等价于 AALC 的 `first_battle = True`，避免「重开 → 立刻又判定不够 → 再重开」的死循环。
 
 顺位来自编队页的 12 个 slot option（`TeamOptionScope.ORDER_SLOT_NAMES`），映射方式和 `TeamPreset.toggleSinner` 一致：点选顺序即出战顺位。`re_formation_each_floor` 对应 `KEY_REFORM`，打开后每层都重编一次。
+## 16. 领奖：把 AALC 的领奖循环搬成脚本
+
+AALC 的领奖（`mirror.py:538-698`）不是「点一下领取就完事」，而是一个优先级很高的状态机：
+
+1. 先看特殊界面：战果确认、已领取、领取确认——按顺序点掉；
+2. 判这次有没有打完：没认出 `complete_mirror_100%` 就标记 `failed`，认出 100% 或 `clear` 就清掉；
+3. `failed` 时点「放弃领取」，成功时点「领取奖励」——接着处理每周加成（`no_weekly_bonuses` 全点掉、`hard_mirror_single_bonuses` 只留一个）、OCR 读通行证经验、点脑啡肽选项；
+4. 回到主页（`home/drive.png`）就结束。
+
+移植时换掉的两处平台级动作：`base/waiting_assets.png` 是整屏截图（2560×1440），拿来做模板匹配等于比整屏，手机端不现实，改成「进循环先固定等 1.5 秒」；`retry()`、`back_init_menu()` 是 PC 端的重开/回主界面兜底，这里换成日志 + 交还管线。
+
+## 17. 战斗里的死局：全员阵亡、状态栏、阵亡认输
+
+`battle.py:262-330` 的三段处理补进了 `MirrorBattleScript`：
+
+- **状态栏被折叠**（`view_status_assets`）：点它右上 `+50/-250`（720p）的位置展开；
+- **全员阵亡**（`dead_all`，34×179 的竖条，屏幕上会出现 3 个）：选纵坐标中间那个，再点结算确认；
+- **有人阵亡且没开 `fight_to_last_man`**：以 `dead.png` 为中心 OCR ±(50,15)，读到「阵亡 / dead」就认输——点认输、点不到就先点设置再点认输，还不行点空白戳弹窗，最多 6 轮。
+
+`dead_all_confirm_assets.png` 上游是整屏图，和 waiting 一样没法当模板用，这里靠「选完复活选项后界面自己回到战斗 / 结算」来推进，而不是去匹配那张整屏图。

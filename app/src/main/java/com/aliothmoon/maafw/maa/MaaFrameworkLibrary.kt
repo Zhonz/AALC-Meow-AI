@@ -145,6 +145,9 @@ interface MaaFrameworkLibrary : Library {
 
     fun MaaControllerPostTouchDown(ctrl: Pointer?, contact: Int, x: Int, y: Int, pressure: Int): Long
 
+    /** 按住不放地拖动；AALC 的连线（技能格→齿轮）就靠 down/move/up 三段拼出来 */
+    fun MaaControllerPostTouchMove(ctrl: Pointer?, contact: Int, x: Int, y: Int, pressure: Int): Long
+
     fun MaaControllerPostTouchUp(ctrl: Pointer?, contact: Int): Long
 
     fun MaaControllerPostScroll(ctrl: Pointer?, dx: Int, dy: Int): Long

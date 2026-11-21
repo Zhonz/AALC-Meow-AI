@@ -190,6 +190,15 @@ internal class MaaScriptHost(
     override fun scroll(dy: Int): Boolean =
         waitController(lib.MaaControllerPostScroll(controller, 0, dy))
 
+    override fun touchDown(x: Int, y: Int): Boolean =
+        waitController(lib.MaaControllerPostTouchDown(controller, CONTACT, x, y, PRESSURE))
+
+    override fun touchMove(x: Int, y: Int): Boolean =
+        waitController(lib.MaaControllerPostTouchMove(controller, CONTACT, x, y, PRESSURE))
+
+    override fun touchUp(): Boolean =
+        waitController(lib.MaaControllerPostTouchUp(controller, CONTACT))
+
     private fun waitController(id: Long): Boolean {
         if (id == INVALID_ID) return false
         val status = lib.MaaControllerWait(controller, id)
@@ -210,6 +219,8 @@ internal class MaaScriptHost(
         const val PROBE_NODE = "__MaaScriptProbe"
 
         private const val INVALID_ID = 0L
+        private const val CONTACT = 0
+        private const val PRESSURE = 50
         private const val NODE_ID_BYTES = 8L
         private const val NODE_ID_SLOTS = 4
         private const val RECT_BYTES = 16L

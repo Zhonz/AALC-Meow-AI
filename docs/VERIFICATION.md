@@ -151,3 +151,44 @@ succeeded = True
 3. **出售 / 合成的不可逆性**：本版只做到「按体系出售」，且默认关闭（`shop_do_not_sell` 默认 Yes）；
    合成 / 升级 / 技能替换这一版没做。
 4. **一个任务里多次交棒**：`maxRounds=12` 的循环只在引擎级走过一次交棒，多次往返没有真机证据。
+
+---
+
+## 9. 镜牢寻路与战斗交棒（handoff）的引擎级验证
+
+验证环境同第 1 节：本机 aarch64 + `pip install maafw==5.16.1` + 自写 `CustomController` 回放静态画布。
+
+### 9.1 四个交棒节点都能被认到，且只有对应画面才认到
+
+把模板贴到 1280×720 深色画布上，用 `MirrorDungeonEntry` 起任务，看节点路径：
+
+| 画布内容 | 节点路径 | 结论 |
+| :--- | :--- | :--- |
+| 只有 legend（地图界面） | `MirrorDungeonEntry → MirrorCheckLegend → MirrorInDungeon → MirrorHandleRoad` | 寻路交棒可达 |
+| 普通战斗按钮 | `MirrorDungeonEntry → MirrorHandleBattle` | 战斗交棒可达 |
+| 链接战按钮 | `MirrorDungeonEntry → MirrorHandleBattle` | 同上 |
+| 商店经费栏 | `MirrorDungeonEntry → MirrorCheckShopCoins → MirrorHandleShop` | 商店交棒没被抢 |
+| 纯色画布 | `MirrorDungeonEntry` 后失败 | 不劫持 |
+
+### 9.2 `Or` 内联识别的坑（这次踩到了）
+
+第一版把两个战斗按钮写成 `any_of` 里的内联 `{"type":"TemplateMatch",...}`，结果该节点在**任何画面上都命中**：
+纯色画布探针返回成功，地图画布的路径也被它截断。改成引用节点名（`any_of: ["MirrorBattleEntryNormal",
+"MirrorBattleEntryChain"]`，两个名字各写一个普通节点）之后，纯色画布与 legend 画布都不再命中，
+两个战斗按钮才命中。复现命令：`python3 /tmp/probe_battle.py`（探针脚本按节点名直接 `post_task`）。
+
+### 9.3 静态核对
+
+- 三个脚本里出现的所有模板名都能在 `assets/resource/image/` 找到（含新增的 `battle/gear_left.png`、
+  `mirror/road_in_mir/risky_encounter.png`、`focused_encounter.png`）
+- `MirrorHandleRoad` / `MirrorHandleBattle` / `MirrorHandleShop` 三个节点都是 `next: []`，
+  `resumeEntry` 指向的 `MirrorDungeonEntry` 存在
+- `validate_pipelines.py` 372 节点 0 错 0 警；`check_pipeline_schema.py` 12 管线 + 197 覆盖片段全过
+
+### 9.4 仍然没验证到的
+
+1. 脚本真实点击之后界面有没有变化（本机拿不到游戏画面）
+2. 巴士拖动距离、三个候选点的偏移在国服/国际服不同分辨率下是否合适
+3. 防御连线的落点与「技能格数」算得对不对（依赖 gear_left/gear_right 同时出现在画面上）
+4. 一个任务里连续多次交棒（进地图 → 战斗 → 地图 → 商店）的稳定性，只做了单次交棒
+

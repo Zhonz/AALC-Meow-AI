@@ -37,6 +37,25 @@ object ShopScriptBinding {
                 maxRounds = MirrorShopScript.maxRounds,
                 params = shopParams(definition, values),
             ),
+            // 寻路同样只在镜牢里跑：管线认到「MirrorHandleRoad」就交棒，脚本按 AALC 的节点权重挑路
+            TaskScript(
+                scriptId = MirrorRoadScript.id,
+                entry = MirrorRoadScript.entry,
+                resumeEntry = MirrorRoadScript.resumeEntry,
+                maxRounds = MirrorRoadScript.maxRounds,
+                params = emptyMap(),
+            ),
+            // 战斗：管线认到「MirrorHandleBattle」交棒；首回合防御由 defense_first_round 开关决定
+            TaskScript(
+                scriptId = MirrorBattleScript.id,
+                entry = MirrorBattleScript.entry,
+                resumeEntry = MirrorBattleScript.resumeEntry,
+                maxRounds = MirrorBattleScript.maxRounds,
+                params = mapOf(
+                    MirrorBattleScript.KEY_DEFENSE_FIRST_ROUND to
+                        flag(definition, values, "defense_first_round", default = false),
+                ),
+            ),
         )
     }
 

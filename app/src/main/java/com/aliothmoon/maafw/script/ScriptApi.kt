@@ -83,6 +83,15 @@ interface ScriptHost {
     /** 滚轮；正数向下 */
     fun scroll(dy: Int): Boolean
 
+    /** 按住某点（contact 固定 0，对应单指按下） */
+    fun touchDown(x: Int, y: Int): Boolean
+
+    /** 按住状态下滑到某点 */
+    fun touchMove(x: Int, y: Int): Boolean
+
+    /** 抬起 */
+    fun touchUp(): Boolean
+
     companion object {
         const val DEFAULT_THRESHOLD = 0.8
         const val DEFAULT_OCR_THRESHOLD = 0.3
@@ -120,6 +129,25 @@ fun ScriptHost.clickBlank(times: Int = 1) {
         click(4 + (it % 3) * 3, 4 + (it % 2) * 3)
         sleep(120)
     }
+}
+
+/**
+ * 一路按住拖过若干点（AALC 的 mouse_drag_link）
+ *
+ * 战斗里「把技能格连到右侧齿轮」必须是一次连续拖动：分开 swipe 会被游戏当成多次点击，
+ * 连携就断了。因此这里用 touchDown → touchMove... → touchUp 拼一条完整手势。
+ */
+fun ScriptHost.dragLink(points: List<Pair<Int, Int>>, segmentMs: Long = 60) {
+    if (points.size < 2) return
+    val (sx, sy) = points.first()
+    touchDown(sx, sy)
+    for (index in 1 until points.size) {
+        sleep(segmentMs)
+        val (x, y) = points[index]
+        touchMove(x, y)
+    }
+    sleep(segmentMs)
+    touchUp()
 }
 
 /** 轮询等一个模板出现 */
@@ -216,7 +244,7 @@ interface ScriptTask {
 
 /** id / 交棒节点 → 脚本实现 */
 object ScriptRegistry {
-    private val all: List<ScriptTask> = listOf(MirrorShopScript)
+    private val all: List<ScriptTask> = listOf(MirrorShopScript, MirrorRoadScript, MirrorBattleScript)
 
     fun byId(id: String): ScriptTask? = all.firstOrNull { it.id == id }
 

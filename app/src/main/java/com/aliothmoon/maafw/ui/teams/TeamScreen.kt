@@ -88,7 +88,8 @@ private val SinnerAvatars: Map<String, Int> = mapOf(
 /** 编队页的分区：[TeamOptionScope.BASE_NAMES] 按 AALC 的卡片顺序切成三组 */
 private val SECTIONS: List<Pair<Int, List<String>>> = listOf(
     R.string.teams_section_team to listOf("team_system", "shop_strategy", "reward_cards"),
-    R.string.teams_section_opening to listOf("choose_opening_bonus", "opening_items"),
+    R.string.teams_section_opening to
+        listOf("choose_opening_bonus", "opening_items", "mirror_opening_bonus", "mirror_use_starlight"),
     R.string.teams_section_battle to listOf("avoid_skill_3", "defense_first_round"),
 )
 

@@ -268,7 +268,7 @@ interface ScriptTask {
 /** id / 交棒节点 → 脚本实现 */
 object ScriptRegistry {
     private val all: List<ScriptTask> =
-        listOf(MirrorShopScript, MirrorRoadScript, MirrorBattleScript, MirrorThemePackScript, MirrorEventScript)
+        listOf(MirrorShopScript, MirrorRoadScript, MirrorBattleScript, MirrorThemePackScript, MirrorEventScript, MirrorStarScript)
 
     fun byId(id: String): ScriptTask? = all.firstOrNull { it.id == id }
 

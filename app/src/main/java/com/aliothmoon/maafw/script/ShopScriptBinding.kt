@@ -44,8 +44,11 @@ object ShopScriptBinding {
                 resumeEntry = MirrorRoadScript.resumeEntry,
                 maxRounds = MirrorRoadScript.maxRounds,
                 params = mapOf(
-                    MirrorRoadScript.KEY_EXIT_FLOOR to
-                        inputText(definition, values, "mirror_exit_floor", "floor"),
+                    // 精确楼层优先；没填就退回 AALC 的 floor_3_exit（打完第 3 层走人 = 第 4 层起收工）
+                    MirrorRoadScript.KEY_EXIT_FLOOR to inputText(definition, values, "mirror_exit_floor", "floor")
+                        .ifEmpty {
+                            if (flag(definition, values, "floor_3_exit", default = false)) "4" else ""
+                        },
                 ),
             ),
             // 主题包：按 AALC 的关键词权重选包（原来只是盲点 500,540）
@@ -63,6 +66,19 @@ object ShopScriptBinding {
                         flag(definition, values, "select_event_pack", default = false),
                     MirrorThemePackScript.KEY_SKIP_EVENT_PACK to
                         flag(definition, values, "skip_event_pack", default = false),
+                ),
+            ),
+            // 开局星光：管线认到星光加成页（coins_assets.png）就交棒，按 opening_bonus 点卡
+            TaskScript(
+                scriptId = MirrorStarScript.id,
+                entry = MirrorStarScript.entry,
+                resumeEntry = MirrorStarScript.resumeEntry,
+                maxRounds = MirrorStarScript.maxRounds,
+                params = mapOf(
+                    MirrorStarScript.KEY_OPENING_BONUS to
+                        inputText(definition, values, "mirror_opening_bonus", "bonus"),
+                    MirrorStarScript.KEY_USE_STARLIGHT to
+                        flag(definition, values, "mirror_use_starlight", default = true),
                 ),
             ),
             // 事件：管线认到事件界面（event/skip_assets.png）就交棒，由脚本按 AALC 的按钮优先级处理

@@ -48,23 +48,20 @@ object AalcTeamImport {
 
     /** 本引擎没有对应管线的 AALC 字段：有值就统计，导入时忽略 */
     private val UNSUPPORTED_KEYS = listOf(
-        "shop_strategy",
-        "system_burn", "system_bleed", "system_tremor", "system_rupture", "system_poise",
-        "system_sinking", "system_charge", "system_slash", "system_pierce", "system_blunt",
-        "do_not_heal", "do_not_buy", "do_not_fuse", "do_not_sell", "do_not_enhance",
-        "only_aggressive_fuse", "do_not_system_fuse", "only_system_fuse",
-        "aggressive_also_enhance", "aggressive_save_systems",
+        // 小指良单通（AALC 的 defense_for_solo）：本引擎没有对应的连续防御状态机
         "prioritize_skill_3", "defense_for_solo", "defense_for_solo_turns",
-        "re_formation_each_floor", "normal_to_hard_floor", "use_starlight",
+        // 每层重新编队：管线目前只用一次编队
+        "re_formation_each_floor",
+        // 固定队伍用途（困难/普通）与开局道具体系：没有对应选项
         "fixed_team_use", "fixed_team_use_select",
-        "shopping_strategy", "shopping_strategy_select",
         "opening_items_system", "opening_items_select",
-        "after_level_IV", "after_level_IV_select",
-        "second_system", "second_system_select", "second_system_setting", "second_system_action",
+        // 观测 EGO 饰品：尚未实现
         "observe_ego_gift", "observe_ego_gift_selected",
-        "skill_replacement", "skill_replacement_select", "skill_replacement_mode",
-        "ignore_shop", "max_keyword_refresh", "max_normal_refresh",
-        "use_team_code", "team_code", "custom_theme_pack_weight",
+        // 编队码自动组队：尚未实现
+        "use_team_code", "team_code",
+        // 自定义主题包权重（嵌套映射，解析器跳过）
+        "use_custom_theme_pack_weight", "custom_theme_pack_weight",
+        // 统计字段，导出时已被 AALC 剔除
         "sinners_be_select",
     )
 
@@ -161,8 +158,102 @@ object AalcTeamImport {
         bool(data["opening_items"])?.let {
             values["opening_items"] = OptionValue.SingleCase(if (it) YES else NO)
         }
-        if (intList(data["opening_bonus"]).any { it > 0 }) {
+        val openingBonus = intList(data["opening_bonus"])
+        if (openingBonus.any { it > 0 }) {
             values["choose_opening_bonus"] = OptionValue.SingleCase(YES)
+            // AALC 的 0/1/2/3（不选/一级/二级/三级）与本 PI 的输入框一一对应
+            values["mirror_opening_bonus"] =
+                OptionValue.Inputs(mapOf("bonus" to openingBonus.joinToString(",")))
+        }
+        bool(data["use_starlight"])?.let {
+            // AALC：True = 不换钱，把星光留给加成卡（点 no_convert_star_to_cost）
+            values["mirror_use_starlight"] = OptionValue.SingleCase(if (it) YES else NO)
+        }
+
+        // 商店：AALC 的 shop_strategy 0=只出售 1=普通合成 2=四级优先
+        val fuseMode = when {
+            bool(data["do_not_fuse"]) == true -> "off"
+            int(data["shop_strategy"]) == 0 -> "off"
+            int(data["shop_strategy"]) == 1 -> "normal"
+            int(data["shop_strategy"]) == 2 -> "aggressive"
+            else -> null
+        }
+        fuseMode?.let { values["shop_fuse_mode"] = OptionValue.SingleCase(it) }
+
+        val sellSystems = SYSTEM_CASES.filter { bool(data["system_" + it]) == true }
+        if (sellSystems.isNotEmpty()) {
+            values["shop_sell_systems"] = OptionValue.MultipleCases(sellSystems)
+        }
+        mapOf(
+            "do_not_heal" to "shop_do_not_heal",
+            "do_not_buy" to "shop_do_not_buy",
+            "do_not_sell" to "shop_do_not_sell",
+            "do_not_enhance" to "shop_do_not_enhance",
+            "only_aggressive_fuse" to "shop_fuse_only_aggressive",
+            "do_not_system_fuse" to "shop_fuse_no_system",
+            "only_system_fuse" to "shop_fuse_only_system",
+            "aggressive_also_enhance" to "shop_aggressive_also_enhance",
+            "aggressive_save_systems" to "shop_fuse_save_system",
+            "skill_replacement" to "shop_skill_replacement",
+        ).forEach { (from, to) ->
+            bool(data[from])?.let { values[to] = OptionValue.SingleCase(if (it) YES else NO) }
+        }
+
+        if (bool(data["after_level_IV"]) == true) {
+            val modes = listOf("sell", "calm", "second", "skip")
+            int(data["after_level_IV_select"])?.let { index ->
+                modes.getOrNull(index)?.let { values["shop_after_iv"] = OptionValue.SingleCase(it) }
+            }
+        }
+        if (bool(data["shopping_strategy"]) == true) {
+            int(data["shopping_strategy_select"])?.let { index ->
+                if (index in 0..5) {
+                    values["shop_shopping_strategy"] = OptionValue.SingleCase(index.toString())
+                }
+            }
+        }
+        if (bool(data["second_system"]) == true) {
+            int(data["second_system_select"])?.let { index ->
+                SYSTEM_CASES.getOrNull(index)?.let {
+                    values["shop_second_system"] = OptionValue.SingleCase(it)
+                }
+            }
+            int(data["second_system_setting"])?.let {
+                values["shop_second_setting"] = OptionValue.SingleCase(if (it == 1) "1" else "0")
+            }
+            // second_system_action = [合成四级, 购买, 选择, 升级]
+            val actions = intList(data["second_system_action"])
+            actions.getOrNull(1)?.let {
+                values["shop_second_buy"] = OptionValue.SingleCase(if (it != 0) YES else NO)
+            }
+            actions.getOrNull(3)?.let {
+                values["shop_second_enhance"] = OptionValue.SingleCase(if (it != 0) YES else NO)
+            }
+        }
+        int(data["max_keyword_refresh"])?.let {
+            if (it in 0..3) values["shop_keyword_refresh"] = OptionValue.SingleCase(it.toString())
+        }
+        int(data["max_normal_refresh"])?.let {
+            if (it in 0..2) values["shop_normal_refresh"] = OptionValue.SingleCase(it.toString())
+        }
+        int(data["skill_replacement_mode"])?.let {
+            if (it in 0..4) values["shop_skill_mode"] = OptionValue.SingleCase(it.toString())
+        }
+        int(data["skill_replacement_select"])?.let {
+            values["shop_skill_priority"] = OptionValue.SingleCase(minOf(it, 2).toString())
+        }
+
+        val ignoreLayers = intList(data["ignore_shop"])
+            .mapIndexedNotNull { index, flag -> if (flag != 0) index + 1 else null }
+        if (ignoreLayers.isNotEmpty()) {
+            values["shop_ignore_layers"] =
+                OptionValue.Inputs(mapOf("layers" to ignoreLayers.joinToString(" ")))
+        }
+        int(data["normal_to_hard_floor"])?.let {
+            if (it > 0) {
+                values["mirror_normal_to_hard_floor"] =
+                    OptionValue.Inputs(mapOf("floor" to it.toString()))
+            }
         }
         bool(data["avoid_skill_3"])?.let {
             values["avoid_skill_3"] = OptionValue.SingleCase(if (it) YES else NO)

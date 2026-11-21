@@ -713,7 +713,7 @@
     ]
   },
   "MirrorCheckDreamingStar": {
-    "doc": "检测到开局星光选择界面（dreaming_star/coins_assets.png）",
+    "doc": "开局星光加成界面（AALC mirror.py:793 enter_mir_with_star）——交棒节点：按 coins_assets 认界面，交给脚本 mirror.star 按 opening_bonus 点 10 张加成卡（含星光换钱），跑完从 MirrorDungeonEntry 续上",
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_to_mir/dreaming_star/coins_assets.png",
@@ -727,10 +727,7 @@
     },
     "action": "DoNothing",
     "post_delay": 500,
-    "next": [
-      "MirrorConfirmDreamingStar",
-      "MirrorEnterDreamingStar"
-    ]
+    "next": []
   },
   "MirrorConfirmDreamingStar": {
     "doc": "点击确认选定星光增益",

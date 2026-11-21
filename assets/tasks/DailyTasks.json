@@ -55,6 +55,8 @@
         "shop_shopping_strategy",
         "shop_second_setting",
         "shop_sell_abandoned",
+        "mirror_opening_bonus",
+        "mirror_use_starlight",
         "shop_ignore_layers",
         "mirror_exit_floor",
         "mirror_normal_to_hard_floor",
@@ -4284,6 +4286,34 @@
         {
           "name": "No",
           "label": "关"
+        }
+      ]
+    },
+    "mirror_opening_bonus": {
+      "type": "input",
+      "label": "开局星光加成（10 张）",
+      "description": "对应电脑版 AALC 的 opening_bonus：从左到右、从上到下 10 张加成卡，每张写 0/1/2/3（0 不选，1 一级，2 二级，3 三级）。例如 1,1,1,0,0,2,0,0,0,0；全填 1 就是全部一级",
+      "fields": [
+        {
+          "name": "bonus",
+          "label": "等级（逗号分隔）",
+          "default": ""
+        }
+      ]
+    },
+    "mirror_use_starlight": {
+      "type": "switch",
+      "label": "开局星光留着换加成",
+      "description": "开着 = 不把星光换成经费，留着买加成卡（AALC 的 use_starlight）；关掉 = 进镜牢时先点「转换成经费」",
+      "default_case": "Yes",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "留着换加成"
+        },
+        {
+          "name": "No",
+          "label": "换成经费"
         }
       ]
     }

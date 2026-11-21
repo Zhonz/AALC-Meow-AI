@@ -1,8 +1,8 @@
 {
-  "version": "v0.6.4",
-  "versionCode": 2611211207,
-  "url": "https://github.com/Zhonz/AALC-Meow-AI/releases/download/pi-2611211207/pi.zip",
-  "sha256": "604111360b91428d53bbbfc4c76918e339779815e7c55765f3df8587c9edb7c0",
+  "version": "v0.6.5",
+  "versionCode": 2611211209,
+  "url": "https://github.com/Zhonz/AALC-Meow-AI/releases/download/pi-2611211209/pi.zip",
+  "sha256": "9796ebd47cc6fac03fc69798b23ab72fcb9e58f75686f130c067ba015a67aef3",
   "sizeBytes": 25007086,
   "aalcTag": "V1.6.2",
   "notes": ""

@@ -364,11 +364,11 @@
     <string name="teams_reset">Reset team</string>
     <string name="teams_remark_label">Remark</string>
     <string name="teams_remark_placeholder">e.g. daily farming team</string>
-    <string name="teams_sinners_hint">Checked sinners form this team&#39;s roster</string>
+    <string name="teams_sinners_hint">Checked sinners form the roster of this team</string>
     <string name="teams_order_title">Turn order</string>
     <string name="teams_order_summary">Slot order for the 12 positions</string>
     <string name="teams_order_hint">Assign a sinner per slot; leave empty to keep the in-game order</string>
-    <string name="teams_scope_title">Team &amp; battle settings</string>
+    <string name="teams_scope_title">Team and battle settings</string>
     <string name="teams_scope_hint">Roster, team system, shop strategy, reward cards and turn order have moved to the Teams page and are configured per team</string>
 
     <!-- Option editor -->

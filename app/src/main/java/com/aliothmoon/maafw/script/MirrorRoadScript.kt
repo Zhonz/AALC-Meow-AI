@@ -50,7 +50,22 @@ object MirrorRoadScript : ScriptTask {
     private const val MAX_ALIGN_TRIES = 4
     private const val MAX_STEPS = 6
 
+    /**
+     * 这一次任务里是否已经放弃寻路
+     *
+     * 地图界面下 `MirrorHandleRoad` 每次都命中，脚本一旦「什么都做不了」（认不到巴士）就直接返回，
+     * 管线会立刻再次交棒 —— 不做记号的话会白转满预算（40 次）才判失败。放弃后本次任务不再尝试，
+     * 交给管线的盲点节点；任务开始时由 `resetSession()` 复位。
+     */
+    @Volatile
+    private var gaveUp = false
+
+    override fun resetSession() {
+        gaveUp = false
+    }
+
     override fun run(host: ScriptHost, params: Map<String, String>) {
+        if (gaveUp) return
         if (host.find(LEGEND, LEGEND_THRESHOLD) == null) {
             host.log("不在镜牢地图界面，交还给管线")
             return
@@ -68,7 +83,8 @@ object MirrorRoadScript : ScriptTask {
         }
 
         val bus = alignBus(host) ?: run {
-            host.log("没找到巴士图标，交还给管线盲点")
+            host.log("没找到巴士图标，本次任务不再尝试寻路，交还给管线盲点")
+            gaveUp = true
             return
         }
 

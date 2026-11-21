@@ -47,6 +47,8 @@ object MirrorBattleScript : ScriptTask {
         val defenseFirstRound = params[KEY_DEFENSE_FIRST_ROUND] == "1"
         var defended = false
         var loop = 0
+        // 连续多少次什么都没认到；战斗界面上的东西都认不到时早点交还，别空转 240 次
+        var idle = 0
 
         while (loop < MAX_LOOPS && !host.cancelled) {
             loop++
@@ -100,8 +102,14 @@ object MirrorBattleScript : ScriptTask {
             }
 
             if (host.find(IN_MIRROR, 0.7) != null || host.find(TURN, 0.7) != null) {
+                idle = 0
                 host.sleep(TURN_DELAY)
                 continue
+            }
+            idle++
+            if (idle >= MAX_IDLE) {
+                host.log("连续 " + idle + " 次没认出战斗界面，交还给管线")
+                return
             }
             host.sleep(400)
         }
@@ -140,4 +148,7 @@ object MirrorBattleScript : ScriptTask {
     }
 
     private const val MAX_LOOPS = 240
+
+    /** 连续空转多少次就交还管线 */
+    private const val MAX_IDLE = 8
 }

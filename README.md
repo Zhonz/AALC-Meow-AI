@@ -1,22 +1,41 @@
-好难做啊！有没有大佬帮忙？我实在是，实在是不知道该怎么继续了。
-因能力有限，无限期搁置
-
-# AALC-Meow (边狱公司 / 边狱巴士小助手 Android 原生端)
+# AALC-Meow-AI
 
 <div align="center">
 
 <img src="logo.png" alt="AALC-Meow Logo" width="128" height="128">
 
-# AALC-Meow
-
-**基于 [MaaFramework](https://github.com/MaaXYZ/MaaFramework) 架构的高性能《边狱公司》（Limbus Company）Android 移动端自动化工具**
+**《边狱公司》（Limbus Company）Android 原生自动化助手**
 
 [![License](https://img.shields.io/badge/license-AGPL%203.0-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Android-green.svg)](https://developer.android.com)
 [![MaaFramework](https://img.shields.io/badge/MaaFramework-v5.16.1-orange.svg)](https://github.com/MaaXYZ/MaaFramework)
-[![AALC Upstream](https://img.shields.io/badge/AALC-Upstream-brightgreen.svg)](https://github.com/KIYI671/AhabAssistantLimbusCompany)
+[![AALC Upstream](https://img.shields.io/badge/AALC-V1.6.2-brightgreen.svg)](https://github.com/KIYI671/AhabAssistantLimbusCompany)
 
 </div>
+
+---
+
+## 🧭 这个仓库是怎么来的
+
+一句话：**这是对 [qi-1021/AALC-Meow](https://github.com/qi-1021/AALC-Meow) 的续更版**。原仓库因为维护者精力不足挂出了「无限期搁置」，本仓库在原代码基础上跟随上游更新，并把没做完的部分补上。
+
+| 维度 | 内容 |
+| :--- | :--- |
+| **代码来源** | 原 Android 移植 [qi-1021/AALC-Meow](https://github.com/qi-1021/AALC-Meow)（AGPL-3.0），保留其全部原始署名与历史 |
+| **玩法/资源来源** | [KIYI671/AhabAssistantLimbusCompany](https://github.com/KIYI671/AhabAssistantLimbusCompany)（AALC）**V1.6.2 / ec8aa17**：任务流程以它的 `tasks/` 为唯一权威，识别模板按它的 `assets/images` 0.5x 重导 |
+| **引擎版本** | [MaaXYZ/MaaFramework](https://github.com/MaaXYZ/MaaFramework) **v5.16.1**（原仓库停在 v5.14.0） |
+| **Android 基座** | [Aliothmoon/MaaFwApp](https://github.com/Aliothmoon/MaaFwApp) 的架构与 bridge 层 |
+| **技术栈** | Kotlin + Jetpack Compose（UI）、KSP、MaaFramework C++ 引擎（JNA 绑定）、CMake/C++ bridge、声明式 Pipeline JSON |
+| **谁做的** | 本次更新由 **AI 助手完成**（DeepSeek Harness 上的编码智能体）：读上游 Python 源码 → 重写 Pipeline → 重导模板 → 用真实引擎与真机截图做验证。人工只负责方向与最终验收 |
+
+> 许可证是 **AGPL-3.0**，衍生自 AALC。分发或修改请保留 [LICENSE](LICENSE) 与上述署名，**不要洗掉原作者信息**。
+
+### 本次更新做了什么（相对原仓库）
+
+- **跟版本**：MaaFramework v5.14.0 → **v5.16.1**（C API 兼容，JNA 层无需改动）；AALC 上游核对为最新 **V1.6.2**，462 张官方图片资源全量同步，252 张识别模板按官方链路重新 0.5x 导出
+- **补流程**：按上游重建通行证流程（19 节点）——日常 / 周常 / 赛季（含第二页滑动）/ 战斗通行证 / 邮件；领取选项拆成「通行证+邮件 / 只通行证 / 只邮件」三种
+- **修问题**：通行证三枚竖排 tab 在同一列、间距仅 144px，不带 roi 时会互相命中导致 `error handling loop detected`，已按真机截图像素位置加窄带 roi
+- **加校验**：三层校验进 CI——自写白名单 → 官方 JSON Schema（`tools/`）→ 真实引擎加载；验证方法与残余风险记录在 [docs/VERIFICATION.md](docs/VERIFICATION.md)
 
 ---
 
@@ -55,5 +74,21 @@
 
 ## 📬 联系方式
 
-- 问题与建议：欢迎提交 [Issues](https://github.com/qi-1021/AALC-Meow/issues)
+- 问题与建议：欢迎提交 [Issues](https://github.com/Zhonz/AALC-Meow-AI/issues)（原仓库的既有问题请留在原仓库，方便追溯）
 - 开发者邮箱：[qiisme1021@icloud.com](mailto:qiisme1021@icloud.com)
+
+---
+
+## 🛠 本地开发
+
+```bash
+python3 scripts/setup_maa_framework.py     # 从 MaaFramework Release 下载引擎 .so
+python3 scripts/validate_pipelines.py      # Pipeline 结构校验
+python3 scripts/check_pipeline_schema.py   # 官方 Schema 校验
+```
+
+> `upstream/{aalc,m9a,maaend}` 三个目录是上游源码的 submodule，**本仓库不随源码分发**
+> （见 [.gitmodules](.gitmodules)）。要重新生成模板或对照上游流程，需要自行
+> `git submodule update --init` 或按 `.gitmodules` 里的地址克隆到对应路径。
+> 改流程 / 改模板 / 验证方法的完整说明见 [docs/RELEASING.md](docs/RELEASING.md)
+> 与 [docs/VERIFICATION.md](docs/VERIFICATION.md)。

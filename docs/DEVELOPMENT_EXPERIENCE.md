@@ -235,6 +235,15 @@ M9A-Meow 采用的体系架构分为三层：
 
 - **经验**：升级 MaaFramework 时把官方 `tools/pipeline.schema.json` 一并同步，Schema 校验能免费获得「新版本新增/改名/废弃字段」的告知；但 Schema 管不到作用域语义，仍需第 1 条那种带引擎源码依据的自定义检查。
 
+
+### 2.12 编队域：把「一支队伍」的选项从任务里搬出来
+
+- **背景**：`mirror` 的 43 个 option 里，体系 / 商店策略 / 奖励卡 / 开局加成 / 两个战斗开关 / 罪人勾选 / 12 位顺位这 17 项语义上是「编队」的属性，却按任务配置——换队要逐项重设，与 AALC 的编队卡差得远。
+- **引擎侧不需要新 pipeline**：AALC 的 `tasks/teams/team_formation.py` 也只是「清空选择 → 按 6+6 网格点头像 → OCR 找编队#N」；本项目的 `sinner_selection` / `sinner_order_slot_1..12` / `daily_teams` 已覆盖同样语义，缺的只是 UI 组织方式。
+- **边界只写一处**：[`domain/TeamPreset.kt`](app/src/main/java/com/aliothmoon/maafw/domain/TeamPreset.kt) 的 `TeamOptionScope.orderedNames` 是唯一清单——任务面板隐藏（`ui/tasks/Sheets.kt`）、编队页渲染（`ConfigurationResolver.resolveTeamOptions`）、运行期覆盖（`RunPlanBuilder` → `TeamOptionScope.mergedValues`）三处都从它出发。少接一处就是「面板里设了却不生效」。
+- **旧配置不改也照原样跑**：`mergedValues` 三档回退——任务没选编队、该编队没配过任何值、配了但键不在编队域——都原样返回任务自己的值。
+- **教训**：`teamPresets` 放在 `UserConfiguration` 而不是 `RunConfiguration`（一支编队对所有运行配置通用，与 `globalOptionValues` 同级）；DataStore 的 `ignoreUnknownKeys` + 字段默认值让旧数据无痛升级。编队号上限跟 PI 的 `daily_teams` 选项走（1..20），不要凭游戏内看到的队数拍一个更小的值。
+
 ---
 ## 3. 兄弟项目移植研判：MAAend（终末地）
 

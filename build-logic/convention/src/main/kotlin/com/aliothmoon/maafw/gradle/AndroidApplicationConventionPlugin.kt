@@ -76,7 +76,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 buildConfigField(
                     "String",
                     "MAFW_GITHUB_REPO",
-                    "\"" + (profile.githubRepo ?: "qi-1021/AALC-Meow") + "\"",
+                    "\"" + (profile.githubRepo ?: "Zhonz/AALC-Meow-AI") + "\"",
                 )
 
                 // Placeholders rather than resValue: with no profile the value stays a resource

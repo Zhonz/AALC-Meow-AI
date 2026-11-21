@@ -17,7 +17,13 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "home/drive.png",
-      "threshold": 0.72
+      "threshold": 0.72,
+      "roi": [
+        894,
+        581,
+        386,
+        102
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 600,
@@ -25,12 +31,6 @@
       "LuxcavationSelectType",
       "LuxcavationExpChoose",
       "LuxcavationThreadChoose"
-    ],
-    "roi": [
-      894,
-      581,
-      386,
-      102
     ]
   },
   "LuxcavationBackToLobby": {
@@ -38,18 +38,18 @@
     "recognition": {
       "type": "TemplateMatch",
       "template": "home/back.png",
-      "threshold": 0.72
+      "threshold": 0.72,
+      "roi": [
+        7,
+        0,
+        178,
+        116
+      ]
     },
     "action": "Click",
     "post_wait_freezes": 800,
     "next": [
       "LuxcavationEntry"
-    ],
-    "roi": [
-      7,
-      0,
-      178,
-      116
     ]
   },
   "LuxcavationSelectType": {

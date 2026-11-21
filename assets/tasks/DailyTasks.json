@@ -44,6 +44,14 @@
         "daily_teams",
         "team_system",
         "shop_strategy",
+        "shop_do_not_heal",
+        "shop_do_not_buy",
+        "shop_do_not_sell",
+        "shop_sell_systems",
+        "shop_keyword_refresh",
+        "shop_normal_refresh",
+        "shop_buy_level_gifts",
+        "shop_must_purchase",
         "reward_cards",
         "choose_opening_bonus",
         "opening_items",
@@ -997,31 +1005,188 @@
     "shop_strategy": {
       "type": "select",
       "label": "选择商店策略",
-      "description": "镜牢道中遇到商店时的策略",
+      "description": "镜牢道中遇到商店时的总开关。选「按细项执行」后由下面几项决定治疗/购买/出售/刷新；选「直接离开」就一分钱不花（与电脑版 AALC 的 ignore_shop 等价）",
       "default_case": "heal",
       "cases": [
         {
           "name": "heal",
-          "label": "优先全员治疗后离开（推荐）",
-          "pipeline_override": {
-            "MirrorHandleShop": {
-              "next": [
-                "MirrorShopHealAll",
-                "MirrorLeaveShopInExploration"
-              ]
-            }
-          }
+          "label": "按细项执行（推荐）"
         },
         {
           "name": "leave",
-          "label": "直接离开（不消耗金币）",
-          "pipeline_override": {
-            "MirrorHandleShop": {
-              "next": [
-                "MirrorLeaveShopInExploration"
-              ]
-            }
-          }
+          "label": "直接离开（不消耗金币）"
+        }
+      ]
+    },
+    "shop_do_not_heal": {
+      "type": "switch",
+      "label": "不治疗",
+      "description": "进店后不花经费给罪人回血（电脑版 AALC 的同名开关）",
+      "default_case": "No",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "开启"
+        },
+        {
+          "name": "No",
+          "label": "关闭"
+        }
+      ]
+    },
+    "shop_do_not_buy": {
+      "type": "switch",
+      "label": "不购买",
+      "description": "进店后不买任何饰品（必买清单、本体系饰品、三级/四级饰品都不买）",
+      "default_case": "No",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "开启"
+        },
+        {
+          "name": "No",
+          "label": "关闭"
+        }
+      ]
+    },
+    "shop_do_not_sell": {
+      "type": "switch",
+      "label": "不出售饰品",
+      "description": "默认不卖：出售会把已获得的饰品换掉，属于不可逆操作，只有你自己勾了要卖的体系才会动手",
+      "default_case": "Yes",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "开启"
+        },
+        {
+          "name": "No",
+          "label": "关闭"
+        }
+      ]
+    },
+    "shop_sell_systems": {
+      "type": "checkbox",
+      "label": "要出售的体系",
+      "description": "勾选的体系饰品会在店里被卖掉换经费；不勾就不卖任何东西。注意这是不可逆操作",
+      "default_cases": [],
+      "cases": [
+        {
+          "name": "burn",
+          "label": "烧伤"
+        },
+        {
+          "name": "bleed",
+          "label": "流血"
+        },
+        {
+          "name": "tremor",
+          "label": "震颤"
+        },
+        {
+          "name": "rupture",
+          "label": "破裂"
+        },
+        {
+          "name": "poise",
+          "label": "呼吸"
+        },
+        {
+          "name": "sinking",
+          "label": "沉沦"
+        },
+        {
+          "name": "charge",
+          "label": "充能"
+        },
+        {
+          "name": "slash",
+          "label": "斩击"
+        },
+        {
+          "name": "pierce",
+          "label": "突刺"
+        },
+        {
+          "name": "blunt",
+          "label": "打击"
+        }
+      ]
+    },
+    "shop_keyword_refresh": {
+      "type": "select",
+      "label": "关键字刷新次数",
+      "description": "经费 ≥300 时按本体系关键字刷新商店（电脑版 AALC 的 max_keyword_refresh）",
+      "default_case": "1",
+      "cases": [
+        {
+          "name": "0",
+          "label": "不刷新"
+        },
+        {
+          "name": "1",
+          "label": "1 次"
+        },
+        {
+          "name": "2",
+          "label": "2 次"
+        },
+        {
+          "name": "3",
+          "label": "3 次"
+        }
+      ]
+    },
+    "shop_normal_refresh": {
+      "type": "select",
+      "label": "普通刷新次数",
+      "description": "经费 ≥200 时普通刷新商店（电脑版 AALC 的 max_normal_refresh）。关键字刷新用完之后才会普通刷新",
+      "default_case": "0",
+      "cases": [
+        {
+          "name": "0",
+          "label": "不刷新"
+        },
+        {
+          "name": "1",
+          "label": "1 次"
+        },
+        {
+          "name": "2",
+          "label": "2 次"
+        }
+      ]
+    },
+    "shop_buy_level_gifts": {
+      "type": "switch",
+      "label": "购买三/四级饰品",
+      "description": "按电脑版 AALC 的逻辑买 level_III_to_buy / level_IV_to_buy 标记的成品饰品",
+      "default_case": "Yes",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "开启"
+        },
+        {
+          "name": "No",
+          "label": "关闭"
+        }
+      ]
+    },
+    "shop_must_purchase": {
+      "type": "switch",
+      "label": "购买必买饰品",
+      "description": "电脑版 AALC 的 must_purchase 清单（卡蜜拉、归乡、石版画、关系碎片、采血包）",
+      "default_case": "Yes",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "开启"
+        },
+        {
+          "name": "No",
+          "label": "关闭"
         }
       ]
     },

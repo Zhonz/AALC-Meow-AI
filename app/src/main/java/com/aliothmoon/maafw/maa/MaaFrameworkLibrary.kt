@@ -76,6 +76,79 @@ interface MaaFrameworkLibrary : Library {
 
     fun MaaTaskerStopping(tasker: Pointer?): Byte
 
+    // ── Tasker：脚本驱动（[com.aliothmoon.maafw.script]）用的识别与详情 ──
+    // 官方没有 Java binding，以下按 include/MaaFramework/Instance/MaaTasker.h 手写
+
+    /** @param image 上一帧截图；传 null 表示让引擎自己截一张 */
+    fun MaaTaskerPostRecognition(tasker: Pointer?, recoType: String, recoParam: String, image: Pointer?): Long
+
+    fun MaaTaskerPostAction(
+        tasker: Pointer?,
+        actionType: String,
+        actionParam: String,
+        box: Pointer?,
+        recoDetail: String?,
+    ): Long
+
+    fun MaaTaskerGetRecognitionDetail(
+        tasker: Pointer?,
+        recoId: Long,
+        nodeName: Pointer?,
+        algorithm: Pointer?,
+        hit: Pointer?,
+        box: Pointer?,
+        detailJson: Pointer?,
+        raw: Pointer?,
+        draws: Pointer?,
+    ): Byte
+
+    fun MaaTaskerGetNodeDetail(
+        tasker: Pointer?,
+        nodeId: Long,
+        nodeName: Pointer?,
+        recoId: Pointer?,
+        actionId: Pointer?,
+        completed: Pointer?,
+    ): Byte
+
+    /** 一次投递过的任务里最近完成的那个节点；节点不存在返回 0 */
+    fun MaaTaskerGetLatestNode(tasker: Pointer?, nodeName: String, latestId: Pointer?): Byte
+
+    /**
+     * 一次任务里跑过的节点 id 列表
+     *
+     * 出参协议特殊：`*node_id_list_size == 0` 时只回填「需要几个」；否则拷 min(n, size) 个并把
+     * size 改成实际拷的个数（Common/MaaTasker.cpp）。所以调用方要给一块够大的 Memory，并把
+     * size 初始化成它的容量
+     */
+    fun MaaTaskerGetTaskDetail(
+        tasker: Pointer?,
+        taskId: Long,
+        entry: Pointer?,
+        nodeIds: Pointer?,
+        nodeIdSize: Pointer?,
+        status: Pointer?,
+    ): Byte
+
+    // ── Controller：脚本自己点击/滑动 ──
+
+    fun MaaControllerPostClick(ctrl: Pointer?, x: Int, y: Int): Long
+
+    fun MaaControllerPostSwipe(
+        ctrl: Pointer?,
+        x1: Int,
+        y1: Int,
+        x2: Int,
+        y2: Int,
+        duration: Int,
+    ): Long
+
+    fun MaaControllerPostTouchDown(ctrl: Pointer?, contact: Int, x: Int, y: Int, pressure: Int): Long
+
+    fun MaaControllerPostTouchUp(ctrl: Pointer?, contact: Int): Long
+
+    fun MaaControllerPostScroll(ctrl: Pointer?, dx: Int, dy: Int): Long
+
     // ── StringBuffer ──
     // MaaAgentClient 的 identifier 走的是 buffer 而不是 char*，用完必须 Destroy
 
@@ -93,6 +166,10 @@ interface MaaFrameworkLibrary : Library {
     fun MaaImageBufferDestroy(handle: Pointer?)
 
     fun MaaImageBufferIsEmpty(handle: Pointer?): Byte
+
+    fun MaaImageBufferWidth(handle: Pointer?): Int
+
+    fun MaaImageBufferHeight(handle: Pointer?): Int
 
     /** 拿的是编码后（PNG）的字节，不是裸位图；长度另取 [MaaImageBufferGetEncodedSize] */
     fun MaaImageBufferGetEncoded(handle: Pointer?): Pointer?

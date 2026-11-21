@@ -109,7 +109,45 @@ tasker = Tasker(); tasker.bind(res, ctrl)
 ## 7. 可重复跑的静态校验
 
 ```bash
-python scripts/validate_pipelines.py        # 373 节点，0 错 0 警
-python scripts/check_pipeline_schema.py     # 12 个管线文件 + 199 个覆盖片段 + 1 个接口清单
-python scripts/check_i18n_strings.py        # 中英各 604 条
+python scripts/validate_pipelines.py        # 368 节点，0 错 0 警
+python scripts/check_pipeline_schema.py     # 12 个管线文件 + 197 个覆盖片段 + 1 个接口清单
+python scripts/check_i18n_strings.py        # 中英各 642 条
+python scripts/verify_with_engine.py        # 真实引擎加载 pipeline + 模板 + OCR 模型
 ```
+
+## 8. 镜牢商店交棒（handoff）的引擎级验证
+
+商店逻辑跑在 Kotlin 脚本里（`script/MirrorShopScript.kt`），**没有任何 schema 管得到它**，只能拿
+真实引擎 + 回放帧验证。方法：`CustomController` 的 `screencap` 返回一张 1280×720 的合成图，
+`tasker.post_task('MirrorDungeonEntry', {})` 后看节点路径。
+
+### 8.1 交棒节点可达
+
+把 `mirror/shop/shop_coins_assets.png` 贴到 (500,100)（落在 `MirrorHandleShop` 的 roi 内）：
+
+```
+succeeded = True
+节点路径 = ['MirrorDungeonEntry', 'MirrorCheckShopCoins', 'MirrorHandleShop']
+```
+
+即：跑进商店 → 识别到经费栏 → 停在交棒节点，且因为 `next` 为空，**任务正常成功结束**
+（MaaRunner 就是靠这一点在中间插脚本）。
+
+### 8.2 三个处理节点互不误触
+
+| 喂入画面 | MirrorHandleShop | MirrorHandleRewardCard | MirrorHandleThemePackFeature |
+| --- | --- | --- | --- |
+| 只有地图（legend） | 不命中 | 不命中 | 不命中 |
+| 商店（经费栏） | ✅ (500,100,46,44) | 不命中 | 不命中 |
+| 奖励卡确认页 | 不命中 | ✅ (700,500,24,19) | 不命中 |
+| 卡包选择页 | 不命中 | 不命中 | ✅ (1140,70,48,48) |
+
+### 8.3 脚本本身仍然没法验证的部分
+
+1. **点击之后的真实界面变化**：回放帧是静态的，脚本点完「治疗」「购买」之后游戏会换页，
+   这部分只能真机看。
+2. **经费 OCR 的真实读数**：合成图里的数字用的是游戏同类字体渲染，但真机上的数字排版、
+   千位分隔符位置未必一致（`ScriptText.firstNumber` 已按 AALC 的对照表纠错，仍属未验证）。
+3. **出售 / 合成的不可逆性**：本版只做到「按体系出售」，且默认关闭（`shop_do_not_sell` 默认 Yes）；
+   合成 / 升级 / 技能替换这一版没做。
+4. **一个任务里多次交棒**：`maxRounds=12` 的循环只在引擎级走过一次交棒，多次往返没有真机证据。

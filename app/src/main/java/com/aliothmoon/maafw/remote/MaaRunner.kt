@@ -19,6 +19,7 @@ import com.aliothmoon.maafw.runner.RunOutcome
 import com.aliothmoon.maafw.runner.RunPlanPayload
 import com.aliothmoon.maafw.runner.RuntimeTaskPayload
 import com.aliothmoon.maafw.runner.runPlanWireJson
+import com.aliothmoon.maafw.script.ScriptRegistry
 import com.aliothmoon.maafw.third.Ln
 import com.sun.jna.Memory
 import com.sun.jna.Pointer
@@ -46,6 +47,15 @@ class MaaRunner(private val agentHost: AgentHost) {
     private var running = false
     private var stopRequested = false
     private val callbackRef = AtomicReference<IMaaRunnerCallback?>()
+
+    /**
+     * 脚本交棒期间脚本自己会投「探针任务」做识别
+     *
+     * 探针同样是 Tasker 任务，会触发 Tasker.Task.Starting/Succeeded 回调；
+     * 若照原样转发，UI 上会凭空多出一串没名没姓的任务开始/结束。交棒期间整段静音。
+     */
+    @Volatile
+    private var suppressEvents = false
 
     // native handle
     private var resource: Pointer? = null
@@ -81,6 +91,7 @@ class MaaRunner(private val agentHost: AgentHost) {
 
     /** JNA 回调必须被强引用住，否则会被 GC，native 回调时踩空 */
     private val eventSink = MaaFrameworkLibrary.MaaEventCallback { _, message, detailsJson, _ ->
+        if (suppressEvents) return@MaaEventCallback
         Ln.i("MaaEventCallback on $message")
         runCatching {
             callbackRef.get()?.onEvent(message.orEmpty(), detailsJson.orEmpty())
@@ -246,15 +257,7 @@ class MaaRunner(private val agentHost: AgentHost) {
                 notify { onTaskStarted(task.taskName, index, payload.tasks.size) }
 
                 val overrides = JsonArray(task.pipelineOverrides).toString()
-                val currentTasker = synchronized(lifecycleLock) { tasker }
-                val taskId = lib.MaaTaskerPostTask(currentTasker, task.entry, overrides)
-                if (taskId == INVALID_ID) {
-                    anyFailed = true
-                    failedTasks += task
-                    notify { onTaskFinished(task.taskName, false, "PostTask 被拒绝") }
-                    return@forEachIndexed
-                }
-                val status = lib.MaaTaskerWait(currentTasker, taskId)
+                val status = runScriptedTask(lib, task, overrides)
                 val success = status == MaaStatus.SUCCEEDED
                 if (!success) {
                     anyFailed = true
@@ -282,14 +285,7 @@ class MaaRunner(private val agentHost: AgentHost) {
                     notify { onTaskStarted("[重试] ${task.taskName}", retryStart + retryIndex, retryStart + failedTasks.size) }
 
                     val overrides = JsonArray(task.pipelineOverrides).toString()
-                    val currentTasker = synchronized(lifecycleLock) { tasker }
-                    val taskId = lib.MaaTaskerPostTask(currentTasker, task.entry, overrides)
-                    if (taskId == INVALID_ID) {
-                        retryAllSuccess = false
-                        notify { onTaskFinished(task.taskName, false, "[重试] PostTask 被拒绝") }
-                        return@forEachIndexed
-                    }
-                    val status = lib.MaaTaskerWait(currentTasker, taskId)
+                    val status = runScriptedTask(lib, task, overrides)
                     val success = status == MaaStatus.SUCCEEDED
                     if (!success) retryAllSuccess = false
                     notify { onTaskFinished(task.taskName, success, "[重试] ${statusText(status)}") }
@@ -319,6 +315,80 @@ class MaaRunner(private val agentHost: AgentHost) {
             }
             notify { onFinished(outcome, reason) }
         }
+    }
+
+    /**
+     * 跑一个任务，遇到脚本交棒节点就把执行权交给脚本，脚本干完再从 resumeEntry 续上管线
+     *
+     * 交棒判定用「节点最近一次执行的 id 有没有变」而不是「这个节点存不存在」：
+     * RuntimeCache::latest_nodes_ 按节点名长期保留（只在 clear() 时清空），
+     * 第二次进商店时节点 id 早就有了，靠存在性判断会一次不落地误判。
+     *
+     * 返回最后一次投递的 MaaStatus；脚本自己抛异常按失败处理（不可逆操作做了一半时，
+     * 继续让管线往下走比停下更危险）。
+     */
+    private fun runScriptedTask(
+        lib: MaaFrameworkLibrary,
+        task: RuntimeTaskPayload,
+        overrides: String,
+    ): Int {
+        if (task.scripts.isEmpty()) {
+            return postAndWait(lib, task.entry, overrides)
+        }
+        var entry = task.entry
+        var budget = task.scripts.maxOf { it.maxRounds }.coerceAtLeast(1)
+        var status = MaaStatus.FAILED
+        while (true) {
+            val currentTasker = synchronized(lifecycleLock) { tasker } ?: return MaaStatus.FAILED
+            val before = task.scripts.associate { it.entry to maaLatestNodeId(lib, currentTasker, it.entry) }
+            status = postAndWait(lib, entry, overrides)
+            if (lib.MaaTaskerStopping(currentTasker).toInt() != 0) return status
+            if (status != MaaStatus.SUCCEEDED) return status
+
+            val handoff = task.scripts.firstOrNull { script ->
+                maaLatestNodeId(lib, currentTasker, script.entry) != before[script.entry]
+            } ?: return status
+
+            val script = ScriptRegistry.byId(handoff.scriptId)
+            if (script == null) {
+                Ln.w("MaaRunner: 未知脚本 ${handoff.scriptId}，跳过交棒")
+                return status
+            }
+            if (budget-- <= 0) {
+                Ln.e("MaaRunner: ${task.taskName} 交棒次数用尽（${script.id}）")
+                return MaaStatus.FAILED
+            }
+            Ln.i("MaaRunner: ${task.taskName} 在 ${handoff.entry} 交棒给 ${script.id}")
+
+            val hostController = controller ?: return MaaStatus.FAILED
+            val host = MaaScriptHost(
+                lib = lib,
+                tasker = currentTasker,
+                controller = hostController,
+                screenWidth = SCRIPT_SCREEN_WIDTH,
+                screenHeight = SCRIPT_SCREEN_HEIGHT,
+                isCancelled = { isStopRequested() },
+                logger = { Ln.i("MaaScript[${script.id}] $it") },
+            )
+            suppressEvents = true
+            try {
+                script.run(host, handoff.params)
+            } catch (e: Throwable) {
+                Ln.e("MaaRunner: 脚本 ${script.id} 异常：${e.javaClass.simpleName}: ${e.message}")
+                return MaaStatus.FAILED
+            } finally {
+                suppressEvents = false
+            }
+            if (isStopRequested()) return status
+            entry = handoff.resumeEntry
+        }
+    }
+
+    private fun postAndWait(lib: MaaFrameworkLibrary, entry: String, overrides: String): Int {
+        val currentTasker = synchronized(lifecycleLock) { tasker } ?: return MaaStatus.FAILED
+        val taskId = lib.MaaTaskerPostTask(currentTasker, entry, overrides)
+        if (taskId == INVALID_ID) return MaaStatus.FAILED
+        return lib.MaaTaskerWait(currentTasker, taskId)
     }
 
     private fun isStopRequested(): Boolean = synchronized(lifecycleLock) {
@@ -639,6 +709,14 @@ class MaaRunner(private val agentHost: AgentHost) {
     private companion object {
         /** MaaInvalidId */
         const val INVALID_ID = 0L
+
+        /**
+         * 脚本坐标系：controller 已把截图短边归一到 720（SCREENSHOT_TARGET_SHORT_SIDE），
+         * 引擎在点击时按 image_raw/target 比例反算回真机像素（ControllerAgent.cpp:1214），
+         * 所以脚本里只要按 1280x720 这种基准想坐标即可
+         */
+        const val SCRIPT_SCREEN_WIDTH = 1280
+        const val SCRIPT_SCREEN_HEIGHT = 720
         const val BRIDGE_LIBRARY_NAME = "libbridge.so"
 
         /** 解释器这类 child 冷启动要几秒，超时给宽一点；连不上会整批任务失败，宁可多等 */

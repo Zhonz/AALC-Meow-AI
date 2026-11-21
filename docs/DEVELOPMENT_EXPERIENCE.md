@@ -254,6 +254,19 @@ M9A-Meow 采用的体系架构分为三层：
 - **导入前先预览**：解析 → `MaaPromptDialog` 列出出战顺序、待命、套用了几项、忽略了几项，确认后才覆盖**当前选中的那一队**（文件里的 `team_number` 不可信，用户可能想导进别的队）。一个罪人都没解析出来时不允许确认，直接提示「确认是用 AALC 导出的文件」。
 - **不做假开关**：AALC 有而本引擎没有管线的设置（弃置体系、不治疗/不购买/不合成/不出售/不升级、第二体系、技能替换、编队码、商店刷新次数、每层重新编队、困难楼层、EGO 饰品观测）不在 UI 里摆开关，只在编队页底部列出并说明「缺的是识别与操作流程」——能点但不生效比没有更糟。
 
+### 2.14 交棒（handoff）：声明式管线中途把执行权交给 Kotlin 脚本
+
+- **为什么必须破例**：AALC 的 `tasks/mirror/in_shop.py` 有 1518 行——读剩余经费（OCR + 数字纠错）、按 `(y // 40, x)` 排序点饰品、按次数刷关键词、钱不够就收手、最后无论如何都要把玩家带出商店。这些是**带状态和阈值的命令式逻辑**，pipeline JSON 表达不了。硬塞成节点只会得到一堆互相抢识别的分支。
+- **交棒三件套**：`RuntimeTask.scripts` 携带 `TaskScript(scriptId, entry, resumeEntry, maxRounds, params)`（`runner/RunPlan.kt`），由 `RunPlanBuilder` 在编译任务时从 PI option 摊平（`script/ShopScriptBinding.kt`）。管线跑到 `entry` 节点即「本轮任务成功结束」，App 侧跑脚本，跑完把 `resumeEntry` 重新投给引擎。
+- **交棒节点怎么造**：`MirrorHandleShop` 用 `TemplateMatch`（`mirror/shop/shop_coins_assets.png`，thr 0.88，roi `[428,81,346,112]`）+ `action: DoNothing` + `"next": []` + `timeout`。`next` 为空是关键——空 next 让任务**正常成功**返回，MaaRunner 才有机会在中间插一段自己的代码。注意 `mirror/road_in_mir/shop.png` 是地图上的商店节点图标（`search_road.py:119` 用它算节点权重），不是商店界面；判定「人已经在商店里」要用经费栏 `shop_coins_assets.png`（`mirror.py:162` 的注释就是「防止卡死在商店」）。
+- **别用「节点存在」判交棒**：`MaaTaskerGetLatestNode` 读的是 `RuntimeCache::latest_nodes_`，**按节点名长期保留，只在 clear() 时清空**。第二次进商店时 id 早就在了，靠存在性判断会一次不落地误判。正确做法是投递前对每个 `script.entry` 取一次 id 快照，`Wait` 成功后再取一次，**id 变了**才算本轮跑到（`MaaRunner.runScriptedTask`）。
+- **识别不能走 `MaaTaskerPostRecognition`**：它要求调用方自己给一帧图（`Common/MaaTasker.cpp` 里 image 为空直接返回 `MaaInvalidId`）。改成「探针节点 + 覆盖」：每次识别现造一个 `__MaaScriptProbe` 节点（`pipeline_override` 允许凭空建节点），`DoNothing` + `next: []` 投一次，再顺 task → node → reco 三级详情读 `detail_json`（`remote/MaaScriptHost.kt`）。代价是**一次识别一个任务，约 1.2 秒**，所以脚本里不要写「每帧轮询」，只在决策点识别。
+- **坐标是截图空间**：controller 已经设了 `SCREENSHOT_TARGET_SHORT_SIDE = 720`，脚本一律按 1280×720 算；引擎在 `ControllerAgent::handle_click` 里按 `image_raw / image_target` 自动放大回真机像素，脚本不用关心设备分辨率。
+- **探针任务要静音**：每次探针都会触发 `Tasker.Task.Starting/Succeeded` 回调，UI 会凭空多出一串无名任务。`MaaRunner` 用 `@Volatile suppressEvents` 在脚本执行期间整段丢弃事件（`MaaRunner.kt` 的 eventSink 第一行）。
+- **预算与兜底**：`maxRounds`（默认 16）限制一次任务里被交棒的次数，防止脚本与管线互相踢皮球；脚本自己必须 try/finally——**不管中间哪步失败都要执行「离开商店」**，否则玩家卡在商店界面，后续所有识别都对不上。脚本抛异常按任务失败处理，不让管线带着半截状态继续。
+- **参数一律来自 PI**：`shop_do_not_heal` / `shop_do_not_buy` / `shop_do_not_sell` / `shop_sell_systems` / `shop_keyword_refresh` / `shop_normal_refresh` / `shop_buy_level_gifts` / `shop_must_purchase`，缺值回落到 PI 的 `default_case`，与 UI 显示的默认值同源——否则会出现「界面显示开、实际没开」。`shop_strategy = leave` 是全零开关，等同 AALC 的 `ignore_shop`。
+- **可验证性**：交棒这条链没有 schema 能校验，只能引擎级验。做法是拿 CustomController 回放合成帧：贴经费栏 → `post_task('MirrorDungeonEntry')` 应走 `MirrorDungeonEntry → MirrorCheckShopCoins → MirrorHandleShop` 且 succeeded；再分别贴「只有地图 legend / 奖励卡确认页 / 卡包选择页」，确认三个处理节点不互相误触。结果记在 [docs/VERIFICATION.md](VERIFICATION.md) 第八节。
+
 ---
 
 ## 3. 兄弟项目移植研判：MAAend（终末地）

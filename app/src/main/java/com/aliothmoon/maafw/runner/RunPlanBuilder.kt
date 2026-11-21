@@ -14,6 +14,7 @@ import com.aliothmoon.maafw.domain.RunConfigurationId
 import com.aliothmoon.maafw.domain.TeamOptionScope
 import com.aliothmoon.maafw.domain.UserConfiguration
 import com.aliothmoon.maafw.domain.validateInputCandidate
+import com.aliothmoon.maafw.script.ShopScriptBinding
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -106,10 +107,11 @@ object RunPlanBuilder {
             patches += globalPatches
             patches += resourcePatches
             // 编队域字段以编队预设为准：任务面板已不展开这些项（见 TeamOptionScope）
+            val taskValues = TeamOptionScope.mergedValues(config.teamPresets, configured.optionValues)
             compileOptions(
                 definition = definition,
                 optionNames = task.optionNames,
-                values = TeamOptionScope.mergedValues(config.teamPresets, configured.optionValues),
+                values = taskValues,
                 scopeLabel = "task:${task.name}",
                 resourceName = resource.name,
                 patches = patches,
@@ -120,6 +122,8 @@ object RunPlanBuilder {
                 entry = task.entry,
                 pipelineOverrides = patches,
                 label = task.label.ifBlank { task.name },
+                // 镜牢商店这类「要读屏做决策」的分段交给脚本，配置值直接摊平送进特权进程
+                scripts = ShopScriptBinding.scriptsFor(task, definition, taskValues),
             )
         }
 

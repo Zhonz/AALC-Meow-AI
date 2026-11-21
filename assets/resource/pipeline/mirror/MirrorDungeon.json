@@ -412,7 +412,7 @@
     },
     "action": "DoNothing",
     "next": [
-      "MirrorLeaveShop"
+      "MirrorHandleShop"
     ]
   },
   "MirrorCheckLegend": {
@@ -860,6 +860,9 @@
     },
     "action": "DoNothing",
     "next": [
+      "MirrorHandleShop",
+      "MirrorHandleRewardCard",
+      "MirrorHandleThemePackFeature",
       "MirrorClickNode",
       "MirrorEgoGiftGetConfirm",
       "MirrorAcquireEgoGiftCard",
@@ -884,7 +887,11 @@
     "action": "Click",
     "post_delay": 1500,
     "next": [
-      "MirrorInDungeon"
+      "MirrorHandleShop",
+      "MirrorHandleRewardCard",
+      "MirrorHandleThemePackFeature",
+      "MirrorInDungeon",
+      "BattleAutoCombat"
     ]
   },
   "MirrorEgoGiftGetConfirm": {

@@ -343,6 +343,15 @@ class MaaFrameworkRunnerPort(
                     taskName = it.taskName,
                     entry = it.entry,
                     pipelineOverrides = it.pipelineOverrides,
+                    scripts = it.scripts.map { script ->
+                        TaskScriptPayload(
+                            scriptId = script.scriptId,
+                            entry = script.entry,
+                            resumeEntry = script.resumeEntry,
+                            maxRounds = script.maxRounds,
+                            params = script.params,
+                        )
+                    },
                 )
             },
             agents = plan.agents.map { AgentPayload(it.childExec, it.childArgs) },

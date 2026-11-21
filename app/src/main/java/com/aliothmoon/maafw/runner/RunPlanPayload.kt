@@ -64,6 +64,17 @@ data class RuntimeTaskPayload(
      * MaaFramework 侧按数组顺序合并（Task/Context.cpp 的 is_array 分支），不能在这里提前合并成一个对象
      */
     val pipelineOverrides: List<JsonObject>,
+    /** 需要脚本接管的分段，见 [TaskScript] */
+    val scripts: List<TaskScriptPayload> = emptyList(),
+)
+
+@Serializable
+data class TaskScriptPayload(
+    val scriptId: String,
+    val entry: String,
+    val resumeEntry: String,
+    val maxRounds: Int = 16,
+    val params: Map<String, String> = emptyMap(),
 )
 
 /** 整轮执行的结果，取值随 IMaaRunnerCallback.onFinished 过 binder */

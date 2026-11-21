@@ -458,75 +458,20 @@
     ]
   },
   "MirrorHandleShop": {
-    "doc": "检测到商店界面",
+    "doc": "镜牢商店（顶部经费栏）——交棒节点：管线到这里算本轮任务成功结束，由 Kotlin 脚本接管买卖/治疗/刷新，跑完再从 MirrorDungeonEntry 续上（见 docs/DEVELOPMENT_EXPERIENCE.md §2.14）。识别值沿用原先卡死兜底的 MirrorCheckShopCoins：roi 只框住经费栏，阈 0.88，避免地图上偶现的金币图标误触",
     "recognition": {
       "type": "TemplateMatch",
-      "template": "mirror/road_in_mir/shop.png",
-      "threshold": 0.75
+      "template": "mirror/shop/shop_coins_assets.png",
+      "threshold": 0.88,
+      "roi": [
+        428,
+        81,
+        346,
+        112
+      ]
     },
     "action": "DoNothing",
-    "next": [
-      "MirrorShopHealAll",
-      "MirrorLeaveShopInExploration"
-    ]
-  },
-  "MirrorShopHealAll": {
-    "doc": "进店自动点击全员治疗（由 MirrorShopStrategy option 决定是否启用）",
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "mirror/shop/heal_sinner/heal_all_sinner_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        1054,
-        283,
-        226,
-        126
-      ]
-    },
-    "action": "Click",
-    "post_delay": 800,
-    "next": [
-      "MirrorShopHealReturn",
-      "MirrorLeaveShopInExploration"
-    ]
-  },
-  "MirrorShopHealReturn": {
-    "doc": "治疗后点击返回商店主界面",
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "mirror/shop/heal_sinner/heal_sinner_return_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        1028,
-        591,
-        252,
-        126
-      ]
-    },
-    "action": "Click",
-    "post_delay": 600,
-    "next": [
-      "MirrorLeaveShopInExploration"
-    ]
-  },
-  "MirrorLeaveShopInExploration": {
-    "doc": "点击离开商店按钮",
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "mirror/leave_shop_confirm.png",
-      "threshold": 0.75,
-      "roi": [
-        610,
-        444,
-        336,
-        97
-      ]
-    },
-    "action": "Click",
-    "post_delay": 1000,
-    "next": [
-      "MirrorDungeonExploration"
-    ]
+    "next": []
   },
   "MirrorHandleEvent": {
     "doc": "检测到镜牢事件界面，转交 EventHandling 处理",

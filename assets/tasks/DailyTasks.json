@@ -52,6 +52,21 @@
         "shop_normal_refresh",
         "shop_buy_level_gifts",
         "shop_must_purchase",
+        "shop_fuse_mode",
+        "shop_do_not_enhance",
+        "shop_fuse_save_system",
+        "shop_fuse_only_aggressive",
+        "shop_fuse_only_system",
+        "shop_fuse_no_system",
+        "shop_aggressive_also_enhance",
+        "shop_after_iv",
+        "shop_second_system",
+        "shop_second_buy",
+        "shop_second_protect",
+        "shop_second_enhance",
+        "shop_skill_replacement",
+        "shop_skill_priority",
+        "shop_skill_mode",
         "reward_cards",
         "choose_opening_bonus",
         "opening_items",
@@ -1187,6 +1202,310 @@
         {
           "name": "No",
           "label": "关闭"
+        }
+      ]
+    },
+    "shop_fuse_mode": {
+      "type": "select",
+      "label": "合成策略",
+      "description": "镜牢商店的合成总开关。不合成＝只买/卖/升级；合成＝把废品凑三件合成；合成：四级优先＝先把没用的饰品全塞进去梭哈四级（电脑版 AALC 的 shopping_strategy 0/1/2）",
+      "default_case": "normal",
+      "cases": [
+        {
+          "name": "off",
+          "label": "不合成"
+        },
+        {
+          "name": "normal",
+          "label": "合成"
+        },
+        {
+          "name": "aggressive",
+          "label": "合成：四级优先（激进）"
+        }
+      ]
+    },
+    "shop_do_not_enhance": {
+      "type": "switch",
+      "label": "不升级饰品",
+      "description": "进店后不做「强化」升级（电脑版 AALC 的 do_not_enhance）",
+      "default_case": "No",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "开启"
+        },
+        {
+          "name": "No",
+          "label": "关闭"
+        }
+      ]
+    },
+    "shop_fuse_save_system": {
+      "type": "switch",
+      "label": "合成时保护本体系饰品",
+      "description": "激进合成选料时，把本体系的饰品挑出来不参与合成",
+      "default_case": "No",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "开启"
+        },
+        {
+          "name": "No",
+          "label": "关闭"
+        }
+      ]
+    },
+    "shop_fuse_only_aggressive": {
+      "type": "switch",
+      "label": "只做激进合成",
+      "description": "跳过普通的三件废品合成，只做梭哈四级那一路",
+      "default_case": "No",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "开启"
+        },
+        {
+          "name": "No",
+          "label": "关闭"
+        }
+      ]
+    },
+    "shop_fuse_only_system": {
+      "type": "switch",
+      "label": "只做公式合成",
+      "description": "跳过激进与普通合成，只按体系配方合成本体系饰品",
+      "default_case": "No",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "开启"
+        },
+        {
+          "name": "No",
+          "label": "关闭"
+        }
+      ]
+    },
+    "shop_fuse_no_system": {
+      "type": "switch",
+      "label": "不做公式合成",
+      "description": "保留激进/普通合成，但不做按体系配方的合成",
+      "default_case": "No",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "开启"
+        },
+        {
+          "name": "No",
+          "label": "关闭"
+        }
+      ]
+    },
+    "shop_aggressive_also_enhance": {
+      "type": "switch",
+      "label": "激进合成期间也升级",
+      "description": "默认激进合成时不升级（经费要留给合成），勾上则两手都做",
+      "default_case": "No",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "开启"
+        },
+        {
+          "name": "No",
+          "label": "关闭"
+        }
+      ]
+    },
+    "shop_after_iv": {
+      "type": "select",
+      "label": "合出四级之后",
+      "description": "合成出本体系四级饰品后的策略（电脑版 AALC 的 after_level_IV）",
+      "default_case": "calm",
+      "cases": [
+        {
+          "name": "calm",
+          "label": "转为普通合成"
+        },
+        {
+          "name": "sell",
+          "label": "停止合成，只出售"
+        },
+        {
+          "name": "second",
+          "label": "转去追第二体系"
+        },
+        {
+          "name": "skip",
+          "label": "之后几层的商店都跳过"
+        }
+      ]
+    },
+    "shop_second_system": {
+      "type": "select",
+      "label": "第二体系",
+      "description": "设置第二体系后，合成出四级会转去追它的四级饰品（电脑版 AALC 的 second_system）",
+      "default_case": "none",
+      "cases": [
+        {
+          "name": "none",
+          "label": "不使用"
+        },
+        {
+          "name": "burn",
+          "label": "烧伤"
+        },
+        {
+          "name": "bleed",
+          "label": "流血"
+        },
+        {
+          "name": "tremor",
+          "label": "震颤"
+        },
+        {
+          "name": "rupture",
+          "label": "破裂"
+        },
+        {
+          "name": "poise",
+          "label": "呼吸"
+        },
+        {
+          "name": "sinking",
+          "label": "沉沦"
+        },
+        {
+          "name": "charge",
+          "label": "充能"
+        },
+        {
+          "name": "slash",
+          "label": "斩击"
+        },
+        {
+          "name": "pierce",
+          "label": "突刺"
+        },
+        {
+          "name": "blunt",
+          "label": "打击"
+        }
+      ]
+    },
+    "shop_second_buy": {
+      "type": "switch",
+      "label": "也买第二体系饰品",
+      "description": "商店里也买第二体系的饰品",
+      "default_case": "No",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "开启"
+        },
+        {
+          "name": "No",
+          "label": "关闭"
+        }
+      ]
+    },
+    "shop_second_protect": {
+      "type": "switch",
+      "label": "保护第二体系饰品",
+      "description": "合成/出售时把第二体系的四级饰品保护起来",
+      "default_case": "No",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "开启"
+        },
+        {
+          "name": "No",
+          "label": "关闭"
+        }
+      ]
+    },
+    "shop_second_enhance": {
+      "type": "switch",
+      "label": "也升级第二体系饰品",
+      "description": "升级时把第二体系的饰品也强化",
+      "default_case": "No",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "开启"
+        },
+        {
+          "name": "No",
+          "label": "关闭"
+        }
+      ]
+    },
+    "shop_skill_replacement": {
+      "type": "switch",
+      "label": "购买技能替换",
+      "description": "在商店里买技能替换模块并替换技能（电脑版 AALC 的 skill_replacement）",
+      "default_case": "No",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "开启"
+        },
+        {
+          "name": "No",
+          "label": "关闭"
+        }
+      ]
+    },
+    "shop_skill_priority": {
+      "type": "select",
+      "label": "技能替换优先人格",
+      "description": "超级商店按人格搜索时，从第一个人格往下搜到第几个",
+      "default_case": "0",
+      "cases": [
+        {
+          "name": "0",
+          "label": "第 1 个"
+        },
+        {
+          "name": "1",
+          "label": "前 3 个"
+        },
+        {
+          "name": "2",
+          "label": "前 7 个"
+        }
+      ]
+    },
+    "shop_skill_mode": {
+      "type": "select",
+      "label": "替换成哪个技能",
+      "description": "技能替换模块里三个技能选哪一个（电脑版 AALC 的 skill_replacement_mode）",
+      "default_case": "0",
+      "cases": [
+        {
+          "name": "0",
+          "label": "技能 1"
+        },
+        {
+          "name": "1",
+          "label": "技能 2"
+        },
+        {
+          "name": "2",
+          "label": "技能 3"
+        },
+        {
+          "name": "3",
+          "label": "技能 1 → 2"
+        },
+        {
+          "name": "4",
+          "label": "技能 2 → 1"
         }
       ]
     },

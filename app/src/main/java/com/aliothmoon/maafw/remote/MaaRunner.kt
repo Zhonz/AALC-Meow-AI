@@ -335,6 +335,8 @@ class MaaRunner(private val agentHost: AgentHost) {
         if (task.scripts.isEmpty()) {
             return postAndWait(lib, task.entry, overrides)
         }
+        // 每个任务开始时清掉脚本的跨节点状态（例如「合成出四级后跳过后续商店」只在本任务内有效）
+        task.scripts.forEach { ScriptRegistry.byId(it.scriptId)?.resetSession() }
         var entry = task.entry
         var budget = task.scripts.maxOf { it.maxRounds }.coerceAtLeast(1)
         var status = MaaStatus.FAILED

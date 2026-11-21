@@ -204,6 +204,9 @@ interface ScriptTask {
     /** 一次任务里最多被交棒几次，防止脚本与管线互相踢皮球 */
     val maxRounds: Int get() = MAX_ROUNDS
 
+    /** 每次任务开始时调用：脚本在这里清掉「跨节点共享」的状态（例如合成出四级后跳过后续商店） */
+    fun resetSession() {}
+
     fun run(host: ScriptHost, params: Map<String, String>)
 
     companion object {

@@ -9,9 +9,9 @@ import com.aliothmoon.maafw.runner.TaskScript
 /**
  * 把 PI option 摊平成脚本参数
  *
- * 为什么不在管线里做：这些值决定的是「脚本怎么决策」（刷几次、买不买、治不治），不是管线
- * 覆盖片段，所以必须原样送到特权进程的脚本里。读取一律走 [OptionDefinition]，缺值回落到 PI
- * 的 default_case —— 与 UI 显示的默认值同源，避免「界面显示开、实际没开」。
+ * 这些值决定的是「脚本怎么决策」（刷几次、买不买、合不合、升不升级），不是管线覆盖片段，
+ * 所以必须原样送到特权进程的脚本里。读取一律走 [OptionDefinition]，缺值回落到 PI 的
+ * default_case —— 与 UI 显示的默认值同源，避免「界面显示开、实际没开」。
  */
 object ShopScriptBinding {
     /** 镜牢任务的入口节点；用它认任务比按名字认可靠（PI 里任务名可以改） */
@@ -48,9 +48,14 @@ object ShopScriptBinding {
         val sellSystems = multipleCases(definition, values, "shop_sell_systems")
             .filter { it in SYSTEMS }
             .joinToString(",")
+        val second = singleCase(definition, values, "shop_second_system")
+            ?.takeIf { it in SYSTEMS }
+            ?.let { it }
         // 总开关优先：选「直接离开」就一分钱不花，细项一律按住 —— 与电脑版 AALC 的 ignore_shop 同义
         val leaveOnly = singleCase(definition, values, "shop_strategy") == "leave"
-        return mapOf(
+        val fuseMode = if (leaveOnly) "off" else singleCase(definition, values, "shop_fuse_mode") ?: "normal"
+
+        return linkedMapOf(
             MirrorShopScript.KEY_SYSTEM to (system ?: ""),
             MirrorShopScript.KEY_SELL_SYSTEMS to sellSystems,
             MirrorShopScript.KEY_DO_NOT_HEAL to
@@ -60,6 +65,34 @@ object ShopScriptBinding {
             // 出售会不可逆地清掉玩家饰品，默认关：没配弃置体系就当没开
             MirrorShopScript.KEY_DO_NOT_SELL to
                 if (leaveOnly) "1" else flag(definition, values, "shop_do_not_sell", default = true),
+            MirrorShopScript.KEY_DO_NOT_ENHANCE to
+                if (leaveOnly) "1" else flag(definition, values, "shop_do_not_enhance", default = false),
+            MirrorShopScript.KEY_FUSE_MODE to fuseMode,
+            MirrorShopScript.KEY_SAVE_SYSTEM_GIFTS to
+                if (leaveOnly) "0" else flag(definition, values, "shop_fuse_save_system", default = false),
+            MirrorShopScript.KEY_ONLY_AGGRESSIVE_FUSE to
+                if (leaveOnly) "1" else flag(definition, values, "shop_fuse_only_aggressive", default = false),
+            MirrorShopScript.KEY_ONLY_SYSTEM_FUSE to
+                if (leaveOnly) "1" else flag(definition, values, "shop_fuse_only_system", default = false),
+            MirrorShopScript.KEY_NO_SYSTEM_FUSE to
+                if (leaveOnly) "1" else flag(definition, values, "shop_fuse_no_system", default = false),
+            MirrorShopScript.KEY_AGGRESSIVE_ALSO_ENHANCE to
+                if (leaveOnly) "0" else flag(definition, values, "shop_aggressive_also_enhance", default = false),
+            MirrorShopScript.KEY_AFTER_IV to
+                if (leaveOnly) "calm" else (singleCase(definition, values, "shop_after_iv") ?: "calm"),
+            MirrorShopScript.KEY_SECOND_SYSTEM to (second ?: ""),
+            MirrorShopScript.KEY_SECOND_BUY to
+                if (leaveOnly) "0" else flag(definition, values, "shop_second_buy", default = false),
+            MirrorShopScript.KEY_SECOND_PROTECT to
+                if (leaveOnly) "0" else flag(definition, values, "shop_second_protect", default = false),
+            MirrorShopScript.KEY_SECOND_ENHANCE to
+                if (leaveOnly) "0" else flag(definition, values, "shop_second_enhance", default = false),
+            MirrorShopScript.KEY_SKILL_REPLACEMENT to
+                if (leaveOnly) "0" else flag(definition, values, "shop_skill_replacement", default = false),
+            MirrorShopScript.KEY_SKILL_PRIORITY to
+                number(definition, values, "shop_skill_priority", 0),
+            MirrorShopScript.KEY_SKILL_MODE to
+                number(definition, values, "shop_skill_mode", 0),
             MirrorShopScript.KEY_MAX_KEYWORD_REFRESH to
                 if (leaveOnly) "0" else number(definition, values, "shop_keyword_refresh", 1),
             MirrorShopScript.KEY_MAX_NORMAL_REFRESH to
@@ -68,7 +101,6 @@ object ShopScriptBinding {
                 if (leaveOnly) "0" else flag(definition, values, "shop_buy_level_gifts", default = true),
             MirrorShopScript.KEY_MUST_PURCHASE to
                 if (leaveOnly) "0" else flag(definition, values, "shop_must_purchase", default = true),
-            MirrorShopScript.KEY_AGGRESSIVE to "1",
         )
     }
 

@@ -518,3 +518,17 @@ AALC 的 `select_observe_ego_gift`（`mirror.py:965`）是少数几个完全靠�
 - **奖励卡四套顺序**：AALC 的 `reward_card_model` 是 4 个模型（0 星光优先、1 星光-经费、2 经费优先、3 饰品优先），每套都是 5 张牌的顺序表；本项目此前只写了 3 个 case 且漏了 `gain_starlight` / `gain_ego_resource`。现在 `reward_cards` 的 4 个 case 严格对应模型 0~3，每条 `next` 末尾都保留「选第一张」兜底，避免全部不匹配时卡死。
 - **流血体系的白棉花**：AALC `in_shop.py:236` 在买体系饰品前后做整屏 OCR，命中「白棉花 / white / gossypium」就点空白取消，不买那一格。脚本层没有整屏 OCR 的默认 ROI，所以显式传 `ScriptRect(0, 0, screenWidth, screenHeight)`；选项 `shop_skip_whitegossypium` 默认开，导入时由 `not_skip_whitegossypium` 取反映射。
 - **清队兜底**：AALC `clean_team()` 在清队确认按钮不在时会点 `identify` 下方 600×scale（720p = 300px）把面板收起来。管线里新增 `TeamClearPanelTail` 节点做同一件事，挂在 `TeamFormationStart` 的 `next` 第二位，只尝试一次就转去点选罪人，避免和 `ClearCurrentTeam` 形成死循环。
+## 15. 编队页与战败重开：把 first_battle 语义翻成脚本状态
+
+AALC 的编队逻辑有三层语义（`team_formation.py` + `mirror.py:370-401` + `re_start`）：
+
+1. 本局第一次进编队页：清队 → 按顺位点 12 个格子 → 点出战；
+2. 之后每次再进编队页：先看还能打几个人——`12/11/10_sinner_live_assets` 任一在场就算够，`none_sinner_assets` 说明队伍被清空（重编即可），否则整屏 OCR 找 `a/b`（分母 5..9、分子 ≥5）判定；
+3. 不够 5 人且不是首战：`re_start()` —— 依次点「转窗口并放弃→确认」「放弃」「投降」「设置」，点到确认后整局重开。
+
+移植时的两个关键点：
+
+- **坐标就是管线里那套**：`SelectSinnerSlot1..12` 的 `target_offset` 相对识别框左上角，而 AALC 的 `find_element` 返回中心点；两者换算后点的是同一个像素（中心 + (-900, 65)），所以脚本直接用 `centerX/centerY` 加偏移，不需要为管线再算一遍。
+- **first_battle 用两个开关表达**：`formed`（本局按配置编过队）与 `formedOnce`（本局至少编过一次，才有资格做存活检查）。重开成功后两者都清掉，等价于 AALC 的 `first_battle = True`，避免「重开 → 立刻又判定不够 → 再重开」的死循环。
+
+顺位来自编队页的 12 个 slot option（`TeamOptionScope.ORDER_SLOT_NAMES`），映射方式和 `TeamPreset.toggleSinner` 一致：点选顺序即出战顺位。`re_formation_each_floor` 对应 `KEY_REFORM`，打开后每层都重编一次。

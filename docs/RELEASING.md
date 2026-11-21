@@ -337,3 +337,23 @@ python scripts/pack_pi.py --version-code 2611220001 --version v0.3.2
 
 - 触发 `build-apk.yml` 出包并按 tag 发布 Release；`publish-pi.yml` 的 `pi-<code>` tag **不是**版本号，别拿它当发版依据（APK 命名同理，CI 里已用 `--match 'v[0-9]*'` 过滤）。
 
+
+
+## 九、发布签名密钥（每次发布必须同一个）
+
+v0.6.6 及以前的 APK 都是 **debug 签名**：GitHub Actions 每次运行都会生成一把新的 debug key，
+所以两个版本的签名不同，手机上无法覆盖安装（`INSTALL_FAILED_UPDATE_INCOMPATIBLE`）。
+
+从 v0.6.7 起 CI 用固定密钥签名，密钥来自仓库 Secrets：
+
+| Secret | 内容 |
+| --- | --- |
+| `KEYSTORE_BASE64` | 密钥库 `release.jks` 的 base64 |
+| `KEYSTORE_PASSWORD` | 密钥库口令 |
+| `KEY_ALIAS` | `aalcmeow` |
+| `KEY_PASSWORD` | 私钥口令 |
+
+密钥备份在本机 `/root/.alc-meow-signing/`（`release.jks` + `pass.txt`），
+证书指纹 SHA-256：`49:71:4E:42:81:E0:4E:D9:8B:FB:7B:33:D9:D7:A0:E6:A8:05:BC:E2:F8:29:A7:7E:6C:0E:39:5F:53:A7:B1:0E`。
+
+**这把密钥一旦丢失，用户就再也没法覆盖升级，只能卸载重装。** 换机器或清理时必须先备份。

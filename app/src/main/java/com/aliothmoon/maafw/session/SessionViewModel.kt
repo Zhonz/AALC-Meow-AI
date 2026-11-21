@@ -26,6 +26,7 @@ import com.aliothmoon.maafw.privileged.ShizukuReadiness
 import com.aliothmoon.maafw.privileged.SystemPermission
 import com.aliothmoon.maafw.privileged.SystemPermissionState
 import com.aliothmoon.maafw.project.PiInstallCoordinator
+import com.aliothmoon.maafw.project.PiResourceUpdater
 import com.aliothmoon.maafw.project.ProjectRepository
 import com.aliothmoon.maafw.project.ProjectState
 import com.aliothmoon.maafw.domain.ResolvedProjectSession
@@ -120,6 +121,8 @@ class SessionViewModel(
     /** 运行日志的产地；VM 只转发它的流并转达「清空」 */
     private val recorder: RunLogRecorder,
     private val piInstall: PiInstallCoordinator,
+    /** 上游 AALC 换了图/流程时，不必等发新 APK 也能换资源 */
+    private val piResourceUpdater: PiResourceUpdater,
 ) : ViewModel() {
 
     private val privilegedState: Flow<PrivilegedSnapshot> = combine(
@@ -198,13 +201,31 @@ class SessionViewModel(
         _effects.tryEmit(effect)
     }
 
+    /**
+     * 启动时顺手看一眼资源包
+     *
+     * 失败不出声：这条链路跑在首屏旁边，网络不通是最常见的情况，弹出来只会让用户
+     * 以为 App 坏了。真装上了才 reload，让新流程立刻生效
+     */
+    private suspend fun autoUpdatePiResources() {
+        if (!appSettings.resourceAutoUpdate.value) return
+        val installed = piResourceUpdater.checkAndInstall()
+        if (installed) {
+            Timber.i("PI resources updated, reloading project")
+            projectRepository.reload()
+        }
+    }
+
     // Intent 串行消费，保证配置写入不交错
     private val intents = Channel<SessionIntent>(Channel.UNLIMITED)
 
     init {
         // 解包在前、加载在后；解包没成不要 reload，半包会被当成已解包
         viewModelScope.launch {
-            if (piInstall.ensureInstalled()) projectRepository.reload()
+            if (piInstall.ensureInstalled()) {
+                projectRepository.reload()
+                autoUpdatePiResources()
+            }
         }
         viewModelScope.launch {
             for (intent in intents) handle(intent)

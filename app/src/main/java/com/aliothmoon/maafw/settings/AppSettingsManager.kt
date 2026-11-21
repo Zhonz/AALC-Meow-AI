@@ -106,6 +106,9 @@ class AppSettingsManager(private val context: Context) : AppSettingsGateway {
     private val _autoCheckUpdate = MutableStateFlow(defaults.autoCheckUpdate.toBoolean())
     override val autoCheckUpdate: StateFlow<Boolean> = _autoCheckUpdate.asStateFlow()
 
+    private val _resourceAutoUpdate = MutableStateFlow(defaults.resourceAutoUpdate.toBoolean())
+    override val resourceAutoUpdate: StateFlow<Boolean> = _resourceAutoUpdate.asStateFlow()
+
     private val _autoDownloadUpdate = MutableStateFlow(defaults.autoDownloadUpdate.toBoolean())
     override val autoDownloadUpdate: StateFlow<Boolean> = _autoDownloadUpdate.asStateFlow()
 
@@ -149,6 +152,7 @@ class AppSettingsManager(private val context: Context) : AppSettingsGateway {
                 _wakeCredential.value = s.wakeCredential
                 _telemetryEnabled.value = s.telemetryEnabled.toBoolean()
                 _autoCheckUpdate.value = s.autoCheckUpdate.toBoolean()
+                _resourceAutoUpdate.value = s.resourceAutoUpdate.toBoolean()
                 _autoDownloadUpdate.value = s.autoDownloadUpdate.toBoolean()
                 _updateChannel.value = parseUpdateChannel(s.updateChannel)
                 _updateSource.value = parseUpdateSource(s.updateSource)
@@ -230,6 +234,10 @@ class AppSettingsManager(private val context: Context) : AppSettingsGateway {
 
     override suspend fun setAutoCheckUpdate(enabled: Boolean): Unit = with(AppSettingsSchema) {
         context.dataStore.edit { it[autoCheckUpdate] = enabled.toString() }
+    }
+
+    override suspend fun setResourceAutoUpdate(enabled: Boolean): Unit = with(AppSettingsSchema) {
+        context.dataStore.edit { it[resourceAutoUpdate] = enabled.toString() }
     }
 
     override suspend fun setAutoDownloadUpdate(enabled: Boolean): Unit = with(AppSettingsSchema) {

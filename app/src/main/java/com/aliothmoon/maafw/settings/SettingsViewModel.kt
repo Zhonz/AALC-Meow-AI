@@ -102,6 +102,8 @@ class SettingsViewModel(
         )
     }.combine(appSettings.autoDownloadUpdate) { base, autoDownload ->
         base.copy(autoDownloadUpdate = autoDownload)
+    }.combine(appSettings.resourceAutoUpdate) { base, resourceAuto ->
+        base.copy(resourceAutoUpdate = resourceAuto)
     }
 
     val uiState: StateFlow<SettingsUiState> = combine(
@@ -146,6 +148,11 @@ class SettingsViewModel(
             is SettingsIntent.SetAutoDownloadUpdate -> viewModelScope.launch {
                 if (updateSettingsLocked()) return@launch
                 appSettings.setAutoDownloadUpdate(intent.enabled)
+            }
+
+            // 资源包与 APK 的下载过程无关，不受 updateSettingsLocked 限制
+            is SettingsIntent.SetResourceAutoUpdate -> viewModelScope.launch {
+                appSettings.setResourceAutoUpdate(intent.enabled)
             }
 
             is SettingsIntent.SetPipOnHome -> viewModelScope.launch {

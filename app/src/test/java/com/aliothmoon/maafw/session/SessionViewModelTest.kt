@@ -26,6 +26,8 @@ import com.aliothmoon.maafw.project.FakeProjectRepository
 import com.aliothmoon.maafw.project.PiInstallCoordinator
 import com.aliothmoon.maafw.project.PiInstaller
 import com.aliothmoon.maafw.project.PiPackage
+import com.aliothmoon.maafw.project.PiRemoteState
+import com.aliothmoon.maafw.project.PiResourceUpdater
 import com.aliothmoon.maafw.project.ProjectState
 import com.aliothmoon.maafw.runner.RUN_LOG_CAPACITY
 import com.aliothmoon.maafw.runner.RecordingEventRunnerPort
@@ -53,6 +55,8 @@ import com.aliothmoon.maafw.runner.StubRunnerPort
 import com.aliothmoon.maafw.runner.StubRunnerScenario
 import com.aliothmoon.maafw.runner.isBusy
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
@@ -198,6 +202,7 @@ class SessionViewModelTest {
             focusDispatcher = focusDispatcher,
             recorder = recorderFor(runner, focusDispatcher),
             piInstall = emptyPiInstall(),
+            piResourceUpdater = NoopPiResourceUpdater,
         )
         return Triple(vm, store, runner)
     }
@@ -223,7 +228,15 @@ class SessionViewModelTest {
             focusDispatcher = focusDispatcher,
             recorder = recorderFor(runner, focusDispatcher),
             piInstall = emptyPiInstall(),
+            piResourceUpdater = NoopPiResourceUpdater,
         )
+    }
+
+    /** 远程资源更新在这层只决定「装上了要不要 reload」，网络另有 PiRemoteUpdateTest 覆盖 */
+    private object NoopPiResourceUpdater : PiResourceUpdater {
+        override val state: StateFlow<PiRemoteState> = MutableStateFlow(PiRemoteState.Idle)
+
+        override suspend fun checkAndInstall(): Boolean = false
     }
 
     /**

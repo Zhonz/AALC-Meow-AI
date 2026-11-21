@@ -133,6 +133,25 @@ pip install "maafw==<与 UPSTREAM_VERSIONS.json 相同的版本>"
 python3 scripts/verify_with_engine.py        # 自动走绑定回退，加载 assets/resource
 ```
 
+## 六、资源包发布（pi.zip，与 APK 解耦）
+
+APK 里的 `assets/pi.zip` 是发版那一刻的资源快照。上游 AALC 换了识别图或流程时，资源不必等下一次发 APK：
+
+```bash
+python3 scripts/pack_pi.py --notes "跟到 AALC V1.6.2 的新界面"   # 产出 build/pi/{pi.zip,pi-manifest.json}
+python3 scripts/pack_pi.py --code 202611211200                  # 手动指定修订号
+```
+
+- 白名单与 `pi-profile.yaml` 的 `include`/`exclude` 一致，zip 根目录直接是 `interface.json`、`tasks/`、`resource/`；
+  套一层目录会被 `PiInstaller.requireInterfaceJson` 拒掉。
+- **发布走 CI**：`assets/**` 有改动时 `.github/workflows/publish-pi.yml` 自动打包、发 `pi-<versionCode>` Release、
+  并把 `pi-manifest.json` 推回 main。App 的三个清单地址都指向 main 分支（raw / gh-proxy / jsDelivr）。
+- **修订号只有一种标尺**：清单里的 `versionCode` 是 PI 自己的修订号（默认 `YYMMDDHHmm`），
+  与 APK 的 `VERSION_CODE`（几万）不是一回事。App 侧用 `pi.remote` 标记区分：
+  当前资源来自远程时才按修订号比大小，否则任何一份有效清单都算新——见 `PiRemoteUpdate.isNewer`。
+- **失败不砸旧版**：解到 `pi.staging` 校验通过才把 `pi` 改名到 `pi.previous`，再换目录；换不动就挪回来。
+- APK 升级会重解打包资源（`pi.bundle` 标记不符），远程那份随之失效，下次启动按新清单再装一次。
+
 ## 六、从 MAAend-Meow 学到的经验（2026-09-27）
 
 来源：`MAAend-Meow/docs/reports/debug-cli-and-remote-debug.md`。以下与本项目直接相关：

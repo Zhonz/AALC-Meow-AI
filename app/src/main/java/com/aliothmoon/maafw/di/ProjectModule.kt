@@ -6,6 +6,8 @@ import com.aliothmoon.maafw.project.DefaultProjectRepository
 import com.aliothmoon.maafw.project.InstalledProjectSource
 import com.aliothmoon.maafw.project.PiInstallCoordinator
 import com.aliothmoon.maafw.project.PiInstaller
+import com.aliothmoon.maafw.project.PiRemoteUpdater
+import com.aliothmoon.maafw.project.PiResourceUpdater
 import com.aliothmoon.maafw.project.ProjectLoader
 import com.aliothmoon.maafw.project.ProjectRepository
 import com.aliothmoon.maafw.project.ProjectSource
@@ -20,6 +22,7 @@ val projectModule = module {
         )
     }
     single { PiInstallCoordinator(get()) }
+    single<PiResourceUpdater> { PiRemoteUpdater(helper = get(), installer = get()) }
     single<ProjectSource> { InstalledProjectSource(get()) }
     single { ProjectLoader(get()) }
     single<ProjectRepository> { DefaultProjectRepository(get()) }

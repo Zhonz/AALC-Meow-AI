@@ -164,6 +164,8 @@
     <string name="settings_update_auto_check">启动时自动检查更新</string>
     <string name="settings_update_auto_download">自动下载更新</string>
     <string name="settings_update_auto_download_desc">启动检查发现新版本时自动下载并打开安装器</string>
+    <string name="settings_update_resource_auto">启动时自动更新游戏资源</string>
+    <string name="settings_update_resource_auto_desc">上游换了界面图或流程时，不必等 App 发新版；只下载识别资源，失败会保留当前资源</string>
     <string name="dialog_update_found_title">发现新版本</string>
     <string name="dialog_update_error_title">检查更新失败</string>
     <string name="dialog_update_failed_title">更新失败</string>

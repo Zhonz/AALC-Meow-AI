@@ -437,6 +437,17 @@ private fun UpdateCard(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        MaaSwitchRow(
+            label = stringResource(R.string.settings_update_resource_auto),
+            checked = update.resourceAutoUpdate,
+            enabled = settingsEnabled,
+            onCheckedChange = { onSettingsIntent(SettingsIntent.SetResourceAutoUpdate(it)) },
+        )
+        Text(
+            text = stringResource(R.string.settings_update_resource_auto_desc),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

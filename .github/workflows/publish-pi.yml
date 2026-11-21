@@ -1,0 +1,56 @@
+name: Publish PI resources
+
+# AALC 上游换了图/流程后，这里把 assets/ 打成 pi.zip 发一个 Release，
+# App 启动时读仓库根目录的 pi-manifest.json 自己决定要不要换资源。
+# 发 APK（build-apk.yml）与发资源是两条独立链路：资源更新不需要重新发版。
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "assets/**"
+      - ".github/workflows/publish-pi.yml"
+      - "pi-profile.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Pack assets into pi.zip
+        run: python scripts/pack_pi.py
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          CODE=$(python -c "import json;print(json.load(open('build/pi/pi-manifest.json'))['versionCode'])")
+          gh release create "pi-${CODE}" \
+            build/pi/pi.zip build/pi/pi-manifest.json \
+            --title "资源包 ${CODE}" \
+            --notes-file build/pi/notes.md \
+            --latest=false
+
+      - name: Update manifest on main
+        run: |
+          set -euo pipefail
+          cp build/pi/pi-manifest.json pi-manifest.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pi-manifest.json
+          if git diff --cached --quiet; then
+            echo "manifest unchanged"
+          else
+            git commit -m "chore(pi): 发布资源包 $(python -c "import json;print(json.load(open('pi-manifest.json'))['versionCode'])")"
+            git push
+          fi

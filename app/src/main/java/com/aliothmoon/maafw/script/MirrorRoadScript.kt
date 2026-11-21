@@ -27,6 +27,13 @@ object MirrorRoadScript : ScriptTask {
     private const val FOCUSED = "mirror/road_in_mir/focused_encounter.png"
     private const val CLEAR_FLOOR = "mirror/road_in_mir/clear_floor.png"
 
+    /** 主动结算（AALC 的 floor_3_exit）：弃权按钮 + 二次确认 */
+    private const val FORFEIT = "mirror/road_in_mir/forfeit_assets.png"
+    private const val CONFIRM_FORFEIT = "mirror/road_in_mir/towindow&forfeit_confirm_assets.png"
+
+    /** 第几层收工；0 = 不主动退出 */
+    const val KEY_EXIT_FLOOR = "exitFloor"
+
     private const val LEGEND_THRESHOLD = 0.7
     private const val BUS_THRESHOLD = 0.62
     private const val NODE_THRESHOLD = 0.62
@@ -62,6 +69,7 @@ object MirrorRoadScript : ScriptTask {
 
     override fun resetSession() {
         gaveUp = false
+        MirrorFloorTracker.reset()
     }
 
     override fun run(host: ScriptHost, params: Map<String, String>) {
@@ -70,6 +78,28 @@ object MirrorRoadScript : ScriptTask {
             host.log("不在镜牢地图界面，交还给管线")
             return
         }
+        // 楼层只用来「按层跳过商店」「几层起切困难」「几层就收工」和日志；
+        // 识别要点开一次设置面板，所以带 90 秒冷却
+        val floor = MirrorFloor.detect(host)
+        if (floor > 0) host.log("当前第 " + floor + " 层")
+
+        // AALC 的 floor_3_exit：到了指定层就主动结算收工（0 = 不退出，默认 0）
+        val exitFloor = ScriptParams.int(params, KEY_EXIT_FLOOR, 0)
+        if (exitFloor > 0 && floor >= exitFloor) {
+            host.log("已到第 " + floor + " 层（设置第 " + exitFloor + " 层收工），发起结算")
+            if (host.clickTemplate(CONFIRM_FORFEIT, 0.7)) {
+                host.sleep(1_500)
+                return
+            }
+            if (host.clickTemplate(FORFEIT, 0.7)) {
+                host.sleep(1_200)
+                host.clickTemplate(CONFIRM_FORFEIT, 0.7)
+                host.sleep(1_500)
+                return
+            }
+            host.log("没找到结算按钮，继续正常运行")
+        }
+
         if (host.find(CLEAR_FLOOR, 0.7) != null) {
             host.log("本层已清空，交给管线处理楼层切换")
             return

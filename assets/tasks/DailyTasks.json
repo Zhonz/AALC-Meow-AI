@@ -52,6 +52,12 @@
         "shop_normal_refresh",
         "shop_buy_level_gifts",
         "shop_must_purchase",
+        "shop_shopping_strategy",
+        "shop_second_setting",
+        "shop_sell_abandoned",
+        "shop_ignore_layers",
+        "mirror_exit_floor",
+        "mirror_normal_to_hard_floor",
         "shop_fuse_mode",
         "shop_do_not_enhance",
         "shop_fuse_save_system",
@@ -4174,6 +4180,110 @@
               "action": "Click"
             }
           }
+        }
+      ]
+    },
+    "shop_ignore_layers": {
+      "type": "input",
+      "label": "跳过商店的层",
+      "description": "这些层进商店后什么都不买，直接离开（对应电脑版 AALC 的 ignore_shop 勾选）。填 1 5 表示第 1、5 层跳过；留空则每层都进商店。",
+      "fields": [
+        {
+          "name": "layers",
+          "label": "层（逗号或空格分隔）",
+          "default": ""
+        }
+      ]
+    },
+    "mirror_normal_to_hard_floor": {
+      "type": "input",
+      "label": "第几层起切困难模式",
+      "description": "镜牢卡包页会数当前层数：到这一层就把主题包难度切到困难。填 0 表示一直用普通难度（对应电脑版 AALC 的 normal_to_hard_floor）。",
+      "fields": [
+        {
+          "name": "floor",
+          "label": "层",
+          "default": "0"
+        }
+      ]
+    },
+    "mirror_exit_floor": {
+      "type": "input",
+      "label": "第几层收工",
+      "description": "到这一层就走「弃权并结算」，不再往下打。填 0 表示打到底（对应电脑版 AALC 的 floor_3_exit）。",
+      "fields": [
+        {
+          "name": "floor",
+          "label": "层",
+          "default": "0"
+        }
+      ]
+    },
+    "shop_shopping_strategy": {
+      "type": "select",
+      "label": "购买策略",
+      "description": "AALC 的 shopping_strategy_select：分别控制必买商品 / 三四级饰品 / 体系饰品三组。all = 不筛选，全买（对应 AALC 未启用策略）",
+      "default_case": "all",
+      "cases": [
+        {
+          "name": "all",
+          "label": "全部购买（不筛选）"
+        },
+        {
+          "name": "0",
+          "label": "必买 + 体系饰品"
+        },
+        {
+          "name": "1",
+          "label": "必买 + 三四级"
+        },
+        {
+          "name": "2",
+          "label": "只买体系饰品"
+        },
+        {
+          "name": "3",
+          "label": "只买三四级"
+        },
+        {
+          "name": "4",
+          "label": "三四级 + 体系饰品"
+        },
+        {
+          "name": "5",
+          "label": "必买 + 体系饰品（同 0）"
+        }
+      ]
+    },
+    "shop_second_setting": {
+      "type": "select",
+      "label": "第二体系时机",
+      "description": "AALC 的 second_system_setting：第二体系的饰品什么时候开始买/升。默认等本体系合出四级，避免一进店就把钱花在第二体系上",
+      "default_case": "0",
+      "cases": [
+        {
+          "name": "0",
+          "label": "合成出四级之后"
+        },
+        {
+          "name": "1",
+          "label": "一直"
+        }
+      ]
+    },
+    "shop_sell_abandoned": {
+      "type": "switch",
+      "label": "顺带卖掉废品饰品",
+      "description": "AALC 的 must_be_abandoned（19 件留着没用的低级饰品）会跟着出售一起清掉。出售不可逆，不想清就关掉",
+      "default_case": "Yes",
+      "cases": [
+        {
+          "name": "Yes",
+          "label": "开"
+        },
+        {
+          "name": "No",
+          "label": "关"
         }
       ]
     }

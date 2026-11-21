@@ -35,6 +35,22 @@ internal data class ShopPlan(
     val maxNormalRefresh: Int,
     val buyLevelGifts: Boolean,
     val mustPurchase: Boolean,
+    /** 要跳过商店的层（AALC 的 ignore_shop[0..4] 是五个开关，这里合成一个逗号分隔的表） */
+    val ignoreLayers: Set<Int>,
+
+    /**
+     * 购买策略（AALC 的 shopping_strategy / shopping_strategy_select）
+     *
+     * null = 未启用策略（全买）；0..5 见 AALC in_shop.py 的三份名单：
+     * 必买只有 0/1/5，三四级只有 1/3/4，体系饰品只有 2/4/5。
+     */
+    val shoppingStrategy: Int?,
+
+    /** 第二体系时机：true = 一直买（second_system_setting=1），false = 等本体系四级 */
+    val secondAlways: Boolean,
+
+    /** 是否连 must_be_abandoned 的 19 件废品一起卖掉（AALC in_shop.py:858-866） */
+    val sellAbandoned: Boolean,
 ) {
     /** 合成出四级饰品之后的策略（对应 AALC 的 after_level_IV / after_level_IV_select） */
     enum class AfterIv {
@@ -95,6 +111,17 @@ internal data class ShopPlan(
                 maxNormalRefresh = ScriptParams.int(params, MirrorShopScript.KEY_MAX_NORMAL_REFRESH, 0).coerceIn(0, 20),
                 buyLevelGifts = ScriptParams.flag(params, MirrorShopScript.KEY_BUY_LEVEL_GIFTS, default = true),
                 mustPurchase = ScriptParams.flag(params, MirrorShopScript.KEY_MUST_PURCHASE, default = true),
+                ignoreLayers = (params[MirrorShopScript.KEY_IGNORE_LAYERS] ?: "")
+                    .split(',', ' ', ';', '、')
+                    .mapNotNull { it.trim().toIntOrNull() }
+                    .filter { it in 1..99 }
+                    .toSet(),
+                shoppingStrategy = (params[MirrorShopScript.KEY_SHOPPING_STRATEGY] ?: "all")
+                    .trim()
+                    .lowercase()
+                    .let { if (it == "all" || it.isEmpty()) null else it.toIntOrNull()?.takeIf { v -> v in 0..5 } },
+                secondAlways = ScriptParams.int(params, MirrorShopScript.KEY_SECOND_SETTING, 0) == 1,
+                sellAbandoned = ScriptParams.flag(params, MirrorShopScript.KEY_SELL_ABANDONED, default = true),
             )
         }
     }

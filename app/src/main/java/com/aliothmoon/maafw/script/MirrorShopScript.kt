@@ -43,6 +43,18 @@ object MirrorShopScript : ScriptTask {
     const val KEY_BUY_LEVEL_GIFTS = "buyLevelGifts"
     const val KEY_MUST_PURCHASE = "mustPurchase"
 
+    /** 要跳过商店的层，逗号分隔（对应 AALC 的 ignore_shop[5] 五个开关） */
+    const val KEY_IGNORE_LAYERS = "ignoreLayers"
+
+    /** 购买策略（AALC 的 shopping_strategy_select）：all / 0..5，见 ShopPlan.shoppingStrategy */
+    const val KEY_SHOPPING_STRATEGY = "shoppingStrategy"
+
+    /** 第二体系的时机（AALC 的 second_system_setting）：0 = 合成出四级后，1 = 一直 */
+    const val KEY_SECOND_SETTING = "secondSetting"
+
+    /** 出售时是否连 must_be_abandoned 的废品一起清掉（AALC 无开关，默认开） */
+    const val KEY_SELL_ABANDONED = "sellAbandoned"
+
     // ── 界面元素（相对 assets/resource/image） ──
     private const val SHOP_MARK = "mirror/road_in_mir/shop.png"
     private const val LEGEND = "mirror/road_in_mir/legend_assets.png"
@@ -149,9 +161,14 @@ object MirrorShopScript : ScriptTask {
     /** 激进合成算出来的第一条分界线（普通合成要过滤掉它上面的东西） */
     private var firstLineY: Int? = null
 
+    /** 本局是否已经合出本体系的四级饰品：第二体系的买/升要等它（AALC 的 fuse_IV 门控） */
+    @Volatile
+    private var fuseIvDone: Boolean = false
+
     override fun resetSession() {
         skipShopsAfterIv = false
         firstLineY = null
+        fuseIvDone = false
     }
 
     // ── 入口 ──
@@ -171,6 +188,13 @@ object MirrorShopScript : ScriptTask {
 
         if (skipShopsAfterIv) {
             host.log("[商店] 已合成四级并设置为跳过后续商店，直接离开")
+            leave(host)
+            return
+        }
+
+        val floor = MirrorFloorTracker.current
+        if (floor > 0 && floor in plan.ignoreLayers) {
+            host.log("[商店] 第 " + floor + " 层配置了跳过商店，直接离开")
             leave(host)
             return
         }
@@ -305,11 +329,14 @@ object MirrorShopScript : ScriptTask {
     // ── 出售 ──
 
     private fun sell(host: ScriptHost, plan: ShopPlan) {
-        if (plan.sellSystems.isEmpty()) {
+        if (plan.sellSystems.isEmpty() && !plan.sellAbandoned) {
             host.log("[商店] 没配置要出售的体系，跳过出售")
             return
         }
-        host.log("[商店] 出售体系：" + plan.sellSystems.joinToString())
+        host.log(
+            "[商店] 出售体系：" + plan.sellSystems.joinToString() +
+                (if (plan.sellAbandoned) "（含 must_be_abandoned 废品）" else ""),
+        )
         host.clickBlank(2)
         if (!host.clickTemplate(SELL_TAB, 0.8)) {
             host.log("[商店] 没找到出售入口，跳过出售")
@@ -317,12 +344,27 @@ object MirrorShopScript : ScriptTask {
         }
         host.sleep(800)
 
+        // AALC 的 protect_coordinates：追第二体系时，第二体系的四级饰品一个都不能卖
+        val protect = if (plan.secondProtect && plan.secondSystem != null) {
+            host.findAll(levelIvIcon(plan.secondSystem), 0.85)
+        } else {
+            emptyList()
+        }
+        if (protect.isNotEmpty()) host.log("[商店] 保护第二体系四级饰品 " + protect.size + " 件")
+
         var sold = 0
         var round = 0
         while (!host.cancelled && round < MAX_SELL_ROUNDS) {
             round++
+            // AALC 每轮都重新点开出售入口：卖完一件列表会回到顶部/重绘
+            if (round > 1 && !host.clickTemplate(SELL_TAB, 0.8)) break
             val target = plan.sellSystems.asSequence()
-                .flatMap { system -> host.findAll(listGiftIcon(system), 0.85).asSequence() }
+                .flatMap { system -> host.findAll(listGiftIcon(system), 0.8).asSequence() }
+                .filter { candidate ->
+                    protect.none {
+                        near(Point(it.box.centerX, it.box.centerY), candidate.box.centerX, candidate.box.centerY, PROTECT_RADIUS)
+                    }
+                }
                 .sortedWith(compareBy<ScriptMatch> { it.box.y / GIFT_ROW_BUCKET }.thenBy { it.box.x })
                 .firstOrNull()
                 ?: break
@@ -335,6 +377,19 @@ object MirrorShopScript : ScriptTask {
             }
             sold++
             host.sleep(500)
+        }
+        // 废品单独走一遍：它们不在体系图标里，AALC 是逐个点掉的
+        if (plan.sellAbandoned) {
+            for (tpl in ABANDONED) {
+                if (host.cancelled) break
+                val match = host.find(tpl, 0.85) ?: continue
+                host.click(match)
+                host.sleep(500)
+                if (host.clickTemplate(SELL_CONFIRM, 0.8) || host.clickTemplate(SOLD_CONFIRM, 0.8)) {
+                    sold++
+                    host.sleep(400)
+                }
+            }
         }
         host.log("[商店] 出售结束：" + sold + " 件")
         host.clickBlank(2)
@@ -351,22 +406,35 @@ object MirrorShopScript : ScriptTask {
 
         while (!host.cancelled && round < MAX_BUY_ROUNDS) {
             round++
-            if (plan.mustPurchase) {
+            // AALC 的 shopping_strategy 三处门控：必买 / 三四级 / 体系饰品各看一份名单
+            val strategy = plan.shoppingStrategy
+            val mustAllowed = strategy == null || strategy in SHOPPING_MUST
+            val levelAllowed = strategy == null || strategy in SHOPPING_LEVEL
+            val systemAllowed = strategy == null || strategy in SHOPPING_SYSTEM
+
+            if (plan.mustPurchase && mustAllowed) {
                 for (commodity in MUST_PURCHASE) {
                     if (host.cancelled) break
                     if (buyOne(host, commodity, 0.85, MUST_PURCHASE_ATTEMPTS)) bought++
                 }
             }
 
-            if (plan.buyLevelGifts && plan.fuseEnabled) {
+            // 三四级只在"激进合成"下买（AALC in_shop.py:182 判的是 fuse_aggressive_switch）
+            if (plan.buyLevelGifts && plan.fuseAggressive && levelAllowed) {
                 if (buyOne(host, LEVEL_IV, 0.82)) bought++
                 if (buyOne(host, LEVEL_III, 0.82)) bought++
             }
 
             val system = plan.system
-            if (system != null) bought += buySystemGifts(host, system, MAX_SYSTEM_GIFTS)
-            if (plan.secondBuy && plan.secondSystem != null) {
-                bought += buySystemGifts(host, plan.secondSystem, MAX_SYSTEM_GIFTS)
+            if (system != null && systemAllowed) bought += buySystemGifts(host, system, MAX_SYSTEM_GIFTS)
+            // 第二体系要等本体系四级（AALC 的 second_system_setting / fuse_IV 门控）
+            val secondReady = plan.secondAlways || fuseIvDone
+            if (plan.secondBuy && plan.secondSystem != null && systemAllowed) {
+                if (secondReady) {
+                    bought += buySystemGifts(host, plan.secondSystem, MAX_SYSTEM_GIFTS)
+                } else {
+                    host.log("[商店] 第二体系要等本体系合出四级，本轮先不买")
+                }
             }
 
             val money = readMoney(host, inHeal = false)
@@ -791,7 +859,10 @@ object MirrorShopScript : ScriptTask {
 
             val confirm = host.find(GIFT_CONFIRM, 0.8)
             if (confirm != null) {
-                if (host.find(FUSION_IV, 0.9) != null) onIv()
+                if (host.find(FUSION_IV, 0.9) != null) {
+                    fuseIvDone = true
+                    onIv()
+                }
                 host.click(confirm)
                 host.sleep(500)
                 host.clickTemplate(GIFT_CONFIRM, 0.8)
@@ -1035,7 +1106,7 @@ object MirrorShopScript : ScriptTask {
         return out
     }
 
-    private fun isEnhanced(list: List<Point>, x: Int, y: Int): Boolean = list.any { near(it, x, y, 10) }
+    private fun isEnhanced(list: List<Point>, x: Int, y: Int): Boolean = list.any { near(it, x, y, 5) }
 
     private data class Point(val x: Int, val y: Int)
 
@@ -1054,12 +1125,22 @@ object MirrorShopScript : ScriptTask {
     private const val STARLIGHT_CHANCES = 5
     private const val MAX_FUSE_ROUNDS = 8
     private const val MAX_ENHANCE_ROUNDS = 30
-    private const val MAX_SELL_ROUNDS = 12
+    private const val MAX_SELL_ROUNDS = 20
     private const val MAX_BUY_ROUNDS = 8
     private const val MAX_SYSTEM_GIFTS = 6
     private const val MUST_PURCHASE_ATTEMPTS = 4
     private const val MAX_LEAVE_ROUNDS = 12
-    private const val GIFT_ROW_BUCKET = 40
+
+    /** 同一行的判定桶高：AALC 是 40（1440 基准），720p 下折半 */
+    private const val GIFT_ROW_BUCKET = 20
+
+    /** 出售时保护第二体系四级饰品的半径（AALC protect_coordinates threshold 50 → 25） */
+    private const val PROTECT_RADIUS = 25
+
+    /** shopping_strategy_select 的三份名单（AALC in_shop.py:152/184/218） */
+    private val SHOPPING_MUST = setOf(0, 1, 5)
+    private val SHOPPING_LEVEL = setOf(1, 3, 4)
+    private val SHOPPING_SYSTEM = setOf(2, 4, 5)
     private const val KEYWORD_REFRESH_COST = 300
     private const val NORMAL_REFRESH_COST = 200
 

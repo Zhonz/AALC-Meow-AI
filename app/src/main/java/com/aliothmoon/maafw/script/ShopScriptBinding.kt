@@ -43,7 +43,10 @@ object ShopScriptBinding {
                 entry = MirrorRoadScript.entry,
                 resumeEntry = MirrorRoadScript.resumeEntry,
                 maxRounds = MirrorRoadScript.maxRounds,
-                params = emptyMap(),
+                params = mapOf(
+                    MirrorRoadScript.KEY_EXIT_FLOOR to
+                        inputText(definition, values, "mirror_exit_floor", "floor"),
+                ),
             ),
             // 主题包：按 AALC 的关键词权重选包（原来只是盲点 500,540）
             TaskScript(
@@ -51,7 +54,27 @@ object ShopScriptBinding {
                 entry = MirrorThemePackScript.entry,
                 resumeEntry = MirrorThemePackScript.resumeEntry,
                 maxRounds = MirrorThemePackScript.maxRounds,
-                params = emptyMap(),
+                params = mapOf(
+                    MirrorThemePackScript.KEY_NORMAL_TO_HARD to
+                        inputText(definition, values, "mirror_normal_to_hard_floor", "floor"),
+                    MirrorThemePackScript.KEY_HARD_MODE to
+                        (singleCase(definition, values, "hard_mirror") ?: "normal"),
+                    MirrorThemePackScript.KEY_SELECT_EVENT_PACK to
+                        flag(definition, values, "select_event_pack", default = false),
+                    MirrorThemePackScript.KEY_SKIP_EVENT_PACK to
+                        flag(definition, values, "skip_event_pack", default = false),
+                ),
+            ),
+            // 事件：管线认到事件界面（event/skip_assets.png）就交棒，由脚本按 AALC 的按钮优先级处理
+            TaskScript(
+                scriptId = MirrorEventScript.id,
+                entry = MirrorEventScript.entry,
+                resumeEntry = MirrorEventScript.resumeEntry,
+                maxRounds = MirrorEventScript.maxRounds,
+                params = mapOf(
+                    MirrorEventScript.KEY_AVOID_UNKNOWN to
+                        flag(definition, values, "defense_for_solo", default = false),
+                ),
             ),
             // 战斗：管线认到「MirrorHandleBattle」交棒；首回合防御由 defense_first_round 开关决定
             TaskScript(
@@ -62,6 +85,10 @@ object ShopScriptBinding {
                 params = mapOf(
                     MirrorBattleScript.KEY_DEFENSE_FIRST_ROUND to
                         flag(definition, values, "defense_first_round", default = false),
+                    MirrorBattleScript.KEY_AVOID_SKILL_3 to
+                        flag(definition, values, "avoid_skill_3", default = false),
+                    MirrorBattleScript.KEY_PRIORITIZE_SKILL_3 to
+                        flag(definition, values, "prioritize_skill_3", default = false),
                 ),
             ),
         )
@@ -128,7 +155,29 @@ object ShopScriptBinding {
                 if (leaveOnly) "0" else flag(definition, values, "shop_buy_level_gifts", default = true),
             MirrorShopScript.KEY_MUST_PURCHASE to
                 if (leaveOnly) "0" else flag(definition, values, "shop_must_purchase", default = true),
+            MirrorShopScript.KEY_IGNORE_LAYERS to
+                if (leaveOnly) "" else inputText(definition, values, "shop_ignore_layers", "layers"),
+            // 购买策略：all = 不启用策略（全买），与 AALC shopping_strategy 关闭时一致
+            MirrorShopScript.KEY_SHOPPING_STRATEGY to
+                if (leaveOnly) "all" else (singleCase(definition, values, "shop_shopping_strategy") ?: "all"),
+            MirrorShopScript.KEY_SECOND_SETTING to
+                if (leaveOnly) "1" else (singleCase(definition, values, "shop_second_setting") ?: "0"),
+            MirrorShopScript.KEY_SELL_ABANDONED to
+                if (leaveOnly) "0" else flag(definition, values, "shop_sell_abandoned", default = true),
         )
+    }
+
+    /** input 型 option 取某字段的文本；没存过就用 PI 的默认值 */
+    private fun inputText(
+        definition: ProjectDefinition,
+        values: Map<String, OptionValue>,
+        name: String,
+        field: String,
+    ): String {
+        val option = definition.options[name] as? OptionDefinition.Input ?: return ""
+        val stored = (values[name] as? OptionValue.Inputs)?.values?.get(field)
+        if (!stored.isNullOrBlank()) return stored
+        return option.fields.firstOrNull { it.name == field }?.default ?: ""
     }
 
     /** switch/select 取选中 case；没存过就用 PI 的 default_case */

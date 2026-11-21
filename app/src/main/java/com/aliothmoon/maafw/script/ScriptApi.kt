@@ -45,6 +45,26 @@ data class ScriptMatch(val box: ScriptRect, val score: Double) {
  * 实现只有一份：[com.aliothmoon.maafw.remote.MaaScriptHost]（跑在特权进程里，握着引擎 handle）。
  * 抽接口是为了让脚本逻辑能在普通单元测试里对着假 host 跑。
  */
+/**
+ * 一帧截图（ARGB），坐标与识别框一致：永远按 [ScriptHost.screenWidth] × [ScriptHost.screenHeight] 缩放好再给你。
+ *
+ * 需要像素级判断（楼层红标、技能格颜色）时才用；能用模板识别的地方继续用 [ScriptHost.find]。
+ */
+class ScreenShot internal constructor(
+    val width: Int,
+    val height: Int,
+    private val pixels: IntArray,
+) {
+    fun argb(x: Int, y: Int): Int =
+        if (x in 0 until width && y in 0 until height) pixels[y * width + x] else 0
+
+    fun red(x: Int, y: Int): Int = (argb(x, y) shr 16) and 0xFF
+
+    fun green(x: Int, y: Int): Int = (argb(x, y) shr 8) and 0xFF
+
+    fun blue(x: Int, y: Int): Int = argb(x, y) and 0xFF
+}
+
 interface ScriptHost {
     /** 截图空间宽度（引擎按 SCREENSHOT_TARGET_SHORT_SIDE=720 归一化过） */
     val screenWidth: Int
@@ -82,6 +102,9 @@ interface ScriptHost {
 
     /** 滚轮；正数向下 */
     fun scroll(dy: Int): Boolean
+
+    /** 最近一帧截图；拿不到（控制器没截图能力）返回 null */
+    fun screenshot(): ScreenShot? = null
 
     /** 按住某点（contact 固定 0，对应单指按下） */
     fun touchDown(x: Int, y: Int): Boolean
@@ -245,7 +268,7 @@ interface ScriptTask {
 /** id / 交棒节点 → 脚本实现 */
 object ScriptRegistry {
     private val all: List<ScriptTask> =
-        listOf(MirrorShopScript, MirrorRoadScript, MirrorBattleScript, MirrorThemePackScript)
+        listOf(MirrorShopScript, MirrorRoadScript, MirrorBattleScript, MirrorThemePackScript, MirrorEventScript)
 
     fun byId(id: String): ScriptTask? = all.firstOrNull { it.id == id }
 

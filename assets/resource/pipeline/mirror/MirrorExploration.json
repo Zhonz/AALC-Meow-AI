@@ -1,687 +1,684 @@
 {
-    "MirrorDungeonExploration": {
-        "doc": "镜牢探索主循环：循环检测当前状态并分发到对应处理节点",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/road_in_mir/legend_assets.png",
-            "threshold": 0.7,
-            "roi": [
-                1158,
-                55,
-                122,
-                92
-            ]
-        },
-        "action": "DoNothing",
-        "next": [
-            "MirrorFloor3ExitAction",
-            "MirrorHandleRoad",
-            "ClickEnterNode",
-            "MirrorClickMyBus",
-            "MirrorClickBusNextNode",
-            "MirrorClickBusLowerNode",
-            "MirrorClickBusUpperNode",
-            "MirrorHandleThemePackFeature",
-            "MirrorHandleRewardCard",
-            "MirrorHandleEgoGiftCard",
-            "MirrorHandleEgoGiftBox",
-            "MirrorEgoGiftGetConfirm2",
-            "MirrorHandleShop",
-            "MirrorHandleEvent",
-            "ClaimMirrorReward",
-            "MirrorDungeonExploration"
-        ]
+  "MirrorDungeonExploration": {
+    "doc": "镜牢探索主循环：循环检测当前状态并分发到对应处理节点",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/legend_assets.png",
+      "threshold": 0.7,
+      "roi": [
+        1158,
+        55,
+        122,
+        92
+      ]
     },
-    "MirrorFloor3ExitAction": {
-        "doc": "只打三层速刷退出逻辑：由 Floor3Exit option 激活后，在地图界面点击右上角设置图标",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/road_in_mir/setting_assets.png",
-            "threshold": 0.75,
-            "roi": [
-                1156,
-                0,
-                124,
-                108
-            ]
-        },
-        "action": "Click",
-        "post_wait_freezes": 800,
-        "next": [
-            "MirrorClickForfeitButton"
-        ]
+    "action": "DoNothing",
+    "next": [
+      "MirrorFloor3ExitAction",
+      "MirrorHandleRoad",
+      "ClickEnterNode",
+      "MirrorClickMyBus",
+      "MirrorClickBusNextNode",
+      "MirrorClickBusLowerNode",
+      "MirrorClickBusUpperNode",
+      "MirrorHandleThemePackFeature",
+      "MirrorHandleRewardCard",
+      "MirrorHandleEgoGiftCard",
+      "MirrorHandleEgoGiftBox",
+      "MirrorEgoGiftGetConfirm2",
+      "MirrorHandleShop",
+      "MirrorHandleEvent",
+      "ClaimMirrorReward",
+      "MirrorDungeonExploration"
+    ]
+  },
+  "MirrorFloor3ExitAction": {
+    "doc": "只打三层速刷退出逻辑：由 Floor3Exit option 激活后，在地图界面点击右上角设置图标",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/setting_assets.png",
+      "threshold": 0.75,
+      "roi": [
+        1156,
+        0,
+        124,
+        108
+      ]
     },
-    "MirrorClickForfeitButton": {
-        "doc": "在设置菜单中点击「放弃/认输」按钮",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/road_in_mir/forfeit_assets.png",
-            "threshold": 0.75,
-            "roi": [
-                413,
-                345,
-                355,
-                122
-            ]
-        },
-        "action": "Click",
-        "post_wait_freezes": 800,
-        "next": [
-            "MirrorConfirmForfeitExit"
-        ]
+    "action": "Click",
+    "post_wait_freezes": 800,
+    "next": [
+      "MirrorClickForfeitButton"
+    ]
+  },
+  "MirrorClickForfeitButton": {
+    "doc": "在设置菜单中点击「放弃/认输」按钮",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/forfeit_assets.png",
+      "threshold": 0.75,
+      "roi": [
+        413,
+        345,
+        355,
+        122
+      ]
     },
-    "MirrorConfirmForfeitExit": {
-        "doc": "二次确认放弃，直接进入奖励结算页",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/road_in_mir/towindow&forfeit_confirm_assets.png",
-            "threshold": 0.75,
-            "roi": [
-                602,
-                438,
-                339,
-                99
-            ]
-        },
-        "action": "Click",
-        "post_wait_freezes": 1500,
-        "next": [
-            "ClaimMirrorReward"
-        ]
+    "action": "Click",
+    "post_wait_freezes": 800,
+    "next": [
+      "MirrorConfirmForfeitExit"
+    ]
+  },
+  "MirrorConfirmForfeitExit": {
+    "doc": "二次确认放弃，直接进入奖励结算页",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/towindow&forfeit_confirm_assets.png",
+      "threshold": 0.75,
+      "roi": [
+        602,
+        438,
+        339,
+        99
+      ]
     },
-    "ClickEnterNode": {
-        "doc": "在地图上点击「进入」按钮前往下一节点",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/road_in_mir/enter_assets.png",
-            "threshold": 0.72,
-            "roi": [
-                1026,
-                488,
-                254,
-                109
-            ]
-        },
-        "action": "Click",
-        "post_delay": 1500,
-        "next": [
-            "MirrorHandleBattle",
-            "TeamFormationConfirm",
-            "BattleAutoCombat",
-            "MirrorDungeonExploration"
-        ]
+    "action": "Click",
+    "post_wait_freezes": 1500,
+    "next": [
+      "ClaimMirrorReward"
+    ]
+  },
+  "ClickEnterNode": {
+    "doc": "在地图上点击「进入」按钮前往下一节点",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/enter_assets.png",
+      "threshold": 0.72,
+      "roi": [
+        1026,
+        488,
+        254,
+        109
+      ]
     },
-    "MirrorHandleThemePackFeature": {
-        "doc": "主题包选择页：交棒给脚本 mirror.theme（按 AALC 的关键词权重选包，可刷新）",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/theme_pack/feature_theme_pack_assets.png",
-            "threshold": 0.72,
-            "roi": [
-                1126,
-                60,
-                154,
-                117
-            ]
-        },
-        "action": "DoNothing",
-        "next": []
+    "action": "Click",
+    "post_delay": 1500,
+    "next": [
+      "MirrorHandleBattle",
+      "TeamFormationConfirm",
+      "BattleAutoCombat",
+      "MirrorDungeonExploration"
+    ]
+  },
+  "MirrorHandleThemePackFeature": {
+    "doc": "主题包选择页：交棒给脚本 mirror.theme（按 AALC 的关键词权重选包，可刷新）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/theme_pack/feature_theme_pack_assets.png",
+      "threshold": 0.72,
+      "roi": [
+        1126,
+        60,
+        154,
+        117
+      ]
     },
-    "MirrorPickThemePackConfirm": {
-        "doc": "选中卡包并点击确认（默认点击中间偏左位置的主题卡包）",
-        "action": "Click",
-        "target": [
-            500,
-            540,
-            50,
-            50
-        ],
-        "post_delay": 1500,
-        "next": [
-            "MirrorDungeonExploration"
-        ]
+    "action": "DoNothing",
+    "next": []
+  },
+  "MirrorPickThemePackConfirm": {
+    "doc": "选中卡包并点击确认（默认点击中间偏左位置的主题卡包）",
+    "action": "Click",
+    "target": [
+      500,
+      540,
+      50,
+      50
+    ],
+    "post_delay": 1500,
+    "next": [
+      "MirrorDungeonExploration"
+    ]
+  },
+  "MirrorRefreshThemePack": {
+    "doc": "若卡包不理想，点击刷新主题包按钮",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/theme_pack/refresh_assets.png",
+      "threshold": 0.75,
+      "roi": [
+        948,
+        0,
+        332,
+        100
+      ]
     },
-    "MirrorRefreshThemePack": {
-        "doc": "若卡包不理想，点击刷新主题包按钮",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/theme_pack/refresh_assets.png",
-            "threshold": 0.75,
-            "roi": [
-                948,
-                0,
-                332,
-                100
-            ]
-        },
-        "action": "Click",
-        "post_delay": 1000,
-        "next": [
-            "MirrorPickThemePackConfirm"
-        ]
+    "action": "Click",
+    "post_delay": 1000,
+    "next": [
+      "MirrorPickThemePackConfirm"
+    ]
+  },
+  "MirrorHandleRewardCard": {
+    "doc": "检测到奖励卡选择界面（encounter reward card）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/get_reward_card/get_reward_card_confirm_assets.png",
+      "threshold": 0.75,
+      "roi": [
+        671,
+        483,
+        324,
+        88
+      ]
     },
-    "MirrorHandleRewardCard": {
-        "doc": "检测到奖励卡选择界面（encounter reward card）",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/get_reward_card/get_reward_card_confirm_assets.png",
-            "threshold": 0.75,
-            "roi": [
-                671,
-                483,
-                324,
-                88
-            ]
-        },
-        "action": "DoNothing",
-        "next": [
-            "MirrorRewardCardSelectStarlight",
-            "MirrorRewardCardSelectEGO",
-            "MirrorRewardCardSelectCost",
-            "MirrorRewardCardSelectCostAndEGO",
-            "MirrorRewardCardSelectEGOResource",
-            "MirrorRewardCardSelectFirst"
-        ]
+    "action": "DoNothing",
+    "next": [
+      "MirrorRewardCardSelectStarlight",
+      "MirrorRewardCardSelectEGO",
+      "MirrorRewardCardSelectCost",
+      "MirrorRewardCardSelectCostAndEGO",
+      "MirrorRewardCardSelectEGOResource",
+      "MirrorRewardCardSelectFirst"
+    ]
+  },
+  "MirrorRewardCardSelectStarlight": {
+    "doc": "优先选择星光奖励卡",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/get_reward_card/gain_starlight.png",
+      "threshold": 0.78
     },
-    "MirrorRewardCardSelectStarlight": {
-        "doc": "优先选择星光奖励卡",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/get_reward_card/gain_starlight.png",
-            "threshold": 0.78
-        },
-        "action": "Click",
-        "post_delay": 500,
-        "next": [
-            "ClickRewardCardConfirm"
-        ]
+    "action": "Click",
+    "post_delay": 500,
+    "next": [
+      "ClickRewardCardConfirm"
+    ]
+  },
+  "MirrorRewardCardSelectEGO": {
+    "doc": "选择含 EGO 饰品的奖励卡",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/get_reward_card/gain_ego.png",
+      "threshold": 0.78
     },
-    "MirrorRewardCardSelectEGO": {
-        "doc": "选择含 EGO 饰品的奖励卡",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/get_reward_card/gain_ego.png",
-            "threshold": 0.78
-        },
-        "action": "Click",
-        "post_delay": 500,
-        "next": [
-            "ClickRewardCardConfirm"
-        ]
+    "action": "Click",
+    "post_delay": 500,
+    "next": [
+      "ClickRewardCardConfirm"
+    ]
+  },
+  "MirrorRewardCardSelectCost": {
+    "doc": "选择含经费（Cost）的奖励卡",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/get_reward_card/gain_cost.png",
+      "threshold": 0.78
     },
-    "MirrorRewardCardSelectCost": {
-        "doc": "选择含经费（Cost）的奖励卡",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/get_reward_card/gain_cost.png",
-            "threshold": 0.78
-        },
-        "action": "Click",
-        "post_delay": 500,
-        "next": [
-            "ClickRewardCardConfirm"
-        ]
+    "action": "Click",
+    "post_delay": 500,
+    "next": [
+      "ClickRewardCardConfirm"
+    ]
+  },
+  "MirrorRewardCardSelectCostAndEGO": {
+    "doc": "选择经费与 EGO 复合奖励卡",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/get_reward_card/gain_cost_and_ego.png",
+      "threshold": 0.78
     },
-    "MirrorRewardCardSelectCostAndEGO": {
-        "doc": "选择经费与 EGO 复合奖励卡",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/get_reward_card/gain_cost_and_ego.png",
-            "threshold": 0.78
-        },
-        "action": "Click",
-        "post_delay": 500,
-        "next": [
-            "ClickRewardCardConfirm"
-        ]
+    "action": "Click",
+    "post_delay": 500,
+    "next": [
+      "ClickRewardCardConfirm"
+    ]
+  },
+  "MirrorRewardCardSelectEGOResource": {
+    "doc": "选择自我资源奖励卡",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/get_reward_card/gain_ego_resource.png",
+      "threshold": 0.78
     },
-    "MirrorRewardCardSelectEGOResource": {
-        "doc": "选择自我资源奖励卡",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/get_reward_card/gain_ego_resource.png",
-            "threshold": 0.78
-        },
-        "action": "Click",
-        "post_delay": 500,
-        "next": [
-            "ClickRewardCardConfirm"
-        ]
+    "action": "Click",
+    "post_delay": 500,
+    "next": [
+      "ClickRewardCardConfirm"
+    ]
+  },
+  "MirrorRewardCardSelectFirst": {
+    "doc": "无匹配偏好时选择第一张奖励卡（最左侧固定位置）",
+    "action": "Click",
+    "target": [
+      400,
+      540,
+      50,
+      50
+    ],
+    "post_delay": 500,
+    "next": [
+      "ClickRewardCardConfirm"
+    ]
+  },
+  "ClickRewardCardConfirm": {
+    "doc": "点击奖励卡确认按钮",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/get_reward_card/get_reward_card_confirm_assets.png",
+      "threshold": 0.75,
+      "roi": [
+        671,
+        483,
+        324,
+        88
+      ]
     },
-    "MirrorRewardCardSelectFirst": {
-        "doc": "无匹配偏好时选择第一张奖励卡（最左侧固定位置）",
-        "action": "Click",
-        "target": [
-            400,
-            540,
-            50,
-            50
-        ],
-        "post_delay": 500,
-        "next": [
-            "ClickRewardCardConfirm"
-        ]
+    "action": "Click",
+    "post_delay": 1000,
+    "next": [
+      "MirrorRewardCardContinueChoosing",
+      "MirrorDungeonExploration"
+    ]
+  },
+  "MirrorRewardCardContinueChoosing": {
+    "doc": "如果弹出「继续选择」按钮，点击继续",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/get_reward_card/continue_choosing_assets.png",
+      "threshold": 0.75,
+      "roi": [
+        392,
+        422,
+        319,
+        89
+      ]
     },
-    "ClickRewardCardConfirm": {
-        "doc": "点击奖励卡确认按钮",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/get_reward_card/get_reward_card_confirm_assets.png",
-            "threshold": 0.75,
-            "roi": [
-                671,
-                483,
-                324,
-                88
-            ]
-        },
-        "action": "Click",
-        "post_delay": 1000,
-        "next": [
-            "MirrorRewardCardContinueChoosing",
-            "MirrorDungeonExploration"
-        ]
+    "action": "Click",
+    "post_delay": 800,
+    "next": [
+      "MirrorDungeonExploration"
+    ]
+  },
+  "MirrorHandleEgoGiftCard": {
+    "doc": "检测到 EGO 饰品卡选择界面，按体系挑选或默认第一个",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/acquire_ego_gift_card.png",
+      "threshold": 0.75
     },
-    "MirrorRewardCardContinueChoosing": {
-        "doc": "如果弹出「继续选择」按钮，点击继续",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/get_reward_card/continue_choosing_assets.png",
-            "threshold": 0.75,
-            "roi": [
-                392,
-                422,
-                319,
-                89
-            ]
-        },
-        "action": "Click",
-        "post_delay": 800,
-        "next": [
-            "MirrorDungeonExploration"
-        ]
+    "action": "DoNothing",
+    "next": [
+      "MirrorEgoGiftPickBleed",
+      "MirrorEgoGiftPickTremor",
+      "MirrorEgoGiftPickRupture",
+      "MirrorEgoGiftPickSinking",
+      "MirrorEgoGiftPickCharge",
+      "MirrorEgoGiftPickPoise",
+      "MirrorEgoGiftPickBurn",
+      "MirrorEgoGiftPickFirst"
+    ]
+  },
+  "MirrorEgoGiftPickBleed": {
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/acquire_ego_gift/bleed.png",
+      "threshold": 0.78
     },
-    "MirrorHandleEgoGiftCard": {
-        "doc": "检测到 EGO 饰品卡选择界面，按体系挑选或默认第一个",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/road_in_mir/acquire_ego_gift_card.png",
-            "threshold": 0.75
-        },
-        "action": "DoNothing",
-        "next": [
-            "MirrorEgoGiftPickBleed",
-            "MirrorEgoGiftPickTremor",
-            "MirrorEgoGiftPickRupture",
-            "MirrorEgoGiftPickSinking",
-            "MirrorEgoGiftPickCharge",
-            "MirrorEgoGiftPickPoise",
-            "MirrorEgoGiftPickBurn",
-            "MirrorEgoGiftPickFirst"
-        ]
+    "action": "Click",
+    "post_delay": 600,
+    "next": [
+      "MirrorHandleEgoGiftBox"
+    ]
+  },
+  "MirrorEgoGiftPickTremor": {
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/acquire_ego_gift/tremor.png",
+      "threshold": 0.78
     },
-    "MirrorEgoGiftPickBleed": {
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/road_in_mir/acquire_ego_gift/bleed.png",
-            "threshold": 0.78
-        },
-        "action": "Click",
-        "post_delay": 600,
-        "next": [
-            "MirrorHandleEgoGiftBox"
-        ]
+    "action": "Click",
+    "post_delay": 600,
+    "next": [
+      "MirrorHandleEgoGiftBox"
+    ]
+  },
+  "MirrorEgoGiftPickRupture": {
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/acquire_ego_gift/rupture.png",
+      "threshold": 0.78
     },
-    "MirrorEgoGiftPickTremor": {
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/road_in_mir/acquire_ego_gift/tremor.png",
-            "threshold": 0.78
-        },
-        "action": "Click",
-        "post_delay": 600,
-        "next": [
-            "MirrorHandleEgoGiftBox"
-        ]
+    "action": "Click",
+    "post_delay": 600,
+    "next": [
+      "MirrorHandleEgoGiftBox"
+    ]
+  },
+  "MirrorEgoGiftPickSinking": {
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/acquire_ego_gift/sinking.png",
+      "threshold": 0.78
     },
-    "MirrorEgoGiftPickRupture": {
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/road_in_mir/acquire_ego_gift/rupture.png",
-            "threshold": 0.78
-        },
-        "action": "Click",
-        "post_delay": 600,
-        "next": [
-            "MirrorHandleEgoGiftBox"
-        ]
+    "action": "Click",
+    "post_delay": 600,
+    "next": [
+      "MirrorHandleEgoGiftBox"
+    ]
+  },
+  "MirrorEgoGiftPickCharge": {
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/acquire_ego_gift/charge.png",
+      "threshold": 0.78
     },
-    "MirrorEgoGiftPickSinking": {
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/road_in_mir/acquire_ego_gift/sinking.png",
-            "threshold": 0.78
-        },
-        "action": "Click",
-        "post_delay": 600,
-        "next": [
-            "MirrorHandleEgoGiftBox"
-        ]
+    "action": "Click",
+    "post_delay": 600,
+    "next": [
+      "MirrorHandleEgoGiftBox"
+    ]
+  },
+  "MirrorEgoGiftPickPoise": {
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/acquire_ego_gift/poise.png",
+      "threshold": 0.78
     },
-    "MirrorEgoGiftPickCharge": {
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/road_in_mir/acquire_ego_gift/charge.png",
-            "threshold": 0.78
-        },
-        "action": "Click",
-        "post_delay": 600,
-        "next": [
-            "MirrorHandleEgoGiftBox"
-        ]
+    "action": "Click",
+    "post_delay": 600,
+    "next": [
+      "MirrorHandleEgoGiftBox"
+    ]
+  },
+  "MirrorEgoGiftPickBurn": {
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/acquire_ego_gift/burn.png",
+      "threshold": 0.78
     },
-    "MirrorEgoGiftPickPoise": {
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/road_in_mir/acquire_ego_gift/poise.png",
-            "threshold": 0.78
-        },
-        "action": "Click",
-        "post_delay": 600,
-        "next": [
-            "MirrorHandleEgoGiftBox"
-        ]
+    "action": "Click",
+    "post_delay": 600,
+    "next": [
+      "MirrorHandleEgoGiftBox"
+    ]
+  },
+  "MirrorEgoGiftPickFirst": {
+    "doc": "无体系匹配时选第一个饰品",
+    "action": "Click",
+    "target": [
+      400,
+      540,
+      50,
+      50
+    ],
+    "post_delay": 600,
+    "next": [
+      "MirrorHandleEgoGiftBox"
+    ]
+  },
+  "MirrorHandleEgoGiftBox": {
+    "doc": "饰品选择后出现「接受/拒绝」弹窗，默认接受",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/acquire_ego_gift_box_assets.png",
+      "threshold": 0.75,
+      "roi": [
+        13,
+        1,
+        151,
+        122
+      ]
     },
-    "MirrorEgoGiftPickBurn": {
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/road_in_mir/acquire_ego_gift/burn.png",
-            "threshold": 0.78
-        },
-        "action": "Click",
-        "post_delay": 600,
-        "next": [
-            "MirrorHandleEgoGiftBox"
-        ]
+    "action": "Click",
+    "post_delay": 800,
+    "next": [
+      "MirrorDungeonExploration"
+    ]
+  },
+  "MirrorEgoGiftGetConfirm2": {
+    "doc": "确认获得 EGO 饰品弹窗",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/ego_gift_get_confirm_assets.png",
+      "threshold": 0.75,
+      "roi": [
+        483,
+        478,
+        338,
+        107
+      ]
     },
-    "MirrorEgoGiftPickFirst": {
-        "doc": "无体系匹配时选第一个饰品",
-        "action": "Click",
-        "target": [
-            400,
-            540,
-            50,
-            50
-        ],
-        "post_delay": 600,
-        "next": [
-            "MirrorHandleEgoGiftBox"
-        ]
+    "action": "Click",
+    "post_delay": 600,
+    "next": [
+      "MirrorDungeonExploration"
+    ]
+  },
+  "MirrorHandleShop": {
+    "doc": "镜牢商店（顶部经费栏）——交棒节点：管线到这里算本轮任务成功结束，由 Kotlin 脚本接管买卖/治疗/刷新，跑完再从 MirrorDungeonEntry 续上（见 docs/DEVELOPMENT_EXPERIENCE.md §2.14）。识别值沿用原先卡死兜底的 MirrorCheckShopCoins：roi 只框住经费栏，阈 0.88，避免地图上偶现的金币图标误触",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/shop/shop_coins_assets.png",
+      "threshold": 0.88,
+      "roi": [
+        428,
+        81,
+        346,
+        112
+      ]
     },
-    "MirrorHandleEgoGiftBox": {
-        "doc": "饰品选择后出现「接受/拒绝」弹窗，默认接受",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/road_in_mir/acquire_ego_gift_box_assets.png",
-            "threshold": 0.75,
-            "roi": [
-                13,
-                1,
-                151,
-                122
-            ]
-        },
-        "action": "Click",
-        "post_delay": 800,
-        "next": [
-            "MirrorDungeonExploration"
-        ]
+    "action": "DoNothing",
+    "next": []
+  },
+  "MirrorHandleEvent": {
+    "doc": "镜牢事件界面（AALC mirror.py:459 event_handling）——交棒节点：按 event/skip_assets.png 认事件界面，交给脚本 mirror.event 按 AALC 的按钮优先级处理（跳过/选项/判定/继续/收饰品），处理完从 MirrorDungeonEntry 续上",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "event/skip_assets.png",
+      "threshold": 0.8
     },
-    "MirrorEgoGiftGetConfirm2": {
-        "doc": "确认获得 EGO 饰品弹窗",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/road_in_mir/ego_gift_get_confirm_assets.png",
-            "threshold": 0.75,
-            "roi": [
-                483,
-                478,
-                338,
-                107
-            ]
-        },
-        "action": "Click",
-        "post_delay": 600,
-        "next": [
-            "MirrorDungeonExploration"
-        ]
+    "action": "DoNothing",
+    "next": []
+  },
+  "ClaimMirrorReward": {
+    "doc": "镜牢结束，点击领取奖励",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/claim_reward/claim_rewards_assets.png",
+      "threshold": 0.75,
+      "roi": [
+        1005,
+        553,
+        275,
+        89
+      ]
     },
-    "MirrorHandleShop": {
-        "doc": "镜牢商店（顶部经费栏）——交棒节点：管线到这里算本轮任务成功结束，由 Kotlin 脚本接管买卖/治疗/刷新，跑完再从 MirrorDungeonEntry 续上（见 docs/DEVELOPMENT_EXPERIENCE.md §2.14）。识别值沿用原先卡死兜底的 MirrorCheckShopCoins：roi 只框住经费栏，阈 0.88，避免地图上偶现的金币图标误触",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/shop/shop_coins_assets.png",
-            "threshold": 0.88,
-            "roi": [
-                428,
-                81,
-                346,
-                112
-            ]
-        },
-        "action": "DoNothing",
-        "next": []
+    "action": "Click",
+    "post_delay": 1200,
+    "next": [
+      "MirrorCheckWeeklyBonuses",
+      "UseEnkephalinConfirm",
+      "MirrorRewardsAcquiredConfirm"
+    ]
+  },
+  "MirrorCheckWeeklyBonuses": {
+    "doc": "处理每周加成选项（weekly_bonuses）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/claim_reward/weekly_bonuses.png",
+      "threshold": 0.75
     },
-    "MirrorHandleEvent": {
-        "doc": "检测到镜牢事件界面，转交 EventHandling 处理",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/road_in_mir/event.png",
-            "threshold": 0.72
-        },
-        "action": "DoNothing",
-        "next": [
-            "EventHandling",
-            "MirrorDungeonExploration"
-        ]
+    "action": "Click",
+    "post_delay": 600,
+    "next": [
+      "UseEnkephalinConfirm",
+      "MirrorRewardsAcquiredConfirm"
+    ]
+  },
+  "UseEnkephalinConfirm": {
+    "doc": "使用脑啡肽续命确认",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/use_enkephalin.png",
+      "threshold": 0.75,
+      "roi": [
+        698,
+        495,
+        333,
+        97
+      ]
     },
-    "ClaimMirrorReward": {
-        "doc": "镜牢结束，点击领取奖励",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/claim_reward/claim_rewards_assets.png",
-            "threshold": 0.75,
-            "roi": [
-                1005,
-                553,
-                275,
-                89
-            ]
-        },
-        "action": "Click",
-        "post_delay": 1200,
-        "next": [
-            "MirrorCheckWeeklyBonuses",
-            "UseEnkephalinConfirm",
-            "MirrorRewardsAcquiredConfirm"
-        ]
+    "action": "Click",
+    "post_delay": 1500,
+    "next": [
+      "MirrorDungeonExploration"
+    ]
+  },
+  "MirrorRewardsAcquiredConfirm": {
+    "doc": "奖励已领取确认按钮，任务完成",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/claim_reward/rewards_acquired_assets.png",
+      "threshold": 0.75,
+      "roi": [
+        488,
+        427,
+        324,
+        88
+      ]
     },
-    "MirrorCheckWeeklyBonuses": {
-        "doc": "处理每周加成选项（weekly_bonuses）",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/claim_reward/weekly_bonuses.png",
-            "threshold": 0.75
-        },
-        "action": "Click",
-        "post_delay": 600,
-        "next": [
-            "UseEnkephalinConfirm",
-            "MirrorRewardsAcquiredConfirm"
-        ]
+    "action": "Click",
+    "post_delay": 1000
+  },
+  "MirrorClickMyBus": {
+    "doc": "点击镜牢当前停驻的巴士图标（若已在可直进节点上）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/mybus_default_distance.png",
+      "threshold": 0.7
     },
-    "UseEnkephalinConfirm": {
-        "doc": "使用脑啡肽续命确认",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/use_enkephalin.png",
-            "threshold": 0.75,
-            "roi": [
-                698,
-                495,
-                333,
-                97
-            ]
-        },
-        "action": "Click",
-        "post_delay": 1500,
-        "next": [
-            "MirrorDungeonExploration"
-        ]
+    "action": "Click",
+    "post_delay": 800,
+    "next": [
+      "ClickEnterNode",
+      "TeamFormationConfirm",
+      "BattleAutoCombat",
+      "MirrorClickBusNextNode"
+    ]
+  },
+  "MirrorClickBusNextNode": {
+    "doc": "基于巴士相对偏移点击下一节点（中路偏右+250px）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/mybus_default_distance.png",
+      "threshold": 0.68
     },
-    "MirrorRewardsAcquiredConfirm": {
-        "doc": "奖励已领取确认按钮，任务完成",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/claim_reward/rewards_acquired_assets.png",
-            "threshold": 0.75,
-            "roi": [
-                488,
-                427,
-                324,
-                88
-            ]
-        },
-        "action": "Click",
-        "post_delay": 1000
+    "action": "Click",
+    "target_offset": [
+      250,
+      0,
+      0,
+      0
+    ],
+    "post_delay": 800,
+    "next": [
+      "ClickEnterNode",
+      "TeamFormationConfirm",
+      "BattleAutoCombat",
+      "MirrorClickBusLowerNode"
+    ]
+  },
+  "MirrorClickBusLowerNode": {
+    "doc": "基于巴士相对偏移点击下路节点（AALC three_roads 的 [500*s,450*s]，720p 即 +250,+225）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/mybus_default_distance.png",
+      "threshold": 0.68
     },
-    "MirrorClickMyBus": {
-        "doc": "点击镜牢当前停驻的巴士图标（若已在可直进节点上）",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/mybus_default_distance.png",
-            "threshold": 0.7
-        },
-        "action": "Click",
-        "post_delay": 800,
-        "next": [
-            "ClickEnterNode",
-            "TeamFormationConfirm",
-            "BattleAutoCombat",
-            "MirrorClickBusNextNode"
-        ]
+    "action": "Click",
+    "target_offset": [
+      250,
+      225,
+      0,
+      0
+    ],
+    "post_delay": 800,
+    "next": [
+      "ClickEnterNode",
+      "TeamFormationConfirm",
+      "BattleAutoCombat",
+      "MirrorClickBusUpperNode"
+    ]
+  },
+  "MirrorClickBusUpperNode": {
+    "doc": "基于巴士相对偏移点击上路节点（AALC three_roads 的 [500*s,-400*s]，720p 即 +250,-200）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/mybus_default_distance.png",
+      "threshold": 0.68
     },
-    "MirrorClickBusNextNode": {
-        "doc": "基于巴士相对偏移点击下一节点（中路偏右+250px）",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/mybus_default_distance.png",
-            "threshold": 0.68
-        },
-        "action": "Click",
-        "target_offset": [
-            250,
-            0,
-            0,
-            0
-        ],
-        "post_delay": 800,
-        "next": [
-            "ClickEnterNode",
-            "TeamFormationConfirm",
-            "BattleAutoCombat",
-            "MirrorClickBusLowerNode"
-        ]
+    "action": "Click",
+    "target_offset": [
+      250,
+      -200,
+      0,
+      0
+    ],
+    "post_delay": 800,
+    "next": [
+      "ClickEnterNode",
+      "TeamFormationConfirm",
+      "BattleAutoCombat"
+    ]
+  },
+  "MirrorHandleRoad": {
+    "doc": "像素级寻路交棒：交给脚本 mirror.road 按节点权重挑路（对应 AALC search_road_default_distance），失败时仍回落到下面的盲点节点",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/legend_assets.png",
+      "threshold": 0.7,
+      "roi": [
+        1158,
+        55,
+        122,
+        92
+      ]
     },
-    "MirrorClickBusLowerNode": {
-        "doc": "基于巴士相对偏移点击下路节点（+250px, +150px）",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/mybus_default_distance.png",
-            "threshold": 0.68
-        },
-        "action": "Click",
-        "target_offset": [
-            250,
-            150,
-            0,
-            0
-        ],
-        "post_delay": 800,
-        "next": [
-            "ClickEnterNode",
-            "TeamFormationConfirm",
-            "BattleAutoCombat",
-            "MirrorClickBusUpperNode"
-        ]
+    "action": "DoNothing",
+    "next": []
+  },
+  "MirrorHandleBattle": {
+    "doc": "战斗交棒：交给脚本 mirror.battle（对应 AALC 的 to_battle + fight；首回合是否全员防御由 defense_first_round 决定）",
+    "recognition": {
+      "type": "Or",
+      "any_of": [
+        "MirrorBattleEntryNormal",
+        "MirrorBattleEntryChain"
+      ]
     },
-    "MirrorClickBusUpperNode": {
-        "doc": "基于巴士相对偏移点击上路节点（+250px, -150px）",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/mybus_default_distance.png",
-            "threshold": 0.68
-        },
-        "action": "Click",
-        "target_offset": [
-            250,
-            -150,
-            0,
-            0
-        ],
-        "post_delay": 800,
-        "next": [
-            "ClickEnterNode",
-            "TeamFormationConfirm",
-            "BattleAutoCombat"
-        ]
+    "action": "DoNothing",
+    "next": []
+  },
+  "MirrorBattleEntryNormal": {
+    "doc": "子识别：地图节点上的「普通战斗」按钮（只被 MirrorHandleBattle 的 Or 引用，不单独走流程）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "battle/normal_to_battle_assets.png",
+      "threshold": 0.74
     },
-    "MirrorHandleRoad": {
-        "doc": "像素级寻路交棒：交给脚本 mirror.road 按节点权重挑路（对应 AALC search_road_default_distance），失败时仍回落到下面的盲点节点",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "mirror/road_in_mir/legend_assets.png",
-            "threshold": 0.7,
-            "roi": [
-                1158,
-                55,
-                122,
-                92
-            ]
-        },
-        "action": "DoNothing",
-        "next": []
+    "action": "DoNothing",
+    "next": []
+  },
+  "MirrorBattleEntryChain": {
+    "doc": "子识别：「链接战」按钮（同上）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "battle/chaim_to_battle_assets.png",
+      "threshold": 0.74
     },
-    "MirrorHandleBattle": {
-        "doc": "战斗交棒：交给脚本 mirror.battle（对应 AALC 的 to_battle + fight；首回合是否全员防御由 defense_first_round 决定）",
-        "recognition": {
-            "type": "Or",
-            "any_of": [
-                "MirrorBattleEntryNormal",
-                "MirrorBattleEntryChain"
-            ]
-        },
-        "action": "DoNothing",
-        "next": []
-    },
-    "MirrorBattleEntryNormal": {
-        "doc": "子识别：地图节点上的「普通战斗」按钮（只被 MirrorHandleBattle 的 Or 引用，不单独走流程）",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "battle/normal_to_battle_assets.png",
-            "threshold": 0.74
-        },
-        "action": "DoNothing",
-        "next": []
-    },
-    "MirrorBattleEntryChain": {
-        "doc": "子识别：「链接战」按钮（同上）",
-        "recognition": {
-            "type": "TemplateMatch",
-            "template": "battle/chaim_to_battle_assets.png",
-            "threshold": 0.74
-        },
-        "action": "DoNothing",
-        "next": []
-    }
+    "action": "DoNothing",
+    "next": []
+  }
 }

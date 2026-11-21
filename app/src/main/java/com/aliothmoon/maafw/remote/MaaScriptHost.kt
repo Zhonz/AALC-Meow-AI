@@ -5,6 +5,8 @@ import com.aliothmoon.maafw.maa.MaaStatus
 import com.aliothmoon.maafw.script.ScriptHost
 import com.aliothmoon.maafw.script.ScriptMatch
 import com.aliothmoon.maafw.script.ScriptRect
+import com.aliothmoon.maafw.script.ScreenShot
+import android.graphics.BitmapFactory
 import com.sun.jna.Memory
 import com.sun.jna.Pointer
 import kotlinx.serialization.json.Json
@@ -189,6 +191,41 @@ internal class MaaScriptHost(
 
     override fun scroll(dy: Int): Boolean =
         waitController(lib.MaaControllerPostScroll(controller, 0, dy))
+
+    override fun screenshot(): ScreenShot? {
+        val buffer = lib.MaaImageBufferCreate() ?: return null
+        return try {
+            if (lib.MaaControllerCachedImage(controller, buffer) == 0.toByte()) {
+                log("控制器没有可用截图，交还给管线")
+                null
+            } else {
+                // 统一缩放到脚本坐标系：脚本里所有坐标常量都是 1280×720 的
+                lib.MaaImageBufferResize(buffer, screenWidth, screenHeight)
+                val data = lib.MaaImageBufferGetEncoded(buffer)
+                val size = lib.MaaImageBufferGetEncodedSize(buffer).toInt()
+                if (data == null || size <= 0) {
+                    null
+                } else {
+                    val bytes = data.getByteArray(0, size)
+                    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, size)
+                    if (bitmap == null) {
+                        null
+                    } else {
+                        val pixels = IntArray(bitmap.width * bitmap.height)
+                        bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+                        val shot = ScreenShot(bitmap.width, bitmap.height, pixels)
+                        bitmap.recycle()
+                        shot
+                    }
+                }
+            }
+        } catch (t: Throwable) {
+            log("截图读取失败: " + t.message)
+            null
+        } finally {
+            lib.MaaImageBufferDestroy(buffer)
+        }
+    }
 
     override fun touchDown(x: Int, y: Int): Boolean =
         waitController(lib.MaaControllerPostTouchDown(controller, CONTACT, x, y, PRESSURE))

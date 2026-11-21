@@ -174,6 +174,9 @@ interface MaaFrameworkLibrary : Library {
 
     fun MaaImageBufferHeight(handle: Pointer?): Int
 
+    /** 把缓冲缩放到指定尺寸（脚本要按 1280×720 的固定坐标算像素，先缩放再取编码） */
+    fun MaaImageBufferResize(handle: Pointer?, width: Int, height: Int): Byte
+
     /** 拿的是编码后（PNG）的字节，不是裸位图；长度另取 [MaaImageBufferGetEncodedSize] */
     fun MaaImageBufferGetEncoded(handle: Pointer?): Pointer?
 

@@ -618,6 +618,7 @@
         },
         "action": "DoNothing",
         "next": [
+            "MirrorHandleThemePackFeature",
             "MirrorInDungeon"
         ]
     },

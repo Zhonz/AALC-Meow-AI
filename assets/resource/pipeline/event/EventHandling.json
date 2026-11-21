@@ -1,160 +1,259 @@
 {
-  "EventHandling": {
-    "recognition": "TemplateMatch",
-    "template": "event/choices_assets.png",
-    "threshold": 0.7,
-    "action": "DoNothing",
-    "next": [
-      "EventVeryHigh",
-      "EventHigh",
-      "EventNormal",
-      "EventLow",
-      "EventVeryLow",
-      "EventProceed",
-      "EventCommence",
-      "EventCommenceBattle",
-      "EventContinue",
-      "EventFallbackClick"
-    ],
-    "roi": [
-      588,
-      75,
-      449,
-      112
-    ]
-  },
-  "EventVeryHigh": {
-    "recognition": "TemplateMatch",
-    "template": "event/very_high.png",
-    "threshold": 0.72,
-    "action": "Click",
-    "post_delay": 800,
-    "next": [
-      "EventCommence",
-      "EventProceed",
-      "EventContinue"
-    ]
-  },
-  "EventHigh": {
-    "recognition": "TemplateMatch",
-    "template": "event/high.png",
-    "threshold": 0.72,
-    "action": "Click",
-    "post_delay": 800,
-    "next": [
-      "EventCommence",
-      "EventProceed",
-      "EventContinue"
-    ]
-  },
-  "EventNormal": {
-    "recognition": "TemplateMatch",
-    "template": "event/normal.png",
-    "threshold": 0.72,
-    "action": "Click",
-    "post_delay": 800,
-    "next": [
-      "EventCommence",
-      "EventProceed",
-      "EventContinue"
-    ]
-  },
-  "EventLow": {
-    "recognition": "TemplateMatch",
-    "template": "event/low.png",
-    "threshold": 0.72,
-    "action": "Click",
-    "post_delay": 800,
-    "next": [
-      "EventCommence",
-      "EventProceed",
-      "EventContinue"
-    ]
-  },
-  "EventVeryLow": {
-    "recognition": "TemplateMatch",
-    "template": "event/very_low.png",
-    "threshold": 0.72,
-    "action": "Click",
-    "post_delay": 800,
-    "next": [
-      "EventCommence",
-      "EventProceed",
-      "EventContinue"
-    ]
-  },
-  "EventCommence": {
-    "recognition": "TemplateMatch",
-    "template": "event/commence_assets.png",
-    "threshold": 0.7,
-    "action": "Click",
-    "post_delay": 1000,
-    "next": [
-      "EventContinue",
-      "EventProceed"
-    ],
-    "roi": [
-      1003,
-      593,
-      277,
-      110
-    ]
-  },
-  "EventCommenceBattle": {
-    "recognition": "TemplateMatch",
-    "template": "event/commence_battle_assets.png",
-    "threshold": 0.7,
-    "action": "Click",
-    "post_delay": 1500,
-    "roi": [
-      1001,
-      593,
-      279,
-      108
-    ]
-  },
-  "EventProceed": {
-    "recognition": "TemplateMatch",
-    "template": "event/proceed_assets.png",
-    "threshold": 0.7,
-    "action": "Click",
-    "post_delay": 800,
-    "next": [
-      "EventContinue"
-    ],
-    "roi": [
-      1030,
-      589,
-      250,
-      114
-    ]
-  },
-  "EventContinue": {
-    "recognition": "TemplateMatch",
-    "template": "event/continue_assets.png",
-    "threshold": 0.7,
-    "action": "Click",
-    "post_delay": 800,
-    "roi": [
-      1032,
-      591,
-      248,
-      112
-    ]
-  },
-  "EventFallbackClick": {
-    "action": "Click",
-    "target": [
-      640,
-      650,
-      40,
-      20
-    ],
-    "post_delay": 800,
-    "next": [
-      "EventCommence",
-      "EventProceed",
-      "EventContinue"
-    ]
-  }
+    "EventHandling": {
+        "recognition": "TemplateMatch",
+        "template": "event/choices_assets.png",
+        "threshold": 0.7,
+        "action": "DoNothing",
+        "next": [
+            "EventUnknown",
+            "EventGainEgo",
+            "EventAdvantageCheck",
+            "EventGainEgoResult",
+            "EventVeryHigh",
+            "EventHigh",
+            "EventNormal",
+            "EventLow",
+            "EventVeryLow",
+            "EventProceed",
+            "EventCommence",
+            "EventCommenceBattle",
+            "EventContinue",
+            "EventPerformCheck",
+            "EventSkip",
+            "EventFallbackClick"
+        ],
+        "roi": [
+            588,
+            75,
+            449,
+            112
+        ]
+    },
+    "EventVeryHigh": {
+        "recognition": "TemplateMatch",
+        "template": "event/very_high.png",
+        "threshold": 0.72,
+        "action": "Click",
+        "post_delay": 800,
+        "next": [
+            "EventCommence",
+            "EventProceed",
+            "EventContinue"
+        ]
+    },
+    "EventHigh": {
+        "recognition": "TemplateMatch",
+        "template": "event/high.png",
+        "threshold": 0.72,
+        "action": "Click",
+        "post_delay": 800,
+        "next": [
+            "EventCommence",
+            "EventProceed",
+            "EventContinue"
+        ]
+    },
+    "EventNormal": {
+        "recognition": "TemplateMatch",
+        "template": "event/normal.png",
+        "threshold": 0.72,
+        "action": "Click",
+        "post_delay": 800,
+        "next": [
+            "EventCommence",
+            "EventProceed",
+            "EventContinue"
+        ]
+    },
+    "EventLow": {
+        "recognition": "TemplateMatch",
+        "template": "event/low.png",
+        "threshold": 0.72,
+        "action": "Click",
+        "post_delay": 800,
+        "next": [
+            "EventCommence",
+            "EventProceed",
+            "EventContinue"
+        ]
+    },
+    "EventVeryLow": {
+        "recognition": "TemplateMatch",
+        "template": "event/very_low.png",
+        "threshold": 0.72,
+        "action": "Click",
+        "post_delay": 800,
+        "next": [
+            "EventCommence",
+            "EventProceed",
+            "EventContinue"
+        ]
+    },
+    "EventCommence": {
+        "recognition": "TemplateMatch",
+        "template": "event/commence_assets.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "post_delay": 1000,
+        "next": [
+            "EventContinue",
+            "EventProceed"
+        ],
+        "roi": [
+            1003,
+            593,
+            277,
+            110
+        ]
+    },
+    "EventCommenceBattle": {
+        "recognition": "TemplateMatch",
+        "template": "event/commence_battle_assets.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "post_delay": 1500,
+        "roi": [
+            1001,
+            593,
+            279,
+            108
+        ]
+    },
+    "EventProceed": {
+        "recognition": "TemplateMatch",
+        "template": "event/proceed_assets.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "post_delay": 800,
+        "next": [
+            "EventContinue"
+        ],
+        "roi": [
+            1030,
+            589,
+            250,
+            114
+        ]
+    },
+    "EventContinue": {
+        "recognition": "TemplateMatch",
+        "template": "event/continue_assets.png",
+        "threshold": 0.7,
+        "action": "Click",
+        "post_delay": 800,
+        "roi": [
+            1032,
+            591,
+            248,
+            112
+        ]
+    },
+    "EventFallbackClick": {
+        "action": "Click",
+        "target": [
+            640,
+            650,
+            40,
+            20
+        ],
+        "post_delay": 800,
+        "next": [
+            "EventCommence",
+            "EventProceed",
+            "EventContinue"
+        ]
+    },
+    "EventUnknown": {
+        "doc": "优先点「？？？」选项（AALC event_handling：优先选 ??? 与直接获取的）",
+        "recognition": {
+            "type": "TemplateMatch",
+            "template": "event/unknown_event.png",
+            "threshold": 0.75
+        },
+        "action": "Click",
+        "post_delay": 800,
+        "next": [
+            "EventCommence",
+            "EventProceed",
+            "EventContinue",
+            "EventSkip"
+        ]
+    },
+    "EventGainEgo": {
+        "doc": "选「获得 EGO 饰品」类选项",
+        "recognition": {
+            "type": "TemplateMatch",
+            "template": "event/select_to_gain_ego.png",
+            "threshold": 0.75
+        },
+        "action": "Click",
+        "post_delay": 800,
+        "next": [
+            "EventCommence",
+            "EventProceed",
+            "EventContinue",
+            "EventSkip"
+        ]
+    },
+    "EventAdvantageCheck": {
+        "doc": "选「有利判定」选项",
+        "recognition": {
+            "type": "TemplateMatch",
+            "template": "event/advantage_check.png",
+            "threshold": 0.75
+        },
+        "action": "Click",
+        "post_delay": 800,
+        "next": [
+            "EventCommence",
+            "EventProceed",
+            "EventContinue",
+            "EventSkip"
+        ]
+    },
+    "EventGainEgoResult": {
+        "doc": "选「按判定结果获得 EGO 饰品」",
+        "recognition": {
+            "type": "TemplateMatch",
+            "template": "event/gain_a_ego_depending_on_result.png",
+            "threshold": 0.75
+        },
+        "action": "Click",
+        "post_delay": 800,
+        "next": [
+            "EventCommence",
+            "EventProceed",
+            "EventContinue",
+            "EventSkip"
+        ]
+    },
+    "EventPerformCheck": {
+        "doc": "触发罪人判定（AALC perform_the_check_feature_assets）",
+        "recognition": {
+            "type": "TemplateMatch",
+            "template": "event/perform_the_check_feature_assets.png",
+            "threshold": 0.75
+        },
+        "action": "Click",
+        "post_delay": 800,
+        "next": [
+            "EventCommence",
+            "EventProceed",
+            "EventContinue"
+        ]
+    },
+    "EventSkip": {
+        "doc": "没有可选项时点跳过",
+        "recognition": {
+            "type": "TemplateMatch",
+            "template": "event/skip_assets.png",
+            "threshold": 0.72
+        },
+        "action": "Click",
+        "post_delay": 800,
+        "next": [
+            "EventContinue",
+            "EventProceed"
+        ]
+    }
 }

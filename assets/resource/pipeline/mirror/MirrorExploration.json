@@ -112,7 +112,7 @@
         ]
     },
     "MirrorHandleThemePackFeature": {
-        "doc": "检测到楼层主题包选择页面（feature_theme_pack_assets）",
+        "doc": "主题包选择页：交棒给脚本 mirror.theme（按 AALC 的关键词权重选包，可刷新）",
         "recognition": {
             "type": "TemplateMatch",
             "template": "mirror/theme_pack/feature_theme_pack_assets.png",
@@ -125,10 +125,7 @@
             ]
         },
         "action": "DoNothing",
-        "next": [
-            "MirrorPickThemePackConfirm",
-            "MirrorRefreshThemePack"
-        ]
+        "next": []
     },
     "MirrorPickThemePackConfirm": {
         "doc": "选中卡包并点击确认（默认点击中间偏左位置的主题卡包）",

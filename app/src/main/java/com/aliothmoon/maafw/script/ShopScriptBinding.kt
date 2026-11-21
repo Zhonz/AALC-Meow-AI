@@ -45,6 +45,14 @@ object ShopScriptBinding {
                 maxRounds = MirrorRoadScript.maxRounds,
                 params = emptyMap(),
             ),
+            // 主题包：按 AALC 的关键词权重选包（原来只是盲点 500,540）
+            TaskScript(
+                scriptId = MirrorThemePackScript.id,
+                entry = MirrorThemePackScript.entry,
+                resumeEntry = MirrorThemePackScript.resumeEntry,
+                maxRounds = MirrorThemePackScript.maxRounds,
+                params = emptyMap(),
+            ),
             // 战斗：管线认到「MirrorHandleBattle」交棒；首回合防御由 defense_first_round 开关决定
             TaskScript(
                 scriptId = MirrorBattleScript.id,

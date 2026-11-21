@@ -41,6 +41,7 @@ import com.aliothmoon.maafw.domain.OptionValue
 import com.aliothmoon.maafw.domain.ResolvedConfiguredTask
 import com.aliothmoon.maafw.domain.TaskCatalogGroup
 import com.aliothmoon.maafw.domain.TaskCatalogItem
+import com.aliothmoon.maafw.domain.TeamOptionScope
 import com.aliothmoon.maafw.i18n.asString
 import com.aliothmoon.maafw.theme.MaaDesignTokens
 import com.aliothmoon.maafw.theme.MaaTheme
@@ -365,6 +366,9 @@ internal fun TaskOptionContent(
     modifier: Modifier = Modifier,
     onClose: (() -> Unit)? = null,
 ) {
+    // 编队域字段统一在「编队」页配置，这里只留一句指路，避免同一份值两处可改
+    val teamScoped = task.options.filter { TeamOptionScope.isTeamScoped(it.name) }
+    val options = task.options.filterNot { TeamOptionScope.isTeamScoped(it.name) }
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(MaaDesignTokens.Spacing.sm),
@@ -381,8 +385,17 @@ internal fun TaskOptionContent(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(MaaDesignTokens.Spacing.sm),
         ) {
+            if (teamScoped.isNotEmpty()) {
+                MaaCard(title = stringResource(R.string.teams_scope_title)) {
+                    Text(
+                        text = stringResource(R.string.teams_scope_hint),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
             OptionEditorList(
-                options = task.options,
+                options = options,
                 locked = locked,
                 onSetOption = onSetOption,
                 carded = true,

@@ -13,6 +13,8 @@ import com.aliothmoon.maafw.domain.RunConfiguration
 import com.aliothmoon.maafw.domain.OverlayControlMode
 import com.aliothmoon.maafw.domain.RunConfigurationId
 import com.aliothmoon.maafw.domain.RunMode
+import com.aliothmoon.maafw.domain.TeamOptionScope
+import com.aliothmoon.maafw.domain.TeamPreset
 import com.aliothmoon.maafw.domain.UserConfiguration
 import com.aliothmoon.maafw.domain.duplicate
 import com.aliothmoon.maafw.privileged.DisplaySizeGateway
@@ -310,6 +312,8 @@ class SessionViewModel(
         if (project !is ProjectState.Ready) return base
         val session = resolveCached(project, config)
         val metadata = project.definition.metadata
+        val teamPresets = TeamOptionScope.normalize(config.teamPresets)
+        val resourceName = session.environment.resource?.name
         return base.copy(
             projectMetadata = metadata,
             telemetryDeclared = project.definition.telemetry != null,
@@ -321,6 +325,14 @@ class SessionViewModel(
             taskCatalog = session.taskCatalog,
             globalOptions = session.globalOptions,
             resourceOptions = session.resourceOptions,
+            teamPresets = teamPresets,
+            teamOptions = teamPresets.associate { preset ->
+                preset.teamNumber to ConfigurationResolver.resolveTeamOptions(
+                    definition = project.definition,
+                    values = preset.optionValues,
+                    resourceName = resourceName,
+                )
+            },
             environment = session.environment,
             sessionDiagnostics = session.diagnostics,
             previewResolution = settings.resolutionPreference.resolution,
@@ -437,6 +449,20 @@ class SessionViewModel(
                 mutateTask(intent.configurationId, intent.taskInstanceId) { task ->
                     task.copy(optionValues = task.optionValues + (intent.optionName to intent.value))
                 }
+            }
+
+            is SessionIntent.SetTeamOption -> guarded {
+                updateTeam(intent.teamNumber) { preset ->
+                    preset.copy(optionValues = preset.optionValues + (intent.optionName to intent.value))
+                }
+            }
+
+            is SessionIntent.SetTeamRemark -> guarded {
+                updateTeam(intent.teamNumber) { it.copy(remark = intent.remark) }
+            }
+
+            is SessionIntent.ResetTeam -> guarded {
+                updateTeam(intent.teamNumber) { preset -> TeamPreset(preset.teamNumber) }
             }
 
             is SessionIntent.SetGlobalOption -> guarded {
@@ -605,6 +631,21 @@ class SessionViewModel(
             config.copy(
                 configurations = config.configurations.map {
                     if (it.id == id) transform(it) else it
+                },
+            )
+        }
+    }
+
+    /** 只改 1..20 里的那一支；缺项先按 [TeamOptionScope.normalize] 补默认再改，避免 UI 拿到半截数据 */
+    private suspend fun updateTeam(
+        teamNumber: Int,
+        transform: (TeamPreset) -> TeamPreset,
+    ) {
+        if (teamNumber !in TeamPreset.numbers) return
+        configurationStore.update { config ->
+            config.copy(
+                teamPresets = TeamOptionScope.normalize(config.teamPresets).map { preset ->
+                    if (preset.teamNumber == teamNumber) transform(preset) else preset
                 },
             )
         }

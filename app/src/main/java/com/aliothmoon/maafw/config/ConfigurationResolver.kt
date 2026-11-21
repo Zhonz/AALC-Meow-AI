@@ -22,6 +22,7 @@ import com.aliothmoon.maafw.domain.RunConfigurationId
 import com.aliothmoon.maafw.domain.TaskCatalogGroup
 import com.aliothmoon.maafw.domain.TaskCatalogItem
 import com.aliothmoon.maafw.domain.TaskDefinition
+import com.aliothmoon.maafw.domain.TeamOptionScope
 import com.aliothmoon.maafw.domain.UnavailableReasons
 import com.aliothmoon.maafw.i18n.UiText
 import com.aliothmoon.maafw.domain.UserConfiguration
@@ -206,6 +207,23 @@ object ConfigurationResolver {
         if (!resourceOk) return UnavailableReasons.resourceMismatch(task.resources)
         return null
     }
+
+    /**
+     * 编队页的字段投影：按 [TeamOptionScope.orderedNames] 的固定顺序解析，只出 PI 真声明了的项
+     *
+     * 与任务面板同一套 [OptionEditorState]：选择项的 cases、开关的两态、多选的勾选状态都复用，
+     * 编队页不需要另写一份「选项是什么」的知识
+     */
+    fun resolveTeamOptions(
+        definition: ProjectDefinition,
+        values: Map<String, OptionValue>,
+        resourceName: String?,
+    ): List<OptionEditorState> = buildOptionEditors(
+        definition = definition,
+        optionNames = TeamOptionScope.orderedNames.filter { it in definition.options },
+        values = values,
+        resourceName = resourceName,
+    )
 
     private fun buildTaskCatalog(
         definition: ProjectDefinition,

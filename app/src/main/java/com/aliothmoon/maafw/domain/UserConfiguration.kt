@@ -21,6 +21,8 @@ data class UserConfiguration(
     val configurations: List<RunConfiguration> = emptyList(),
     val activeConfigurationId: RunConfigurationId? = null,
     val welcomeFingerprint: String? = null,
+    /** 编队（1..20，与 PI 的 daily_teams 一致）预设；缺项由 [TeamOptionScope.normalize] 补默认，旧数据缺字段即空表 */
+    val teamPresets: List<TeamPreset> = emptyList(),
 ) {
     fun configuration(id: RunConfigurationId?): RunConfiguration? =
         id?.let { target -> configurations.firstOrNull { it.id == target } }

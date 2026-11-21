@@ -343,9 +343,26 @@
     <string name="nav_home">首页</string>
     <string name="nav_tasks">任务</string>
     <string name="nav_schedule">定时</string>
+    <string name="nav_teams">编队</string>
     <string name="nav_settings">设置</string>
     <string name="dialog_cannot_start">无法开始</string>
     <string name="dialog_ok">知道了</string>
+
+    <!-- 编队页 -->
+    <string name="teams_empty_title">暂无编队配置</string>
+    <string name="teams_empty_hint">项目资源加载完成后，才能在这里配置编队</string>
+    <string name="teams_select_title">选择编队</string>
+    <string name="teams_select_hint">每支编队配一次；任务里选「使用编队」就会套用这里的设置</string>
+    <string name="teams_card_title">编队#%1$d</string>
+    <string name="teams_reset">重置本队</string>
+    <string name="teams_remark_label">备注名</string>
+    <string name="teams_remark_placeholder">例如：日常刷币队</string>
+    <string name="teams_sinners_hint">勾选的罪人会作为该编队的出战名单，取消勾选即移出</string>
+    <string name="teams_order_title">出战顺位</string>
+    <string name="teams_order_summary">12 个位置的出手顺序</string>
+    <string name="teams_order_hint">按位置指定罪人；留空 = 不指定，沿用游戏内默认顺位</string>
+    <string name="teams_scope_title">编队与战斗设置</string>
+    <string name="teams_scope_hint">阵容、体系、商店策略、奖励卡与出战顺位已移到「编队」页，按编队统一配置</string>
 
     <!-- option 编辑器 -->
     <string name="option_input_invalid">输入不合法</string>

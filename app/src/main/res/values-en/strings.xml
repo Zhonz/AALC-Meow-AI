@@ -350,9 +350,26 @@
     <string name="nav_home">Home</string>
     <string name="nav_tasks">Tasks</string>
     <string name="nav_schedule">Schedule</string>
+    <string name="nav_teams">Teams</string>
     <string name="nav_settings">Settings</string>
     <string name="dialog_cannot_start">Cannot start</string>
     <string name="dialog_ok">OK</string>
+
+    <!-- Team page -->
+    <string name="teams_empty_title">No team presets yet</string>
+    <string name="teams_empty_hint">Team settings become available once the project resources are loaded</string>
+    <string name="teams_select_title">Pick a team</string>
+    <string name="teams_select_hint">Configure each team once; tasks that pick this team apply these settings automatically</string>
+    <string name="teams_card_title">Team #%1$d</string>
+    <string name="teams_reset">Reset team</string>
+    <string name="teams_remark_label">Remark</string>
+    <string name="teams_remark_placeholder">e.g. daily farming team</string>
+    <string name="teams_sinners_hint">Checked sinners form this team&#39;s roster</string>
+    <string name="teams_order_title">Turn order</string>
+    <string name="teams_order_summary">Slot order for the 12 positions</string>
+    <string name="teams_order_hint">Assign a sinner per slot; leave empty to keep the in-game order</string>
+    <string name="teams_scope_title">Team &amp; battle settings</string>
+    <string name="teams_scope_hint">Roster, team system, shop strategy, reward cards and turn order have moved to the Teams page and are configured per team</string>
 
     <!-- Option editor -->
     <string name="option_input_invalid">Invalid input</string>

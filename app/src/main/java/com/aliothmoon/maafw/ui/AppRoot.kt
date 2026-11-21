@@ -34,11 +34,13 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Checklist
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Settings
@@ -125,6 +127,7 @@ import com.aliothmoon.maafw.ui.settings.SettingsScreen
 import com.aliothmoon.maafw.ui.tasks.FullscreenPreview
 import com.aliothmoon.maafw.ui.tasks.TasksScreen
 import com.aliothmoon.maafw.ui.tasks.rememberMovablePreview
+import com.aliothmoon.maafw.ui.teams.TeamScreen
 import com.aliothmoon.maafw.util.Misc
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -145,6 +148,7 @@ private enum class TopDestination(
     Home(R.string.nav_home, Icons.Outlined.Home, Icons.Filled.Home),
     Tasks(R.string.nav_tasks, Icons.Outlined.Checklist, Icons.Filled.Checklist),
     Schedule(R.string.nav_schedule, Icons.Outlined.Schedule, Icons.Filled.Schedule),
+    Teams(R.string.nav_teams, Icons.Outlined.Groups, Icons.Filled.Groups),
     Settings(R.string.nav_settings, Icons.Outlined.Settings, Icons.Filled.Settings),
 }
 
@@ -476,6 +480,11 @@ fun AppRoot(
                         modifier = Modifier.fillMaxSize(),
                     )
 
+                    TopDestination.Teams -> TeamScreen(
+                        state = state,
+                        onIntent = viewModel::onIntent,
+                        modifier = Modifier.fillMaxSize(),
+                    )
                     TopDestination.Settings -> SettingsScreen(
                         state = state,
                         onIntent = viewModel::onIntent,

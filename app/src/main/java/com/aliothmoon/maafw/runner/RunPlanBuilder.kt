@@ -11,6 +11,7 @@ import com.aliothmoon.maafw.domain.OptionValue
 import com.aliothmoon.maafw.domain.PipelineType
 import com.aliothmoon.maafw.domain.ProjectDefinition
 import com.aliothmoon.maafw.domain.RunConfigurationId
+import com.aliothmoon.maafw.domain.TeamOptionScope
 import com.aliothmoon.maafw.domain.UserConfiguration
 import com.aliothmoon.maafw.domain.validateInputCandidate
 import kotlinx.serialization.json.JsonArray
@@ -104,10 +105,11 @@ object RunPlanBuilder {
             // 协议「Option 覆盖顺序」：task 基础 → global → resource →（controller 未建模）→ task option
             patches += globalPatches
             patches += resourcePatches
+            // 编队域字段以编队预设为准：任务面板已不展开这些项（见 TeamOptionScope）
             compileOptions(
                 definition = definition,
                 optionNames = task.optionNames,
-                values = configured.optionValues,
+                values = TeamOptionScope.mergedValues(config.teamPresets, configured.optionValues),
                 scopeLabel = "task:${task.name}",
                 resourceName = resource.name,
                 patches = patches,

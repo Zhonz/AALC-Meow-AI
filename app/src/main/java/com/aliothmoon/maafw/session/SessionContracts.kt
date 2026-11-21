@@ -14,6 +14,7 @@ import com.aliothmoon.maafw.domain.RunConfigurationId
 import com.aliothmoon.maafw.domain.RunMode
 import com.aliothmoon.maafw.privileged.WatchdogState
 import com.aliothmoon.maafw.domain.TaskCatalogGroup
+import com.aliothmoon.maafw.domain.TeamPreset
 import com.aliothmoon.maafw.domain.ThemeMode
 import com.aliothmoon.maafw.theme.ThemeStyle
 import com.aliothmoon.maafw.i18n.UiText
@@ -43,6 +44,10 @@ data class SessionUiState(
     val globalOptions: List<OptionEditorState> = emptyList(),
     /** 空 = 当前 resource 没有 option[]，设置页不出「资源设置」 */
     val resourceOptions: List<OptionEditorState> = emptyList(),
+    /** 编队预设，已归一成 1..20 且顺序固定（与 PI 的 daily_teams 选项一致） */
+    val teamPresets: List<TeamPreset> = emptyList(),
+    /** 每支编队按自身值解析出的字段；键为编队号 */
+    val teamOptions: Map<Int, List<OptionEditorState>> = emptyMap(),
     val projectMetadata: ProjectMetadata = ProjectMetadata(),
     /** PI 声明了 telemetry；没声明时设置页不出这一行 */
     val telemetryDeclared: Boolean = false,
@@ -223,6 +228,16 @@ sealed interface SessionIntent {
         val optionName: String,
         val value: OptionValue,
     ) : SessionIntent
+
+    /** 编队预设不属于运行配置：改一次对所有用到该编队的任务生效 */
+    data class SetTeamOption(
+        val teamNumber: Int,
+        val optionName: String,
+        val value: OptionValue,
+    ) : SessionIntent
+
+    data class SetTeamRemark(val teamNumber: Int, val remark: String) : SessionIntent
+    data class ResetTeam(val teamNumber: Int) : SessionIntent
 
     /** 不属于任何运行配置：改一次对所有配置的所有任务生效 */
     data class SetGlobalOption(val optionName: String, val value: OptionValue) : SessionIntent

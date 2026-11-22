@@ -244,8 +244,11 @@ object AalcTeamImport {
             int(data["second_system_setting"])?.let {
                 values["shop_second_setting"] = OptionValue.SingleCase(if (it == 1) "1" else "0")
             }
-            // second_system_action = [合成四级, 购买, 选择, 升级]
+            // second_system_action = [合成四级, 购买, 选择, 升级]（第三位 choose 上游没有使用点）
             val actions = intList(data["second_system_action"])
+            actions.getOrNull(0)?.let {
+                values["shop_second_fuse"] = OptionValue.SingleCase(if (it != 0) YES else NO)
+            }
             actions.getOrNull(1)?.let {
                 values["shop_second_buy"] = OptionValue.SingleCase(if (it != 0) YES else NO)
             }

@@ -31,10 +31,27 @@ object MirrorShopScript : ScriptTask {
     const val KEY_NO_SYSTEM_FUSE = "noSystemFuse"
     const val KEY_AGGRESSIVE_ALSO_ENHANCE = "aggressiveAlsoEnhance"
     const val KEY_AFTER_IV = "afterIv"
+
+    /** 额外体系（第二 / 第三体系）的键名前缀；后缀见 [SUFFIX_SYSTEM] 等 */
+    const val PREFIX_SECOND = "second"
+    const val PREFIX_THIRD = "third"
+    const val SUFFIX_SYSTEM = "System"
+    const val SUFFIX_FUSE = "Fuse"
+    const val SUFFIX_BUY = "Buy"
+    const val SUFFIX_ENHANCE = "Enhance"
+    const val SUFFIX_SETTING = "Setting"
+
+    /** 第二体系的键（保留旧名，历史保存的参数仍能读） */
     const val KEY_SECOND_SYSTEM = "secondSystem"
+    const val KEY_SECOND_FUSE = "secondFuse"
     const val KEY_SECOND_BUY = "secondBuy"
-    const val KEY_SECOND_PROTECT = "secondProtect"
     const val KEY_SECOND_ENHANCE = "secondEnhance"
+
+    /** 第三体系：与第二体系同一套形状，AALC 里没有，是我们按同样原理加的 */
+    const val KEY_THIRD_SYSTEM = "thirdSystem"
+    const val KEY_THIRD_FUSE = "thirdFuse"
+    const val KEY_THIRD_BUY = "thirdBuy"
+    const val KEY_THIRD_ENHANCE = "thirdEnhance"
     const val KEY_SKILL_REPLACEMENT = "skillReplacement"
     const val KEY_SKILL_PRIORITY = "skillPriority"
     const val KEY_SKILL_MODE = "skillMode"
@@ -51,6 +68,9 @@ object MirrorShopScript : ScriptTask {
 
     /** 第二体系的时机（AALC 的 second_system_setting）：0 = 合成出四级后，1 = 一直 */
     const val KEY_SECOND_SETTING = "secondSetting"
+
+    /** 第三体系的时机：语义同 [KEY_SECOND_SETTING] */
+    const val KEY_THIRD_SETTING = "thirdSetting"
 
     /** 出售时是否连 must_be_abandoned 的废品一起清掉（AALC 无开关，默认开） */
     const val KEY_SELL_ABANDONED = "sellAbandoned"
@@ -172,16 +192,20 @@ object MirrorShopScript : ScriptTask {
     @Volatile
     private var replacements: Int = 0
 
-    /** 第二体系也合出四级了（AALC fuse_second_IV）：此时不再追第二体系，激进合成收手 */
+    /**
+     * 已经合出四级的额外体系（AALC 的 fuse_second_IV 泛化到多个体系）
+     *
+     * 追下一个体系时用它挑关键词：谁不在集合里就追谁。
+     */
     @Volatile
-    private var fuseSecondIvDone: Boolean = false
+    private var fuseExtraIvDone: MutableSet<String> = mutableSetOf()
 
     override fun resetSession() {
         skipShopsAfterIv = false
         firstLineY = null
         fuseIvDone = false
         replacements = 0
-        fuseSecondIvDone = false
+        fuseExtraIvDone = mutableSetOf()
     }
 
     // ── 入口 ──
@@ -391,13 +415,9 @@ object MirrorShopScript : ScriptTask {
         }
         host.sleep(800)
 
-        // AALC 的 protect_coordinates：追第二体系时，第二体系的四级饰品一个都不能卖
-        val protect = if (plan.secondProtect && plan.secondSystem != null) {
-            host.findAll(levelIvIcon(plan.secondSystem), 0.85)
-        } else {
-            emptyList()
-        }
-        if (protect.isNotEmpty()) host.log("[商店] 保护第二体系四级饰品 " + protect.size + " 件")
+        // AALC 的 protect_coordinates：追额外体系时，那些体系的四级饰品一个都不能卖
+        val protect = plan.fuseExtras.flatMap { host.findAll(levelIvIcon(it.system), 0.85) }
+        if (protect.isNotEmpty()) host.log("[商店] 保护额外体系四级饰品 " + protect.size + " 件")
 
         var sold = 0
         var round = 0
@@ -476,14 +496,14 @@ object MirrorShopScript : ScriptTask {
             if (system != null && systemAllowed) {
                 bought += buySystemGifts(host, system, MAX_SYSTEM_GIFTS, plan.skipWhiteGossypium)
             }
-            // 第二体系要等本体系四级（AALC 的 second_system_setting / fuse_IV 门控）
-            val secondReady = plan.secondAlways || fuseIvDone
-            if (plan.secondBuy && plan.secondSystem != null && systemAllowed) {
-                if (secondReady) {
-                    bought += buySystemGifts(host, plan.secondSystem, MAX_SYSTEM_GIFTS, plan.skipWhiteGossypium)
-                } else {
-                    host.log("[商店] 第二体系要等本体系合出四级，本轮先不买")
+            // 额外体系：setting=0 时要等本体系四级（AALC in_shop.py:256）
+            for (extra in plan.extraSystems) {
+                if (!extra.buy || !systemAllowed) continue
+                if (!extra.always && !fuseIvDone) {
+                    host.log("[商店] " + extra.system + " 要等本体系合出四级，本轮先不买")
+                    continue
                 }
+                bought += buySystemGifts(host, extra.system, MAX_SYSTEM_GIFTS, plan.skipWhiteGossypium)
             }
 
             val money = readMoney(host, inHeal = false)
@@ -669,7 +689,7 @@ object MirrorShopScript : ScriptTask {
                 }
                 ShopPlan.AfterIv.CALM -> aggressive = false
                 ShopPlan.AfterIv.SECOND ->
-                    aggressive = plan.secondSystem != null && plan.secondProtect && !fuseSecondIvDone
+                    aggressive = plan.fuseExtras.any { it.system !in fuseExtraIvDone }
                 ShopPlan.AfterIv.SKIP -> {
                     aggressive = false
                     fuseOn = false
@@ -712,15 +732,15 @@ object MirrorShopScript : ScriptTask {
 
     /** 进入合成页并选好关键词（AALC enter_fuse） */
     private fun enterFuse(host: ScriptHost, plan: ShopPlan): Boolean {
-        // AALC in_shop.py:884：本体系四级已合出、要追第二体系时，合成关键词换成第二体系
-        val system = if (
-            fuseIvDone && !fuseSecondIvDone && plan.afterIv == ShopPlan.AfterIv.SECOND &&
-            plan.secondSystem != null && plan.fuseAggressive
+        // AALC in_shop.py:884：本体系四级已合出、要追额外体系时，合成关键词换成那个体系
+        val pending = if (
+            fuseIvDone && plan.afterIv == ShopPlan.AfterIv.SECOND && plan.fuseAggressive
         ) {
-            plan.secondSystem
+            plan.fuseExtras.firstOrNull { it.system !in fuseExtraIvDone }
         } else {
-            plan.system
-        } ?: return false
+            null
+        }
+        val system = pending?.system ?: plan.system ?: return false
         var guard = 0
         while (!host.cancelled && guard < 15) {
             guard++
@@ -823,11 +843,9 @@ object MirrorShopScript : ScriptTask {
             if (line != null && plan.fuseAggressive) {
                 candidates = candidates.filter { it.y >= line }
             }
-            if (plan.secondProtect && plan.secondSystem != null) {
-                val p = host.find(levelIvIcon(plan.secondSystem), 0.8)
-                if (p != null) {
-                    candidates = candidates.filterNot { near(it, p.centerX, p.centerY, PROTECT_THRESHOLD) }
-                }
+            for (extra in plan.fuseExtras) {
+                val p = host.find(levelIvIcon(extra.system), 0.8) ?: continue
+                candidates = candidates.filterNot { near(it, p.centerX, p.centerY, PROTECT_THRESHOLD) }
             }
 
             var fused = false
@@ -955,10 +973,13 @@ object MirrorShopScript : ScriptTask {
             if (confirm != null) {
                 if (host.find(FUSION_IV, 0.9) != null) {
                     fuseIvDone = true
-                    val second = plan.secondSystem
-                    if (fuseIvDone && second != null && host.find(levelIvIcon(second), 0.8) != null) {
-                        fuseSecondIvDone = true
-                        host.log("[商店] 两个体系都合出四级了，激进合成收手")
+                    // 顺手看一眼额外体系的四级是不是也已经在场（AALC in_shop.py:373-382 的 fuse_second_IV）
+                    for (extra in plan.fuseExtras) {
+                        if (extra.system in fuseExtraIvDone) continue
+                        if (host.find(levelIvIcon(extra.system), 0.8) != null) {
+                            fuseExtraIvDone.add(extra.system)
+                            host.log("[商店] " + extra.system + " 也合出四级了")
+                        }
                     }
                     onIv()
                 }
@@ -995,7 +1016,7 @@ object MirrorShopScript : ScriptTask {
 
         val enhanced = mutableListOf<Point>()
         var systemIvDone = false
-        var secondIvDone = false
+        val extraIvDone = mutableSetOf<String>()
         var bigDone = false
         var stale = 0
         var round = 0
@@ -1017,18 +1038,26 @@ object MirrorShopScript : ScriptTask {
                 }
             }
 
-            if (plan.secondEnhance && plan.secondSystem != null && !secondIvDone) {
-                val iv2 = host.find(levelIvIcon(plan.secondSystem), 0.8)
-                if (iv2 != null) {
-                    if (!isEnhanced(enhanced, iv2.centerX, iv2.centerY)) {
-                        host.click(iv2)
-                        if (!powerUp(host)) break
-                        enhanced.add(Point(iv2.centerX, iv2.centerY))
+            // 额外体系（第二 / 第三体系）的四级：setting 门控与购买一致，advanced 之后才升
+            var extraHandled = false
+            var bail = false
+            for (extra in plan.extraSystems) {
+                if (!extra.enhance || extra.system in extraIvDone) continue
+                if (!extra.always && !fuseIvDone) continue
+                val iv2 = host.find(levelIvIcon(extra.system), 0.8) ?: continue
+                if (!isEnhanced(enhanced, iv2.centerX, iv2.centerY)) {
+                    host.click(iv2)
+                    if (!powerUp(host)) {
+                        bail = true
+                        break
                     }
-                    secondIvDone = true
-                    continue
+                    enhanced.add(Point(iv2.centerX, iv2.centerY))
                 }
+                extraIvDone.add(extra.system)
+                extraHandled = true
             }
+            if (bail) break
+            if (extraHandled) continue
 
             if (!bigDone && !systemIvDone) {
                 val big = host.find(bigGiftIcon(system), 0.8)
@@ -1197,7 +1226,7 @@ object MirrorShopScript : ScriptTask {
         )
         val system = plan.system
         if (system != null) list.add(levelIvIcon(system))
-        if (plan.secondProtect && plan.secondSystem != null) list.add(levelIvIcon(plan.secondSystem))
+        for (extra in plan.fuseExtras) list.add(levelIvIcon(extra.system))
         return list
     }
 

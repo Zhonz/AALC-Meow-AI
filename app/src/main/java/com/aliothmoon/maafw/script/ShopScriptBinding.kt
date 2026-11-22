@@ -90,7 +90,7 @@ object ShopScriptBinding {
                     MirrorStarScript.KEY_OPENING_BONUS to
                         inputText(definition, values, "mirror_opening_bonus", "bonus"),
                     MirrorStarScript.KEY_USE_STARLIGHT to
-                        flag(definition, values, "mirror_use_starlight", default = true),
+                        flag(definition, values, "mirror_use_starlight", default = false),
                 ),
             ),
             // 开局三件初始饰品：认到「确认」按钮就交棒，按体系与顺序点饰品
@@ -194,12 +194,10 @@ object ShopScriptBinding {
         val sellSystems = multipleCases(definition, values, "shop_sell_systems")
             .filter { it in SYSTEMS }
             .joinToString(",")
-        val second = singleCase(definition, values, "shop_second_system")
-            ?.takeIf { it in SYSTEMS }
-            ?.let { it }
         // 总开关优先：选「直接离开」就一分钱不花，细项一律按住 —— 与电脑版 AALC 的 ignore_shop 同义
         val leaveOnly = singleCase(definition, values, "shop_strategy") == "leave"
-        val fuseMode = if (leaveOnly) "off" else singleCase(definition, values, "shop_fuse_mode") ?: "normal"
+        val fuseMode = if (leaveOnly) "off" else singleCase(definition, values, "shop_fuse_mode") ?: "off"
+        val ownSystem = system ?: ""
 
         return linkedMapOf(
             MirrorShopScript.KEY_SYSTEM to (system ?: ""),
@@ -208,9 +206,9 @@ object ShopScriptBinding {
                 if (leaveOnly) "1" else flag(definition, values, "shop_do_not_heal", default = false),
             MirrorShopScript.KEY_DO_NOT_BUY to
                 if (leaveOnly) "1" else flag(definition, values, "shop_do_not_buy", default = false),
-            // 出售会不可逆地清掉玩家饰品，默认关：没配弃置体系就当没开
+            // 默认与 AALC 一致（do_not_sell=False）：出售是默认开启的，只有配了弃置体系才有东西可卖
             MirrorShopScript.KEY_DO_NOT_SELL to
-                if (leaveOnly) "1" else flag(definition, values, "shop_do_not_sell", default = true),
+                if (leaveOnly) "1" else flag(definition, values, "shop_do_not_sell", default = false),
             MirrorShopScript.KEY_DO_NOT_ENHANCE to
                 if (leaveOnly) "1" else flag(definition, values, "shop_do_not_enhance", default = false),
             MirrorShopScript.KEY_FUSE_MODE to fuseMode,
@@ -226,13 +224,20 @@ object ShopScriptBinding {
                 if (leaveOnly) "0" else flag(definition, values, "shop_aggressive_also_enhance", default = false),
             MirrorShopScript.KEY_AFTER_IV to
                 if (leaveOnly) "calm" else (singleCase(definition, values, "shop_after_iv") ?: "calm"),
-            MirrorShopScript.KEY_SECOND_SYSTEM to (second ?: ""),
+            MirrorShopScript.KEY_SECOND_SYSTEM to (extraSystem(definition, values, "shop_second_system", ownSystem) ?: ""),
+            MirrorShopScript.KEY_SECOND_FUSE to
+                if (leaveOnly) "0" else flag(definition, values, "shop_second_fuse", default = false),
             MirrorShopScript.KEY_SECOND_BUY to
                 if (leaveOnly) "0" else flag(definition, values, "shop_second_buy", default = false),
-            MirrorShopScript.KEY_SECOND_PROTECT to
-                if (leaveOnly) "0" else flag(definition, values, "shop_second_protect", default = false),
             MirrorShopScript.KEY_SECOND_ENHANCE to
                 if (leaveOnly) "0" else flag(definition, values, "shop_second_enhance", default = false),
+            MirrorShopScript.KEY_THIRD_SYSTEM to (extraSystem(definition, values, "shop_third_system", ownSystem) ?: ""),
+            MirrorShopScript.KEY_THIRD_FUSE to
+                if (leaveOnly) "0" else flag(definition, values, "shop_third_fuse", default = false),
+            MirrorShopScript.KEY_THIRD_BUY to
+                if (leaveOnly) "0" else flag(definition, values, "shop_third_buy", default = false),
+            MirrorShopScript.KEY_THIRD_ENHANCE to
+                if (leaveOnly) "0" else flag(definition, values, "shop_third_enhance", default = false),
             MirrorShopScript.KEY_SKILL_REPLACEMENT to
                 if (leaveOnly) "0" else flag(definition, values, "shop_skill_replacement", default = false),
             MirrorShopScript.KEY_SKILL_PRIORITY to
@@ -242,7 +247,7 @@ object ShopScriptBinding {
             MirrorShopScript.KEY_MAX_KEYWORD_REFRESH to
                 if (leaveOnly) "0" else number(definition, values, "shop_keyword_refresh", 1),
             MirrorShopScript.KEY_MAX_NORMAL_REFRESH to
-                if (leaveOnly) "0" else number(definition, values, "shop_normal_refresh", 0),
+                if (leaveOnly) "0" else number(definition, values, "shop_normal_refresh", 1),
             MirrorShopScript.KEY_BUY_LEVEL_GIFTS to
                 if (leaveOnly) "0" else flag(definition, values, "shop_buy_level_gifts", default = true),
             MirrorShopScript.KEY_MUST_PURCHASE to
@@ -254,6 +259,8 @@ object ShopScriptBinding {
                 if (leaveOnly) "all" else (singleCase(definition, values, "shop_shopping_strategy") ?: "all"),
             MirrorShopScript.KEY_SECOND_SETTING to
                 if (leaveOnly) "1" else (singleCase(definition, values, "shop_second_setting") ?: "0"),
+            MirrorShopScript.KEY_THIRD_SETTING to
+                if (leaveOnly) "1" else (singleCase(definition, values, "shop_third_setting") ?: "0"),
             MirrorShopScript.KEY_SELL_ABANDONED to
                 if (leaveOnly) "0" else flag(definition, values, "shop_sell_abandoned", default = true),
             MirrorShopScript.KEY_SKIP_WHITE_GOSSYPIUM to
@@ -279,6 +286,15 @@ object ShopScriptBinding {
             }
         return if (order.isEmpty()) DEFAULT_SINNER_ORDER else order.joinToString(",")
     }
+
+    /** 额外体系（第二/第三体系）：none、空、或与本体系重复都算没配 */
+    private fun extraSystem(
+        definition: ProjectDefinition,
+        values: Map<String, OptionValue>,
+        name: String,
+        ownSystem: String,
+    ): String? = singleCase(definition, values, name)
+        ?.takeIf { it in SYSTEMS && it != ownSystem }
 
     /** input 型 option 取某字段的文本；没存过就用 PI 的默认值 */
     private fun inputText(

@@ -948,7 +948,7 @@
       "MirrorHandleRoad",
       "MirrorClickNode",
       "MirrorHandleBattle",
-      "MirrorAcquireEgoGiftCard",
+      "MirrorHandleGiftPick",
       "MirrorHandleEvent",
       "MirrorHandleRewardCard",
       "MirrorHandleThemePackFeature",
@@ -997,65 +997,6 @@
     },
     "action": "Click",
     "post_delay": 800,
-    "next": [
-      "MirrorInDungeon"
-    ]
-  },
-  "MirrorAcquireEgoGiftCard": {
-    "doc": "遇到饰品卡选择界面：按 MirrorTheme option 选对应体系饰品，默认选第一个（最左）",
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "mirror/road_in_mir/acquire_ego_gift_card.png",
-      "threshold": 0.75
-    },
-    "action": "DoNothing",
-    "next": [
-      "MirrorPickEgoGiftBleed",
-      "MirrorPickEgoGiftFirst"
-    ]
-  },
-  "MirrorPickEgoGiftBleed": {
-    "doc": "选择流血体系饰品（被 MirrorTheme=bleed 时通过 pipeline_override 激活）",
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "mirror/road_in_mir/acquire_ego_gift/bleed.png",
-      "threshold": 0.78
-    },
-    "action": "Click",
-    "post_delay": 800,
-    "next": [
-      "MirrorRefuseOrConfirmGift"
-    ]
-  },
-  "MirrorPickEgoGiftFirst": {
-    "doc": "无匹配体系时，直接点击第一个饰品（屏幕固定坐标，通用 fallback）",
-    "action": "Click",
-    "target": [
-      650,
-      540,
-      50,
-      50
-    ],
-    "post_delay": 800,
-    "next": [
-      "MirrorRefuseOrConfirmGift"
-    ]
-  },
-  "MirrorRefuseOrConfirmGift": {
-    "doc": "弹出拒绝/接受饰品确认时，点击接受",
-    "recognition": {
-      "type": "TemplateMatch",
-      "template": "mirror/road_in_mir/acquire_ego_gift_box_assets.png",
-      "threshold": 0.75,
-      "roi": [
-        13,
-        1,
-        151,
-        122
-      ]
-    },
-    "action": "Click",
-    "post_delay": 600,
     "next": [
       "MirrorInDungeon"
     ]
@@ -1185,6 +1126,16 @@
       "type": "TemplateMatch",
       "template": "home/drive.png",
       "threshold": 0.8
+    },
+    "action": "DoNothing",
+    "next": []
+  },
+  "MirrorHandleGiftPick": {
+    "doc": "饰品卡选择界面：交棒给脚本按体系挑卡（MirrorGiftPickScript），脚本自己会选卡、点选择或走拒绝",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/acquire_ego_gift_card.png",
+      "threshold": 0.75
     },
     "action": "DoNothing",
     "next": []

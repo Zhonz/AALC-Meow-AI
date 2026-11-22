@@ -90,7 +90,11 @@
                 "avoid_skill_3",
                 "prioritize_skill_3",
                 "defense_first_round",
+                "defense_for_solo",
+                "defense_for_solo_turns",
+                "combat_count",
                 "re_formation_each_floor",
+                "team_code",
                 "sinner_selection",
                 "sinner_order_slot_1",
                 "sinner_order_slot_2",
@@ -940,87 +944,31 @@
             "cases": [
                 {
                     "name": "burn",
-                    "label": "烧伤",
-                    "pipeline_override": {
-                        "MirrorAcquireEgoGiftCard": {
-                            "next": [
-                                "MirrorEgoGiftPickBurn",
-                                "MirrorEgoGiftPickFirst"
-                            ]
-                        }
-                    }
+                    "label": "烧伤"
                 },
                 {
                     "name": "bleed",
-                    "label": "流血",
-                    "pipeline_override": {
-                        "MirrorAcquireEgoGiftCard": {
-                            "next": [
-                                "MirrorEgoGiftPickBleed",
-                                "MirrorEgoGiftPickFirst"
-                            ]
-                        }
-                    }
+                    "label": "流血"
                 },
                 {
                     "name": "tremor",
-                    "label": "震颤",
-                    "pipeline_override": {
-                        "MirrorAcquireEgoGiftCard": {
-                            "next": [
-                                "MirrorEgoGiftPickTremor",
-                                "MirrorEgoGiftPickFirst"
-                            ]
-                        }
-                    }
+                    "label": "震颤"
                 },
                 {
                     "name": "rupture",
-                    "label": "破裂",
-                    "pipeline_override": {
-                        "MirrorAcquireEgoGiftCard": {
-                            "next": [
-                                "MirrorEgoGiftPickRupture",
-                                "MirrorEgoGiftPickFirst"
-                            ]
-                        }
-                    }
+                    "label": "破裂"
                 },
                 {
                     "name": "poise",
-                    "label": "呼吸",
-                    "pipeline_override": {
-                        "MirrorAcquireEgoGiftCard": {
-                            "next": [
-                                "MirrorEgoGiftPickPoise",
-                                "MirrorEgoGiftPickFirst"
-                            ]
-                        }
-                    }
+                    "label": "呼吸"
                 },
                 {
                     "name": "sinking",
-                    "label": "沉沦",
-                    "pipeline_override": {
-                        "MirrorAcquireEgoGiftCard": {
-                            "next": [
-                                "MirrorEgoGiftPickSinking",
-                                "MirrorEgoGiftPickFirst"
-                            ]
-                        }
-                    }
+                    "label": "沉沦"
                 },
                 {
                     "name": "charge",
-                    "label": "充能",
-                    "pipeline_override": {
-                        "MirrorAcquireEgoGiftCard": {
-                            "next": [
-                                "MirrorEgoGiftPickCharge",
-                                "MirrorEgoGiftPickFirst"
-                            ]
-                        }
-                    }
+                    "label": "充能"
                 },
                 {
                     "name": "slash",
@@ -4604,6 +4552,58 @@
                 {
                     "name": "No",
                     "label": "关闭"
+                }
+            ]
+        },
+        "defense_for_solo": {
+            "type": "switch",
+            "label": "单通连续防御",
+            "description": "只剩一人时先连续防御几回合",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "label": "开启"
+                },
+                {
+                    "name": "No",
+                    "label": "关闭"
+                }
+            ]
+        },
+        "defense_for_solo_turns": {
+            "type": "input",
+            "label": "单通防御回合",
+            "description": "连续防御的回合数",
+            "fields": [
+                {
+                    "name": "turns",
+                    "label": "回合",
+                    "default": "5"
+                }
+            ]
+        },
+        "combat_count": {
+            "type": "input",
+            "label": "战斗场次",
+            "description": "本局第几场战斗，影响超时判定",
+            "fields": [
+                {
+                    "name": "count",
+                    "label": "场次",
+                    "default": "1"
+                }
+            ]
+        },
+        "team_code": {
+            "type": "input",
+            "label": "编队码",
+            "description": "进本前自动加载的编队码，留空不加载",
+            "fields": [
+                {
+                    "name": "code",
+                    "label": "编队码",
+                    "default": ""
                 }
             ]
         }

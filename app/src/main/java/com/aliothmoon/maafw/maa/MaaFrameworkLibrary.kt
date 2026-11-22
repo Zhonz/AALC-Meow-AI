@@ -134,6 +134,9 @@ interface MaaFrameworkLibrary : Library {
 
     fun MaaControllerPostClick(ctrl: Pointer?, x: Int, y: Int): Long
 
+    /** 向当前焦点输入框敲一串文本（编队码用）；AndroidNativeController 走 IME 注入 */
+    fun MaaControllerPostInputText(ctrl: Pointer?, text: String): Long
+
     fun MaaControllerPostSwipe(
         ctrl: Pointer?,
         x1: Int,

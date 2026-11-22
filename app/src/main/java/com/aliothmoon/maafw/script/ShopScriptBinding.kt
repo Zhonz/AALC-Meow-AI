@@ -136,6 +136,27 @@ object ShopScriptBinding {
                         flag(definition, values, "defense_for_solo", default = false),
                 ),
             ),
+            // 饰品卡：管线认到选卡界面（MirrorHandleGiftPick）就交棒，按本体系→额外体系→已持有排序
+            TaskScript(
+                scriptId = MirrorGiftPickScript.id,
+                entry = MirrorGiftPickScript.entry,
+                resumeEntry = MirrorGiftPickScript.resumeEntry,
+                maxRounds = MirrorGiftPickScript.maxRounds,
+                params = mapOf(
+                    MirrorGiftPickScript.KEY_SYSTEM to
+                        (singleCase(definition, values, "team_system") ?: ""),
+                    MirrorGiftPickScript.KEY_SECOND_SYSTEM to
+                        (extraSystem(definition, values, "shop_second_system", "") ?: ""),
+                    MirrorGiftPickScript.KEY_SECOND_SETTING to
+                        (singleCase(definition, values, "shop_second_setting") ?: "0"),
+                    MirrorGiftPickScript.KEY_THIRD_SYSTEM to
+                        (extraSystem(definition, values, "shop_third_system", "") ?: ""),
+                    MirrorGiftPickScript.KEY_THIRD_SETTING to
+                        (singleCase(definition, values, "shop_third_setting") ?: "0"),
+                    MirrorGiftPickScript.KEY_SKIP_WHITE to
+                        if (flag(definition, values, "not_skip_whitegossypium", default = false) == "1") "0" else "1",
+                ),
+            ),
             // 战斗：管线认到「MirrorHandleBattle」交棒；首回合防御由 defense_first_round 开关决定
             TaskScript(
                 scriptId = MirrorBattleScript.id,
@@ -151,6 +172,14 @@ object ShopScriptBinding {
                         flag(definition, values, "prioritize_skill_3", default = false),
                     MirrorBattleScript.KEY_FIGHT_TO_LAST_MAN to
                         flag(definition, values, "fight_to_last_man", default = false),
+                    // 单通连续防御：AALC defense_for_solo / defense_for_solo_turns（默认 5 回合）
+                    MirrorBattleScript.KEY_DEFENSE_FOR_SOLO to
+                        flag(definition, values, "defense_for_solo", default = false),
+                    MirrorBattleScript.KEY_DEFENSE_FOR_SOLO_TURNS to
+                        inputText(definition, values, "defense_for_solo_turns", "turns").ifEmpty { "5" },
+                    // 战斗场次只影响超时时长（AALC 900 + 300 * combat_count 秒）
+                    MirrorBattleScript.KEY_COMBAT_COUNT to
+                        inputText(definition, values, "combat_count", "count").ifEmpty { "1" },
                 ),
             ),
             // 编队：管线认到镜牢编队页（MirrorHandleTeam）就交棒；顺位取 12 个 slot option，
@@ -164,6 +193,9 @@ object ShopScriptBinding {
                     MirrorTeamScript.KEY_SINNER_ORDER to sinnerOrder(definition, values),
                     MirrorTeamScript.KEY_REFORM to
                         flag(definition, values, "re_formation_each_floor", default = false),
+                    // 编队码：留空就不加载（脚本自己会因为缺键盘/模板而跳过）
+                    MirrorTeamScript.KEY_TEAM_CODE to
+                        inputText(definition, values, "team_code", "code").trim(),
                 ),
             ),
             // 领奖：管线认到结算页（MirrorHandleReward）就交棒；每周加成/单次领取/保留奖励按开关处理
@@ -181,6 +213,15 @@ object ShopScriptBinding {
                         flag(definition, values, "hard_mirror_single_bonuses", default = false),
                     MirrorRewardScript.KEY_HARD_MODE to
                         flag(definition, values, "hard_mirror", default = false),
+                    // 奖励卡四套模型与 reward_cards 的四个 case 一一对应（reward_card.py:8-37 的顺序）
+                    MirrorRewardScript.KEY_REWARD_CARD_MODEL to
+                        (when (singleCase(definition, values, "reward_cards")) {
+                            "starlight_first" -> 0
+                            "starlight_cost_first" -> 1
+                            "cost_first" -> 2
+                            "ego_first" -> 3
+                            else -> 3
+                        }).toString(),
                 ),
             ),
         )

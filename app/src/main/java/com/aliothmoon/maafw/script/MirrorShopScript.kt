@@ -200,6 +200,12 @@ object MirrorShopScript : ScriptTask {
     @Volatile
     private var fuseExtraIvDone: MutableSet<String> = mutableSetOf()
 
+    /** 别的脚本（饰品卡挑选）要问「本体系四级到手没有」——AALC 用 shop.fuse_IV 给第二体系开门 */
+    fun isFuseIvDone(): Boolean = fuseIvDone
+
+    /** 某个额外体系是否已经合出四级 */
+    fun isExtraIvDone(system: String): Boolean = system in fuseExtraIvDone
+
     override fun resetSession() {
         skipShopsAfterIv = false
         firstLineY = null

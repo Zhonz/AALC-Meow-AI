@@ -51,12 +51,8 @@ object AalcTeamImport {
 
     /** 本引擎没有对应管线的 AALC 字段：有值就统计，导入时忽略 */
     private val UNSUPPORTED_KEYS = listOf(
-        // 小指良单通（AALC 的 defense_for_solo）：本引擎没有对应的连续防御状态机
-        "defense_for_solo", "defense_for_solo_turns",
         // 固定队伍用途（困难/普通）与开局道具体系：没有对应选项
         "fixed_team_use", "fixed_team_use_select",
-        // 编队码自动组队：尚未实现
-        "use_team_code", "team_code",
         // 自定义主题包权重（嵌套映射，解析器跳过）
         "use_custom_theme_pack_weight", "custom_theme_pack_weight",
         // 统计字段，导出时已被 AALC 剔除
@@ -286,6 +282,18 @@ object AalcTeamImport {
         }
         bool(data["defense_first_round"])?.let {
             values["defense_first_round"] = OptionValue.SingleCase(if (it) YES else NO)
+        }
+        // 小指良单通：battle.py 的连续防御状态机（defense_for_solo_turns 默认 5 回合）
+        bool(data["defense_for_solo"])?.let {
+            values["defense_for_solo"] = OptionValue.SingleCase(if (it) YES else NO)
+        }
+        int(data["defense_for_solo_turns"])?.let {
+            if (it > 0) values["defense_for_solo_turns"] = OptionValue.Inputs(mapOf("turns" to it.toString()))
+        }
+        // 编队码：AALC 用 use_team_code 决定要不要加载 team_code
+        val teamCode = (data["team_code"] as? String).orEmpty().trim()
+        if (teamCode.isNotEmpty() && bool(data["use_team_code"]) != false) {
+            values["team_code"] = OptionValue.Inputs(mapOf("code" to teamCode))
         }
 
         val remark = (data["remark_name"] as? String).orEmpty().trim()

@@ -26,11 +26,25 @@ object MirrorTeamScript : ScriptTask {
     /** 每层重新编队（AALC `team_setting.re_formation_each_floor`，默认关） */
     const val KEY_REFORM = "reform"
 
+    /**
+     * 编队码（AALC `team_setting.team_code`，见 `team_formation.py:283-339`）
+     *
+     * 目前 `ShopScriptBinding` 还没把这个键写进参数表，需要主线补一行才会传进来；
+     * 值非空时本脚本会走 [loadTeamCode] 的探测流程。
+     */
+    const val KEY_TEAM_CODE = "teamCode"
+
     private const val SCALE = 0.5
 
     // ---- 素材（都在 assets/resource/image/ 下） ----
     private const val IDENTIFY = "teams/identify_assets.png"
     private const val CLEAR_CONFIRM = "teams/clear_selection_confirm_assets.png"
+    /** 选择队伍确认页（AALC `team_formation.py:290` 的前置条件，进镜牢选队伍时才有） */
+    private const val SELECT_TEAM_CONFIRM = "mirror/road_to_mir/select_team_confirm_assets.png"
+    /** 选队伍页右上角的「队伍代码」按钮与弹窗里的取消/确认（AALC teams/ 下同源素材） */
+    private const val TEAM_CODE = "teams/team_code_assets.png"
+    private const val TEAM_CODE_CANCEL = "teams/team_code_cancel_button_assets.png"
+    private const val TEAM_CODE_CONFIRM = "teams/team_code_confirm_button_assets.png"
     private const val NONE_SINNER = "teams/none_sinner_assets.png"
     private const val LIVE_12 = "teams/12_sinner_live_assets.png"
     private const val LIVE_11 = "teams/11_sinner_live_assets.png"
@@ -101,6 +115,10 @@ object MirrorTeamScript : ScriptTask {
             return
         }
         val reform = ScriptParams.flag(params, KEY_REFORM)
+
+        // AALC mirror.py:1102-1105：启用编队码时先尝试加载；这里先做能力探测，见 loadTeamCode 的说明
+        val teamCode = params[KEY_TEAM_CODE]?.trim().orEmpty()
+        if (teamCode.isNotEmpty()) loadTeamCode(host, teamCode)
 
         // AALC mirror.py:382-397：编过队之后每次进编队页先看还能打几个人
         if (formedOnce) {
@@ -188,11 +206,73 @@ object MirrorTeamScript : ScriptTask {
                 return
             }
             host.log("[编队] 没看到清队确认，点锚点下方收起面板")
-            host.click(panel.centerX, panel.centerY + PANEL_TAIL_Y)
+            // AALC team_formation.py:41-46：click [identify[0], identify[1] + 600*scale]。
+            // AALC 的 identify 匹配坐标是模板框左上角，不是中心，所以这里也用 box.x / box.y 对齐。
+            host.click(panel.box.x, panel.box.y + PANEL_TAIL_Y)
             host.sleep(PANEL_SLEEP)
             if (host.find(CLEAR_CONFIRM, FORMATION_THRESHOLD) == null) return
             panel = host.find(IDENTIFY, FORMATION_THRESHOLD, IDENTIFY_ROI) ?: panel
         }
+    }
+
+    /**
+     * 编队码加载（AALC `team_formation.py:283-339 load_team_code_in_game`）
+     *
+     * 上游流程是：选择队伍确认页 → 点编队码按钮 → 点「加载编队码」→ 用取消按钮确认输入框出现
+     * → `auto.input_text(team_code)` → 点确认 → 再认编队码按钮判断成功 → 失败点取消并用 (100,100) 关窗。
+     *
+     * 本项目只能做到「探测 + 跳过」，原因有三条，都是硬限制：
+     * 1. `ScriptHost` 没有 `input_text` / 键盘注入 / 剪贴板能力（只有 find/click/readText/screenshot），
+     *    无法把编队码输进输入框；
+     * 2. 上游依赖的 `teams/load_team_code_button_assets.png`、`teams/team_code_cancel_button_assets.png`、
+     *    `teams/team_code_confirm_button_assets.png` 在本项目 `assets/resource/image/` 下都不存在，
+     *    无法可靠判断输入框是否打开、也无法关闭弹窗；
+     * 3. 本脚本的入口是 `MirrorHandleTeam`（镜牢编队页），而 AALC 是在更早的「选择队伍」页
+     *    （`mirror.py:1098 select_mirror_team`）加载编队码，那里才有 `select_team_confirm`。
+     *
+     * 所以按任务约定降级为：先按 AALC 前置条件认 `select_team_confirm`，再用 OCR 找编队码输入框，
+     * 输入框不存在就直接 log 跳过；即使存在也因为没有输入能力而跳过，绝不点开弹窗留下半截状态。
+     */
+    private fun loadTeamCode(host: ScriptHost, teamCode: String) {
+        if (host.find(SELECT_TEAM_CONFIRM, FORMATION_THRESHOLD) == null) {
+            host.log("[编队] 编队码：" + teamCode + " 已配置，但当前不是选择队伍页（没认出 select_team_confirm），跳过")
+            return
+        }
+        // AALC team_formation.py:303-339：点「队伍代码」→ 等弹窗 → 输入 → 连点确认 → 看到按钮回来算成功
+        repeat(3) { attempt ->
+            if (host.cancelled) return
+            if (!host.clickTemplate(TEAM_CODE, 0.8)) {
+                host.log("[编队] 编队码：第 " + (attempt + 1) + " 次没点到「队伍代码」按钮")
+                return@repeat
+            }
+            host.sleep(900)
+            if (host.find(TEAM_CODE_CANCEL, 0.75) == null) {
+                // 弹窗没出现：点空白关掉再试（AALC 的 mouse_click_blank）
+                host.clickBlank(1)
+                host.sleep(600)
+                return@repeat
+            }
+            if (!host.inputText(teamCode)) {
+                host.log("[编队] 编队码：控制器不支持输入文本，关掉弹窗跳过")
+                host.clickTemplate(TEAM_CODE_CANCEL, 0.75)
+                host.sleep(600)
+                return
+            }
+            host.sleep(500)
+            repeat(3) {
+                if (host.clickTemplate(TEAM_CODE_CONFIRM, 0.75)) host.sleep(700)
+            }
+            host.sleep(700)
+            if (host.find(TEAM_CODE, 0.75) != null) {
+                host.log("[编队] 编队码加载成功")
+                return
+            }
+            host.clickTemplate(TEAM_CODE_CANCEL, 0.75)
+            host.sleep(600)
+        }
+        // AALC 失败后点左上角关窗
+        host.click(100, 100)
+        host.log("[编队] 编队码加载失败，已重试 3 次，继续按顺位编队")
     }
 
     /**

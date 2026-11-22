@@ -98,6 +98,9 @@ interface ScriptHost {
 
     fun click(x: Int, y: Int): Boolean
 
+    /** 往当前焦点输入框敲字；控制器不支持时返回 false */
+    fun inputText(text: String): Boolean = false
+
     fun swipe(fromX: Int, fromY: Int, toX: Int, toY: Int, durationMs: Int = 400): Boolean
 
     /** 滚轮；正数向下 */
@@ -279,6 +282,7 @@ object ScriptRegistry {
             MirrorObserveScript,
             MirrorTeamScript,
             MirrorRewardScript,
+            MirrorGiftPickScript,
         )
 
     fun byId(id: String): ScriptTask? = all.firstOrNull { it.id == id }

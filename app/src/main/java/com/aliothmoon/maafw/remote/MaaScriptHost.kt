@@ -186,6 +186,9 @@ internal class MaaScriptHost(
     override fun click(x: Int, y: Int): Boolean =
         waitController(lib.MaaControllerPostClick(controller, x, y))
 
+    override fun inputText(text: String): Boolean =
+        waitController(lib.MaaControllerPostInputText(controller, text))
+
     override fun swipe(fromX: Int, fromY: Int, toX: Int, toY: Int, durationMs: Int): Boolean =
         waitController(lib.MaaControllerPostSwipe(controller, fromX, fromY, toX, toY, durationMs))
 

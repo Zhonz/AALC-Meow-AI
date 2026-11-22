@@ -28,6 +28,16 @@ object MirrorBattleScript : ScriptTask {
     const val KEY_PRIORITIZE_SKILL_3 = "prioritize_skill_3"
     const val KEY_FIGHT_TO_LAST_MAN = "fightToLastMan"
 
+    /**
+     * 小指良单通连续防御（AALC `battle.py:110-149` 的 defense_for_solo_state）。
+     * 目前 `ShopScriptBinding` 没传这两个键，默认关闭；打开后一次任务内共享剩余回合数。
+     */
+    const val KEY_DEFENSE_FOR_SOLO = "defense_for_solo"
+    const val KEY_DEFENSE_FOR_SOLO_TURNS = "defense_for_solo_turns"
+
+    /** 连续战斗次数（AALC `battle.py:248` 超时 = 900 + 300 * combat_count 秒），默认 1 */
+    const val KEY_COMBAT_COUNT = "combat_count"
+
     private const val NORMAL_TO_BATTLE = "battle/normal_to_battle_assets.png"
     private const val CHAIN_TO_BATTLE = "battle/chaim_to_battle_assets.png"
     private const val SELECT_NONE = "battle/select_none_assets.png"
@@ -41,10 +51,29 @@ object MirrorBattleScript : ScriptTask {
     private const val DEAD_ALL = "battle/dead_all.png"
     private const val DEAD = "battle/dead.png"
     private const val VIEW_STATUS = "battle/view_status_assets.png"
+    private const val PAUSE = "battle/pause_assets.png"
+    private const val LEGEND = "mirror/road_in_mir/legend_assets.png"
     private const val SETTING = "mirror/road_in_mir/setting_assets.png"
+    /** AALC `mirror.py:1213-1240 re_start` 的整局重开入口 */
+    private const val FORFEIT_CONFIRM = "mirror/road_in_mir/towindow&forfeit_confirm_assets.png"
+    private const val FORFEIT = "mirror/road_in_mir/forfeit_assets.png"
 
     private const val ENTER_BATTLE_DELAY = 1_800L
     private const val TURN_DELAY = 800L
+    /** AALC battle.py:275 sleep(2 * waiting)，waiting 初始 1.5s，这里取 3s */
+    private const val PAUSE_SLEEP = 3_000L
+    /** AALC battle.py:305 全灭处理后 sleep(1) */
+    private const val DEAD_ALL_SLEEP = 1_000L
+
+    /** AALC battle.py:25 DEFENSE_FOR_SOLO_TURN_LIMIT = 5 */
+    private const val DEFENSE_FOR_SOLO_TURN_LIMIT = 5
+    /** AALC battle.py:248 超时 900 + 300 * combat_count 秒 */
+    private const val BATTLE_TIMEOUT_BASE_SECONDS = 900L
+    private const val BATTLE_TIMEOUT_PER_COMBAT_SECONDS = 300L
+    /** AALC battle.py:306 fail_times >= 5 时交回镜牢主循环重开 */
+    private const val FAIL_TIMES_LIMIT = 5
+    /** 整局重开最多试多少轮（AALC 是 while True，这里加保险上限） */
+    private const val RESTART_LOOPS = 15
 
     /** 720p 相对 AALC 1440 基准的缩放 */
     private const val SCALE = 0.5
@@ -77,19 +106,50 @@ object MirrorBattleScript : ScriptTask {
         intArrayOf(150, 1, 222), // envy
     )
 
+    /** 一次镜牢任务内共享的连续防御剩余回合（AALC `DefenseForSoloState.remaining_turns`） */
+    @Volatile
+    private var soloRemaining = DEFENSE_FOR_SOLO_TURN_LIMIT
+
+    override fun resetSession() {
+        soloRemaining = DEFENSE_FOR_SOLO_TURN_LIMIT
+    }
+
     override fun run(host: ScriptHost, params: Map<String, String>) {
         val defenseFirstRound = params[KEY_DEFENSE_FIRST_ROUND] == "1"
         val avoidSkill3 = params[KEY_AVOID_SKILL_3] == "1"
         val prioritizeSkill3 = params[KEY_PRIORITIZE_SKILL_3] == "1" && !avoidSkill3
         val fightToLastMan = params[KEY_FIGHT_TO_LAST_MAN] == "1"
+        val defenseForSolo = params[KEY_DEFENSE_FOR_SOLO] == "1"
+        val soloTurns = params[KEY_DEFENSE_FOR_SOLO_TURNS]?.toIntOrNull()?.coerceIn(0, 50)
+            ?: DEFENSE_FOR_SOLO_TURN_LIMIT
+        if (defenseForSolo && soloRemaining == DEFENSE_FOR_SOLO_TURN_LIMIT) soloRemaining = soloTurns
+        val combatCount = params[KEY_COMBAT_COUNT]?.toIntOrNull()?.coerceAtLeast(1) ?: 1
+        val timeoutMs = (BATTLE_TIMEOUT_BASE_SECONDS + BATTLE_TIMEOUT_PER_COMBAT_SECONDS * combatCount) * 1000L
+
         var defended = false
         var chained = false
         var loop = 0
         var idle = 0
+        var firstTurn = true
+        var soloUsedThisTurn = false
+        var failTimes = 0
+        var inMirror = false
+        var battleStart = System.currentTimeMillis()
 
         while (loop < MAX_LOOPS && !host.cancelled) {
             loop++
 
+            // AALC battle.py:248：一次战斗超过 900 + 300 * combat_count 秒就退回主菜单
+            if (System.currentTimeMillis() - battleStart > timeoutMs) {
+                host.log("战斗超过 " + (timeoutMs / 1000) + " 秒仍未结束，交还给管线")
+                return
+            }
+
+            // AALC battle.py:256-259：已经回到镜牢地图（legend）就不再当战斗处理，交还给管线
+            if (host.find(LEGEND, 0.75) != null) {
+                host.log("已回到镜牢地图，战斗结束")
+                return
+            }
             if (host.clickTemplate(FINISH_CONFIRM, 0.72)) {
                 host.log("战斗结束，点结算确认")
                 host.sleep(1_000)
@@ -102,11 +162,13 @@ object MirrorBattleScript : ScriptTask {
             }
             if (host.clickTemplate(NORMAL_TO_BATTLE, 0.74)) {
                 host.log("点普通战斗进入战斗")
+                battleStart = System.currentTimeMillis()
                 host.sleep(ENTER_BATTLE_DELAY)
                 continue
             }
             if (host.clickTemplate(CHAIN_TO_BATTLE, 0.74)) {
                 host.log("点链接战进入战斗")
+                battleStart = System.currentTimeMillis()
                 host.sleep(ENTER_BATTLE_DELAY)
                 continue
             }
@@ -116,29 +178,53 @@ object MirrorBattleScript : ScriptTask {
                 continue
             }
 
-            // 状态栏被折叠（点一下展开）：AALC 点 view_status 右上 +50/-250 的位置
+            // 状态栏被折叠（点一下展开）：
+            // AALC battle.py:266-269 用 view_status 匹配框左上角 + (100*scale, -500*scale)，720p 即 +(50, -250)
             val viewStatus = host.find(VIEW_STATUS, 0.72)
             if (viewStatus != null) {
-                host.click(viewStatus.box.centerX + 50, viewStatus.box.centerY - 250)
+                host.click(viewStatus.box.x + (100 * SCALE).toInt(), viewStatus.box.y - (500 * SCALE).toInt())
                 host.log("点开战斗状态栏")
                 host.sleep(600)
                 continue
             }
-            // 全员阵亡：三个复活选项里选中间那个，再点确认
+            // 战斗播片中（AALC battle.py:272-280）：拉长间隔，并认为第一回合已过、连续防御的每回合标记复位
+            if (host.find(PAUSE, 0.7) != null) {
+                host.sleep(PAUSE_SLEEP)
+                firstTurn = false
+                soloUsedThisTurn = false
+                continue
+            }
+            // AALC battle.py:263-264：in_mirror 一旦认出就保持，阵亡认输只在镜牢里做
+            if (!inMirror && host.find(IN_MIRROR, 0.7) != null) inMirror = true
+
+            // 全员阵亡（AALC battle.py:282-307）
+            //
+            // AALC 用 dead_all_confirm_assets.png 当按钮模板，但那张图是 2560x1440 的整屏截图，
+            // 当模板匹配等于拿整屏去比整屏，手机端基本不可能命中（它自己在 2560 宽下也只是勉强）。
+            // 这里改成按识别到的复活选项个数取中间那个，再用结算确认按钮兜底。
             val deadAll = host.findAll(DEAD_ALL, 0.75)
-            if (deadAll.size >= 2) {
-                val middle = deadAll.sortedBy { it.box.centerY }[deadAll.size / 2]
-                host.click(middle.box.centerX, middle.box.centerY)
-                host.log("全员阵亡，选择中间的复活选项")
-                host.sleep(1_500)
+            if (deadAll.isNotEmpty()) {
+                val sorted = deadAll.sortedBy { it.box.centerY }
+                val pick = sorted[sorted.size / 2]
+                host.click(pick.box.centerX, pick.box.centerY)
+                host.log("全员阵亡，点第 " + (sorted.size / 2 + 1) + " 个复活选项（共 " + sorted.size + " 个）")
+                host.sleep(1_200)
                 if (host.clickTemplate(FINISH_CONFIRM, 0.72)) {
-                    host.sleep(1_000)
+                    host.log("点全员阵亡确认")
+                }
+                host.sleep(DEAD_ALL_SLEEP)
+                battleStart = System.currentTimeMillis()
+                failTimes++
+                soloUsedThisTurn = false
+                if (failTimes >= FAIL_TIMES_LIMIT) {
+                    host.log("连续 " + failTimes + " 次全员阵亡，按 AALC re_start 重开本局")
+                    restartRun(host)
                     return
                 }
                 continue
             }
             // 有人阵亡且不允许战到最后一个：认输退出（AALC battle.py:309-330）
-            if (!fightToLastMan) {
+            if (inMirror && !fightToLastMan) {
                 val dead = host.find(DEAD, 0.78)
                 if (dead != null) {
                     val band = ScriptRect(
@@ -159,10 +245,24 @@ object MirrorBattleScript : ScriptTask {
             val gearLeft = host.find(GEAR_LEFT, 0.8)
             val gearRight = host.find(GEAR_RIGHT, 0.72)
             if (gearLeft != null && gearRight != null) {
-                if (defenseFirstRound && !defended) {
-                    host.log("第一回合全员防御")
+                // AALC battle.py:118-149：连续防御优先于第一回合防御，且同一回合只防御一次
+                val useLimitedDefense = defenseForSolo && soloRemaining > 0 && !soloUsedThisTurn
+                val useFirstRoundDefense = firstTurn && defenseFirstRound && !soloUsedThisTurn
+                if (useLimitedDefense || useFirstRoundDefense) {
+                    if (useLimitedDefense) {
+                        host.log("小指良单通连续防御（剩余 " + soloRemaining + " 回合）")
+                    } else {
+                        host.log("第一回合全员防御")
+                    }
                     if (defenseRound(host, gearLeft, gearRight)) {
-                        defended = true
+                        if (useLimitedDefense) {
+                            soloRemaining--
+                            soloUsedThisTurn = true
+                            host.log("连续防御完成，剩余 " + soloRemaining + " 回合")
+                            if (soloRemaining == 0) host.log("本次镜牢连续防御已完成，后续恢复普通战斗")
+                        } else {
+                            defended = true
+                        }
                     } else {
                         host.log("防御连线失败，本回合改用胜率连线")
                         turnByWinRate(host)
@@ -188,7 +288,7 @@ object MirrorBattleScript : ScriptTask {
                 continue
             }
 
-            if (host.find(IN_MIRROR, 0.7) != null || host.find(TURN, 0.7) != null) {
+            if (inMirror || host.find(TURN, 0.7) != null) {
                 idle = 0
                 host.sleep(TURN_DELAY)
                 continue
@@ -206,6 +306,8 @@ object MirrorBattleScript : ScriptTask {
     private fun giveUp(host: ScriptHost) {
         repeat(6) {
             if (host.cancelled) return
+            // AALC battle.py:318-322：先看是不是已经回到镜牢地图（legend），是就直接结束认输流程
+            if (host.find(LEGEND, 0.75) != null) return
             if (host.clickTemplate(GIVE_UP, 0.75)) {
                 host.sleep(1_500)
                 return
@@ -221,6 +323,41 @@ object MirrorBattleScript : ScriptTask {
             host.sleep(600)
         }
         host.log("认输没点出来，交还给管线")
+    }
+
+
+    /**
+     * 整局重开（AALC `mirror.py:1213-1240 re_start`，由 battle.py:306 的 fail_times>=5 触发）
+     *
+     * 依次试「转窗口并放弃→确认」「放弃」「投降」「设置」，点到就睡一下再看；
+     * 都没有就点空白代替 AALC 的 ESC，连续两轮没进展就停手交还管线。
+     */
+    private fun restartRun(host: ScriptHost) {
+        var idle = 0
+        for (round in 1..RESTART_LOOPS) {
+            if (host.cancelled) return
+            if (host.clickTemplate(FORFEIT_CONFIRM, 0.8)) {
+                host.log("[战斗] 重开：确认退出本局（第 " + round + " 轮）")
+                host.sleep(1_500)
+                return
+            }
+            val clicked = host.clickTemplate(FORFEIT, 0.8) ||
+                host.clickTemplate(GIVE_UP, 0.75) ||
+                host.clickTemplate(SETTING, 0.75)
+            if (clicked) {
+                idle = 0
+                host.sleep(800)
+                continue
+            }
+            host.clickBlank(1)
+            host.sleep(800)
+            idle++
+            if (idle >= 2) {
+                host.log("[战斗] 重开没进展（连续点空白），交还给管线")
+                return
+            }
+        }
+        host.log("[战斗] 重开超过 " + RESTART_LOOPS + " 轮没确认，交还给管线")
     }
 
     /** 常规回合：点胜率卡片（P）再点右侧齿轮（Enter） */

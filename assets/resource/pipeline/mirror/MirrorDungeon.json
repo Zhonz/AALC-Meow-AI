@@ -386,27 +386,80 @@
     ]
   },
   "MirrorDungeonEntry": {
-    "doc": "官方 road_to_mir() 入口路由：按原版候选顺序自愈推进",
+    "doc": "官方 road_to_mir() 入口路由：候选顺序对齐 mirror.py:150-224（首次引导弹窗最先、商店早于地牢图例、事件/奖励卡早于「继续上次」）+ 主循环前置分支（离开设置弹窗 mirror.py:281、弹窗确认 mirror.py:325）",
     "recognition": "DirectHit",
     "action": "DoNothing",
     "next": [
+      "MirrorDismissFirstPrompt",
       "MirrorCheckClaimClear",
+      "MirrorClickToWindow",
+      "MirrorEgoGiftGetConfirm",
+      "MirrorCheckShopCoins",
       "MirrorCheckLegend",
+      "MirrorHandleEvent",
+      "MirrorHandleRewardCard",
       "MirrorClickResume",
-      "MirrorClickEnterRoadToMir",
       "MirrorClickEnterMirror",
+      "MirrorClickInfinityEnter",
+      "MirrorClickEnterRoadToMir",
       "MirrorClickMirrorDungeons",
       "MirrorClickDrive",
-      "MirrorCheckShopCoins",
-      "MirrorClickInfinityEnter",
       "MirrorSelectTeamScreen",
       "MirrorCheckDreamingStar",
+      "MirrorCheckThemePack",
+      "MirrorEventEffect",
       "MirrorHandleInitGift",
       "MirrorHandleObserve",
       "MirrorCheckInitEgoGift",
-      "MirrorCheckThemePack",
-      "MirrorDismissFirstPrompt",
       "MirrorHandleBattle"
+    ]
+  },
+  "MirrorClickToWindow": {
+    "doc": "官方 mirror.py:281-283 离开镜牢的设置弹窗：点 to_window 中心左移 200*0.5=100px（取消/返回），只关弹窗不退出镜牢",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/to_window_assets.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "target_offset": [
+      -100,
+      0,
+      0,
+      0
+    ],
+    "post_wait_freezes": 800,
+    "next": [
+      "MirrorInDungeon",
+      "MirrorDungeonEntry"
+    ]
+  },
+  "MirrorEventEffect": {
+    "doc": "官方 mirror.py:317-319 选择增益事件（少见）：先点「增益」按钮",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/event_effect_button.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_wait_freezes": 800,
+    "next": [
+      "MirrorEventEffectConfirm",
+      "MirrorDungeonEntry"
+    ]
+  },
+  "MirrorEventEffectConfirm": {
+    "doc": "官方 mirror.py:318 增益事件的确认按钮（select_event_effect_confirm）",
+    "recognition": {
+      "type": "TemplateMatch",
+      "template": "mirror/road_in_mir/select_event_effect_confirm.png",
+      "threshold": 0.75
+    },
+    "action": "Click",
+    "post_wait_freezes": 800,
+    "next": [
+      "MirrorInDungeon",
+      "MirrorDungeonEntry"
     ]
   },
   "MirrorCheckClaimClear": {
@@ -800,7 +853,7 @@
     ]
   },
   "MirrorCheckInitEgoGift": {
-    "doc": "检测到开局自选3饰品界面（activate_gift_search_on/off）",
+    "doc": "检测到开局自选3饰品界面（activate_gift_search_on/off）；官方 mirror.py:490 认到该页就交给 select_init_ego_gift()，所以这里先把识别权让给交棒节点 MirrorHandleInitGift，脚本认不到才退回旧的盲点路径",
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_to_mir/activate_gift_search_on_assets.png",
@@ -814,6 +867,7 @@
     },
     "action": "DoNothing",
     "next": [
+      "MirrorHandleInitGift",
       "MirrorPickInitGiftsFirstThree",
       "MirrorConfirmInitGifts"
     ]
@@ -874,7 +928,7 @@
     ]
   },
   "MirrorInDungeon": {
-    "doc": "镜牢内主循环入口：识别地图（legend_assets），进入探索状态机",
+    "doc": "镜牢内主循环入口：识别地图（legend_assets），按 mirror.py:322-360 地牢内分发顺序推进——先点掉遮屏的获取确认/商店/领奖，再寻路，最后才是开打/事件/奖励卡",
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/road_in_mir/legend_assets.png",
@@ -888,16 +942,16 @@
     },
     "action": "DoNothing",
     "next": [
-      "MirrorHandleEvent",
-      "MirrorHandleRoad",
-      "MirrorHandleBattle",
+      "MirrorEgoGiftGetConfirm",
       "MirrorHandleShop",
+      "MirrorClaimReward",
+      "MirrorHandleRoad",
+      "MirrorClickNode",
+      "MirrorHandleBattle",
+      "MirrorAcquireEgoGiftCard",
+      "MirrorHandleEvent",
       "MirrorHandleRewardCard",
       "MirrorHandleThemePackFeature",
-      "MirrorClickNode",
-      "MirrorEgoGiftGetConfirm",
-      "MirrorAcquireEgoGiftCard",
-      "MirrorClaimReward",
       "BattleAutoCombat",
       "MirrorInDungeon"
     ]

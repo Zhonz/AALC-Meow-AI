@@ -569,7 +569,7 @@
     ]
   },
   "MirrorClickBusNextNode": {
-    "doc": "基于巴士相对偏移点击下一节点（中路偏右+250px）",
+    "doc": "基于巴士相对偏移点击正前（中）路节点：官方 search_road.py:180 three_roads[0] = [500*s, 50*s]，720p 即 +250,+25（原先 y 写成 0，漏了 50*0.5）",
     "recognition": {
       "type": "TemplateMatch",
       "template": "mirror/mybus_default_distance.png",
@@ -578,7 +578,7 @@
     "action": "Click",
     "target_offset": [
       250,
-      0,
+      25,
       0,
       0
     ],

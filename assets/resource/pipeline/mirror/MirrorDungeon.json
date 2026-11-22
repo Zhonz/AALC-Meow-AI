@@ -395,6 +395,7 @@
       "MirrorClickToWindow",
       "MirrorEgoGiftGetConfirm",
       "MirrorCheckShopCoins",
+      "MirrorHandleGiftPick",
       "MirrorCheckLegend",
       "MirrorHandleEvent",
       "MirrorHandleRewardCard",

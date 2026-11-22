@@ -581,3 +581,41 @@ internal data class ExtraSystem(
 
 **默认值这一版全部对齐 AALC**（`config_typing.py` TeamSetting）：`do_not_sell=False`（出售默认开启）、`max_normal_refresh=1`、`shop_strategy=0`（商店默认只出售，即 `shop_fuse_mode=off`）、`use_starlight=False`（默认把星光换成经费）。之前这几项为了"不碰玩家库存"刻意保守，结果与电脑版行为不一致——用户要求以 AALC 为准，所以改回来了，风险说明保留在选项描述里。
 
+
+## 19. 饰品卡按体系挑、编队码、死局处理（v0.6.8）
+
+### 19.1 饰品卡：先过滤，再排序，最后才点
+
+AALC 的 select_ego_gift（mirror.py:1491）不是「看到卡片就点」，而是先按体系认图标插到列表头，再对每张卡做 OCR。手机端写成 MirrorGiftPickScript：
+
+1. 先认 ego_gift_get_confirm，已经回到地牢就收工；
+2. findAll(acquire_ego_gift_card, 0.75, limit = 8) 拿到每张卡的中心，按中心裁出 (-25, -150, +225, +175)（720p）的识别框，框里 OCR：
+   - 命中 白棉花 / white / gossypium → 跳过（对应 not_skip_whitegossypium）；
+   - 命中 已持有 / owned → 排到最后；
+3. 用 host.find(systemIcon(system), 0.85, roi) 判体系，优先级 = 本体系 0 / 第二体系 1 / 第三体系 2 / 其它 3；
+4. 用 ego_gift_get_bbox 附近 OCR 判断这次能选 2 张还是 1 张（/2、2/2、/1），选够就停；
+5. 逐个 host.click 后点「选择」；全被过滤掉就走「拒绝 → 确认」。
+
+关键点：**每张卡的识别框跟着卡片走**（中心 + 固定偏移），不写死屏幕坐标——饰品卡在界面上是横向排布的，写死会错位。
+
+### 19.2 编队码：先探到弹窗，再注入文本
+
+MaaFramework 5.16 的控制器有 MaaControllerPostInputText，JNA 里补一行声明即可用。流程（MirrorTeamScript.loadTeamCode）：
+
+| 步骤 | 素材 | 失败退路 |
+| --- | --- | --- |
+| 选队伍页前置 | select_team_confirm_assets | 不是这页就整段跳过 |
+| 点「队伍代码」 | teams/team_code_assets | 没点到就重试 3 次 |
+| 等弹窗 | team_code_cancel_button_assets | 认不到就 clickBlank 再试（弹窗可能没开） |
+| 注入文本 | inputText(code) | 控制器不支持文本输入 → 点取消、跳过，不卡在弹窗里 |
+| 确认 | team_code_confirm_button_assets（最多 3 次） | 看「队伍代码」按钮是否回来，没回来就取消重试 |
+
+注意两张按钮素材在上游是 2560×1440 的整屏截图，必须裁非黑 bbox 再 0.5x：取消 62×68 → 31×34，确认 57×71 → 28×36。
+
+### 19.3 死局：整屏图不能当模板
+
+battle/dead_all_confirm_assets.png 在上游也是整屏截图，当模板匹配等于拿整屏去比，永远匹配不到。改成：认到 dead_all（17×89 的竖条，可用）出现 2 个以上时，按 centerY 排序取中间那个点击（三选一的中间项），再点 battle_finish_confirm。连续 5 场全灭则走 restartRun：towindow&forfeit_confirm → forfeit_assets → give_up_assets → setting_assets，最多 15 轮。
+
+### 19.4 参数接线
+
+新增 4 个 option：defense_for_solo（switch）、defense_for_solo_turns（input，默认 5）、combat_count（input，默认 1）、team_code（input）。AalcTeamImport 里对应删掉 UNSUPPORTED_KEYS 的四项（原来只提示「不支持」），新增 bool/int/文本三种映射；use_team_code 为假时不导入 team_code，与 AALC 的开关语义一致。

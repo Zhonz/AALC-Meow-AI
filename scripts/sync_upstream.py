@@ -95,10 +95,45 @@ def set_output(has_changes: bool, summary: str) -> None:
         f.write(f"summary={summary}\n")
 
 
+def pinned_commit() -> str:
+    data = json.loads(VERSIONS_FILE.read_text(encoding="utf-8"))
+    return data["components"]["aalc"].get("pinned_commit", "")
+
+
+def remote_head_via_ls_remote() -> str:
+    """没有 submodule 时用 ls-remote 查上游 HEAD，不需要克隆"""
+    out = sh("git", "ls-remote", AALC_REPO, "HEAD", "refs/heads/main", "refs/heads/master")
+    heads = {}
+    for line in out.splitlines():
+        sha, _, ref = line.partition("\t")
+        heads[ref] = sha
+    return heads.get("refs/heads/main") or heads.get("refs/heads/master") or heads.get("HEAD", "")
+
+
 def main() -> int:
-    if not AALC_ROOT.is_dir():
-        log(f"错误: 找不到 submodule {AALC_ROOT}")
-        return 1
+    # 本地开发时 upstream/aalc 是指向 refs/AALC 的符号链接，CI 里则是真 submodule。
+    # 拿不到真仓库时不要直接失败：用 ls-remote 比一下版本，有更新就提示人工同步。
+    if AALC_ROOT.is_symlink() or not (AALC_ROOT / ".git").exists():
+        log(f"没有可用的 AALC 仓库（{AALC_ROOT}），改用 ls-remote 比较版本")
+        try:
+            new = remote_head_via_ls_remote()
+        except subprocess.CalledProcessError as exc:
+            log(f"警告: ls-remote 失败，跳过本次同步\n{exc.stderr}")
+            set_output(False, "ls-remote failed")
+            return 0
+        old = pinned_commit()
+        if new and new == old:
+            log(f"上游无更新 ({old[:7]})")
+            set_output(False, "no upstream change")
+            return 0
+        if not new:
+            log("警告: 读不到上游 HEAD，跳过本次同步")
+            set_output(False, "no upstream head")
+            return 0
+        log(f"上游有新提交 {old[:7] or '?'} -> {new[:7]}，但当前环境没有 submodule，"
+            "请在本地执行 git submodule update --init upstream/aalc 后手动同步")
+        set_output(False, f"upstream ahead {new[:7]} (submodule missing)")
+        return 0
 
     old = current_commit()
     new = remote_commit()

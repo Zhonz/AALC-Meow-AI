@@ -24,8 +24,8 @@ object ShopScriptBinding {
         "sinking", "charge", "slash", "pierce", "blunt",
     )
 
-    /** 12 个顺位槽全空置时的兜底顺位：AALC 默认队伍的前 6 人 */
-    private const val DEFAULT_SINNER_ORDER = "1,2,3,4,5,6"
+    /** 12 个顺位槽全空置时的兜底顺位：AALC 默认队伍的前 7 人 */
+    private const val DEFAULT_SINNER_ORDER = "1,2,3,4,5,6,7"
 
     fun scriptsFor(
         task: TaskDefinition,
@@ -313,7 +313,7 @@ object ShopScriptBinding {
      * 出战顺位：编队页的 12 个顺位槽，槽 N = 第 N 个被点选的罪人（点选顺序就是出场顺序，
      * 与 AALC team_formation.py:65-77 的 sinner_team 同义），空槽（none）跳过。
      * 槽位与罪人编号都取 [TeamOptionScope] 那一份定义，免得和 SelectSinnerSlot1..12 的坐标顺序走偏。
-     * 一个槽都没填时用 AALC 默认队伍的前 6 人（游戏里前 6 位出战）。
+     * 一个槽都没填时用 AALC 默认队伍的前 7 人（游戏里前 7 位出战）。
      */
     private fun sinnerOrder(
         definition: ProjectDefinition,
@@ -395,10 +395,22 @@ object ShopScriptBinding {
         return if (on) "1" else "0"
     }
 
+    /** 数值项：select 取 case 名，input 取第一个字段，都解析不出就用 [fallback] */
     private fun number(
         definition: ProjectDefinition,
         values: Map<String, OptionValue>,
         name: String,
         fallback: Int,
-    ): String = singleCase(definition, values, name)?.toIntOrNull()?.toString() ?: fallback.toString()
+    ): String {
+        val fromSelect = singleCase(definition, values, name)?.toIntOrNull()
+        if (fromSelect != null) return fromSelect.toString()
+        val option = definition.options[name] as? OptionDefinition.Input
+        if (option != null) {
+            val field = option.fields.firstOrNull()?.name
+            val text = inputText(definition, values, name, field ?: "")
+            // 用户可能连写「2 次」这类中文，抽第一段数字即可
+            Regex("""\d+""").find(text)?.value?.toIntOrNull()?.let { return it.toString() }
+        }
+        return fallback.toString()
+    }
 }

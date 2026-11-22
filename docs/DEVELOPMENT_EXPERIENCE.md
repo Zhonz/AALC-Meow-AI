@@ -248,7 +248,7 @@ M9A-Meow 采用的体系架构分为三层：
 
 - **顺位不是「12 个下拉」，是点选顺序**：AALC `tasks/teams/team_formation.py` 里 `sinner_team = TeamSetting.sinner_order` 然后 `for i in 1..12: sinner = sinner_team.index(i)` 依次点头像——**第几个被点，就是第几号位**。本项目有 `sinner_order_slot_1..12` 十二个 option，天然能表达同样的语义：点一下罪人 → 追加到队尾；再点一下 → 移出并把后面的顺位顺延（`TeamOptionScope.toggleSinner`）。
 - **顺位槽必须写满**：`applySinners` 把 12 个槽全部写死（未占用写 `none`），并同步 `sinner_selection` 多选。留空的槽会回退到任务里旧的值，多出来的点击会把队伍点乱——这类 bug 在真机上表现为「编队顺序和你点的不一样」。
-- **出战/待命**：游戏规则前 6 位出战（`DEPLOY_LIMIT = 6`），第 7 位起标「待命」。宫格固定 2 行 × 6 列，与游戏内 `all_sinners_name` 的顺序、以及 pipeline 里 `SelectSinnerSlot1..12` 的 `target_offset` 一一对应——换宫格顺序等于把点击坐标对错人。
+- **出战/待命**：游戏规则前 7 位出战（`DEPLOY_LIMIT = 7`），第 8 位起标「待命」。宫格固定 2 行 × 6 列，与游戏内 `all_sinners_name` 的顺序、以及 pipeline 里 `SelectSinnerSlot1..12` 的 `target_offset` 一一对应——换宫格顺序等于把点击坐标对错人。
 - **导入 AALC 的导出文件**：电脑版「导出队伍设置」是 ruamel 落盘的 YAML（`module/config/team_import_export.py`，`team_setting.model_dump()` 去掉 4 个统计字段），字段平铺。手机端不引 YAML 库，`domain/AalcTeamImport.kt` 只实现这份文件用到的子集：顶层键 + 标量 + 块序列/行内序列，嵌套映射（`custom_theme_pack_weight`）整块跳过；`#` 只有在前面是空白时才算注释（否则 `remark_name: 编队#1` 会被截断）。
 - **语义不同就别硬映射**：AALC 的 `shop_strategy` 是「出售/合成/合成四级优先」，本项目是「治疗后离开/直接离开」——同名不同义，硬映射等于给用户一个错的行为，所以归入「已忽略」并在预览里报数量。`reward_cards` 的四档只能压到本项目三档（0/1 → `starlight_first`，2 → `cost_first`，3 → `ego_first`）；`opening_bonus` 的 10 项细分压成「开局加成开/关」。
 - **导入前先预览**：解析 → `MaaPromptDialog` 列出出战顺序、待命、套用了几项、忽略了几项，确认后才覆盖**当前选中的那一队**（文件里的 `team_number` 不可信，用户可能想导进别的队）。一个罪人都没解析出来时不允许确认，直接提示「确认是用 AALC 导出的文件」。
@@ -619,3 +619,16 @@ battle/dead_all_confirm_assets.png 在上游也是整屏截图，当模板匹配
 ### 19.4 参数接线
 
 新增 4 个 option：defense_for_solo（switch）、defense_for_solo_turns（input，默认 5）、combat_count（input，默认 1）、team_code（input）。AalcTeamImport 里对应删掉 UNSUPPORTED_KEYS 的四项（原来只提示「不支持」），新增 bool/int/文本三种映射；use_team_code 为假时不导入 team_code，与 AALC 的开关语义一致。
+
+## 20. 设置只留一份：编队域 vs 任务域
+
+AALC 的 `TeamSetting`（refs/AALC/module/config/config_typing.py:6）是「按队伍生效」的一整套字段：体系、商店策略、十个弃置开关、合成/升级/技能替换、开局加成、战斗开关全部在里面；只有 `hard_mirror`、`floor_3_exit`、`save_rewards` 这类是全局 `Config`。
+
+旧版本把这些键同时摆在任务面板和编队页，两处都能改、后改的赢，等于把「哪份生效」交给运气。现在的规则只有一条：**名字在 `TeamOptionScope.names` 里 = 属于编队，任务面板一律不显示（只留一句指路），运行期由 `mergedValues` 用「使用编队」选中的那支覆盖**。
+
+- `names` = `BASE_NAMES`（51 项，按 AALC 的卡片顺序）+ `sinner_selection` + 12 个顺位槽；
+- 任务面板过滤（`ui/tasks/Sheets.kt` 的 `TaskOptionContent`）和运行期合并（`runner/RunPlanBuilder.kt:110`）读同一份集合，加字段只改一处；
+- 数值项（刷新次数、按层跳过商店、第 N 层切困难）在 PI 里是 `input`：`ShopScriptBinding.number()` 先按 select 解析，再读 input 第一个字段里的数字，用户写「2 次」也能取到 2；
+- 顺位槽补齐：编队里只存了前几个槽时，缺的补成 `none`，否则会漏用任务里的旧值。
+
+**出战人数**：游戏里 7 人出战、5 人待命，`DEPLOY_LIMIT = 7` 只影响徽标与「出战/待命」划分；罪人宫格仍是 2 行 × 6 列（`GRID_COLUMNS = 6`），因为宫格位置由游戏界面决定，和出战人数无关——把两者混成一个常量会让宫格变成 7 列、点错人。

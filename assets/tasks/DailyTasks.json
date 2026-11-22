@@ -1097,46 +1097,26 @@
             ]
         },
         "shop_keyword_refresh": {
-            "type": "select",
+            "type": "input",
             "label": "关键字刷新次数",
             "description": "经费够就按体系关键词刷新",
-            "default_case": "1",
-            "cases": [
+            "fields": [
                 {
-                    "name": "0",
-                    "label": "不刷新"
-                },
-                {
-                    "name": "1",
-                    "label": "1 次"
-                },
-                {
-                    "name": "2",
-                    "label": "2 次"
-                },
-                {
-                    "name": "3",
-                    "label": "3 次"
+                    "name": "times",
+                    "label": "次数",
+                    "default": "1"
                 }
             ]
         },
         "shop_normal_refresh": {
-            "type": "select",
+            "type": "input",
             "label": "普通刷新次数",
-            "description": "经费够就普通刷新",
-            "default_case": "1",
-            "cases": [
+            "description": "经费够就普通刷新商店",
+            "fields": [
                 {
-                    "name": "0",
-                    "label": "不刷新"
-                },
-                {
-                    "name": "1",
-                    "label": "1 次"
-                },
-                {
-                    "name": "2",
-                    "label": "2 次"
+                    "name": "times",
+                    "label": "次数",
+                    "default": "1"
                 }
             ]
         },

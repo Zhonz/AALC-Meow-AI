@@ -43,8 +43,11 @@ object TeamOptionScope {
     /** 顺位槽的公共前缀，槽 N = 第 N 个被点选的罪人 */
     const val ORDER_SLOT_PREFIX = "sinner_order_slot_"
 
-    /** 游戏规则：前 6 位出战，其余待命 */
-    const val DEPLOY_LIMIT = 6
+    /** 游戏规则：前 7 位出战，其余 5 位待命 */
+    const val DEPLOY_LIMIT = 7
+
+    /** 编队界面的宫格列数：2 行 × 6 列，与游戏内阵容网格一致（与出战人数无关） */
+    const val GRID_COLUMNS = 6
 
     /** 空槽的 case 名（PI 里 action=DoNothing，等于不点这个人） */
     const val NONE_CASE = "none"
@@ -71,10 +74,54 @@ object TeamOptionScope {
     )
 
     /** 编队页的分区顺序：体系与商店 → 开局 → 战斗 */
+    /**
+     * 编队域的完整字段表，对齐 AALC 的 `TeamSetting`（每个队伍一整套镜牢与商店策略）
+     *
+     * AALC 把这些全放在队伍设置里、按队伍生效，所以这里也归编队页；任务面板只保留
+     * 真正全局的项（次数、难度、周加成、白棉花、全灭、事件包、编队选择）。
+     */
     val BASE_NAMES = listOf(
         "team_system",
         "shop_strategy",
         "reward_cards",
+        // 商店：治疗 / 出售 / 购买 / 刷新
+        "shop_do_not_heal",
+        "shop_do_not_buy",
+        "shop_do_not_sell",
+        "shop_sell_systems",
+        "shop_sell_abandoned",
+        "shop_skip_whitegossypium",
+        "shop_keyword_refresh",
+        "shop_normal_refresh",
+        "shop_shopping_strategy",
+        "shop_buy_level_gifts",
+        "shop_must_purchase",
+        "shop_ignore_layers",
+        // 合成与升级
+        "shop_fuse_mode",
+        "shop_do_not_enhance",
+        "shop_fuse_save_system",
+        "shop_fuse_only_aggressive",
+        "shop_fuse_only_system",
+        "shop_fuse_no_system",
+        "shop_aggressive_also_enhance",
+        "shop_after_iv",
+        // 第二 / 第三体系
+        "shop_second_system",
+        "shop_second_setting",
+        "shop_second_fuse",
+        "shop_second_buy",
+        "shop_second_enhance",
+        "shop_third_system",
+        "shop_third_setting",
+        "shop_third_fuse",
+        "shop_third_buy",
+        "shop_third_enhance",
+        // 技能替换
+        "shop_skill_replacement",
+        "shop_skill_priority",
+        "shop_skill_mode",
+        // 开局
         "choose_opening_bonus",
         "opening_items",
         "mirror_opening_items_order",
@@ -82,10 +129,15 @@ object TeamOptionScope {
         "mirror_observe_gifts",
         "mirror_opening_bonus",
         "mirror_use_starlight",
+        // 战斗
         "avoid_skill_3",
         "prioritize_skill_3",
         "defense_first_round",
+        "defense_for_solo",
+        "defense_for_solo_turns",
         "re_formation_each_floor",
+        "team_code",
+        "mirror_normal_to_hard_floor",
     )
 
     val ORDER_SLOT_NAMES: List<String> = (1..SINNER_ORDER.size).map { ORDER_SLOT_PREFIX + it }

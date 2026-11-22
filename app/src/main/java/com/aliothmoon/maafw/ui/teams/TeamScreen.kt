@@ -87,7 +87,50 @@ private val SinnerAvatars: Map<String, Int> = mapOf(
 
 /** 编队页的分区：[TeamOptionScope.BASE_NAMES] 按 AALC 的卡片顺序切成三组 */
 private val SECTIONS: List<Pair<Int, List<String>>> = listOf(
-    R.string.teams_section_team to listOf("team_system", "shop_strategy", "reward_cards"),
+    R.string.teams_section_team to
+        listOf(
+            "team_system",
+            "shop_strategy",
+            "reward_cards",
+            "shop_do_not_heal",
+            "shop_do_not_buy",
+            "shop_do_not_sell",
+            "shop_sell_systems",
+            "shop_sell_abandoned",
+            "shop_skip_whitegossypium",
+            "shop_keyword_refresh",
+            "shop_normal_refresh",
+            "shop_shopping_strategy",
+            "shop_buy_level_gifts",
+            "shop_must_purchase",
+            "shop_ignore_layers",
+        ),
+    R.string.teams_section_fuse to
+        listOf(
+            "shop_fuse_mode",
+            "shop_do_not_enhance",
+            "shop_fuse_save_system",
+            "shop_fuse_only_aggressive",
+            "shop_fuse_only_system",
+            "shop_fuse_no_system",
+            "shop_aggressive_also_enhance",
+            "shop_after_iv",
+        ),
+    R.string.teams_section_extra to
+        listOf(
+            "shop_second_system",
+            "shop_second_setting",
+            "shop_second_fuse",
+            "shop_second_buy",
+            "shop_second_enhance",
+            "shop_third_system",
+            "shop_third_setting",
+            "shop_third_fuse",
+            "shop_third_buy",
+            "shop_third_enhance",
+        ),
+    R.string.teams_section_skill to
+        listOf("shop_skill_replacement", "shop_skill_priority", "shop_skill_mode"),
     R.string.teams_section_opening to
         listOf(
             "choose_opening_bonus",
@@ -99,13 +142,22 @@ private val SECTIONS: List<Pair<Int, List<String>>> = listOf(
             "mirror_observe_gifts",
         ),
     R.string.teams_section_battle to
-        listOf("avoid_skill_3", "prioritize_skill_3", "defense_first_round", "re_formation_each_floor"),
+        listOf(
+            "avoid_skill_3",
+            "prioritize_skill_3",
+            "defense_first_round",
+            "defense_for_solo",
+            "defense_for_solo_turns",
+            "re_formation_each_floor",
+            "team_code",
+            "mirror_normal_to_hard_floor",
+        ),
 )
 
 /**
  * 编队页：对齐 AALC 的「编队卡 + 罪人宫格」结构
  *
- * 罪人点选顺序就是出战顺位（AALC team_formation.py 的语义），前 6 位出战、其余待命。
+ * 罪人点选顺序就是出战顺位（AALC team_formation.py 的语义），前 7 位出战、其余 5 位待命。
  * 每支编队在这里配一次，任务页只选「用哪支编队」；运行期由 TeamOptionScope.mergedValues 合并。
  * 编辑中的编队号是页面本地状态，不写进配置——它只是「我正看哪一张卡」
  */
@@ -381,7 +433,7 @@ private fun SinnerGrid(
     enabled: Boolean,
     onToggle: (String) -> Unit,
 ) {
-    val rows = cases.chunked(TeamOptionScope.DEPLOY_LIMIT)
+    val rows = cases.chunked(TeamOptionScope.GRID_COLUMNS)
     Column(verticalArrangement = Arrangement.spacedBy(MaaDesignTokens.Spacing.xs)) {
         rows.forEach { row ->
             Row(
@@ -400,8 +452,8 @@ private fun SinnerGrid(
                         modifier = Modifier.weight(1f),
                     )
                 }
-                // 最后一行不足 6 人时补空位，保持列宽一致
-                repeat(TeamOptionScope.DEPLOY_LIMIT - row.size) {
+                // 最后一行不足一列宽时补空位，保持列宽一致
+                repeat(TeamOptionScope.GRID_COLUMNS - row.size) {
                     Spacer(modifier = Modifier.weight(1f))
                 }
             }

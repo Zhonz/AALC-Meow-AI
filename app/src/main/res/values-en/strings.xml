@@ -364,13 +364,16 @@
     <string name="teams_reset">Reset team</string>
     <string name="teams_remark_label">Remark</string>
     <string name="teams_remark_placeholder">e.g. daily farming team</string>
-    <string name="teams_sinners_hint">Tap order becomes the deploy order: the first 6 deploy, the rest stay on standby. Tap again to remove.</string>
+    <string name="teams_sinners_hint">Tap order becomes the deploy order: the first 7 deploy, the remaining 5 stay on standby. Tap again to remove.</string>
     <string name="teams_sinners_summary">%1$d selected: %2$d deploy, %3$d standby</string>
     <string name="teams_sinners_clear">Clear roster</string>
     <string name="teams_deploy">Deploy</string>
     <string name="teams_standby">Standby</string>
     <string name="teams_section_team">Team and shop</string>
     <string name="teams_section_opening">Opening</string>
+    <string name="teams_section_fuse">Fusion and upgrade</string>
+    <string name="teams_section_extra">Second / third system</string>
+    <string name="teams_section_skill">Skill replacement</string>
     <string name="teams_section_battle">Battle</string>
     <string name="teams_import">Import</string>
     <string name="teams_import_read_failed">Could not read that file</string>

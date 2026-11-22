@@ -252,11 +252,12 @@ object AalcTeamImport {
                 values["shop_second_enhance"] = OptionValue.SingleCase(if (it != 0) YES else NO)
             }
         }
+        // 刷新次数在 PI 里是 input（数字框），AALC 是 int，直接写字段
         int(data["max_keyword_refresh"])?.let {
-            if (it in 0..3) values["shop_keyword_refresh"] = OptionValue.SingleCase(it.toString())
+            if (it >= 0) values["shop_keyword_refresh"] = OptionValue.Inputs(mapOf("times" to it.toString()))
         }
         int(data["max_normal_refresh"])?.let {
-            if (it in 0..2) values["shop_normal_refresh"] = OptionValue.SingleCase(it.toString())
+            if (it >= 0) values["shop_normal_refresh"] = OptionValue.Inputs(mapOf("times" to it.toString()))
         }
         int(data["skill_replacement_mode"])?.let {
             if (it in 0..4) values["shop_skill_mode"] = OptionValue.SingleCase(it.toString())

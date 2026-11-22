@@ -357,13 +357,16 @@
     <string name="teams_reset">重置本队</string>
     <string name="teams_remark_label">备注名</string>
     <string name="teams_remark_placeholder">例如：日常刷币队</string>
-    <string name="teams_sinners_hint">按点选顺序排出战顺位：前 6 位出战，其余待命；再点一次移出</string>
+    <string name="teams_sinners_hint">按点选顺序排出战顺位：前 7 位出战，其余 5 位待命；再点一次移出</string>
     <string name="teams_sinners_summary">已选 %1$d 人：出战 %2$d，待命 %3$d</string>
     <string name="teams_sinners_clear">清空阵容</string>
     <string name="teams_deploy">出战</string>
     <string name="teams_standby">待命</string>
     <string name="teams_section_team">队伍与商店</string>
     <string name="teams_section_opening">开局</string>
+    <string name="teams_section_fuse">合成与升级</string>
+    <string name="teams_section_extra">第二 / 第三体系</string>
+    <string name="teams_section_skill">技能替换</string>
     <string name="teams_section_battle">战斗</string>
     <string name="teams_import">导入</string>
     <string name="teams_import_read_failed">读不到这个文件</string>

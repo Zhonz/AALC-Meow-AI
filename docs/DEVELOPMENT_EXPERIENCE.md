@@ -552,3 +552,32 @@ AALC 的领奖（`mirror.py:538-698`）不是「点一下领取就完事」，�
 - **有人阵亡且没开 `fight_to_last_man`**：以 `dead.png` 为中心 OCR ±(50,15)，读到「阵亡 / dead」就认输——点认输、点不到就先点设置再点认输，还不行点空白戳弹窗，最多 6 轮。
 
 `dead_all_confirm_assets.png` 上游是整屏图，和 waiting 一样没法当模板用，这里靠「选完复活选项后界面自己回到战斗 / 结算」来推进，而不是去匹配那张整屏图。
+
+## 18. 第二体系泛化成"额外体系"：为什么不是复制一份代码
+
+AALC 的第二体系只有一份，逻辑散在商店的五个地方（买、出售保护、普通合成保护、合成关键词、升级），每处都是 `if self.second_system and self.second_system_action[...]`。要加第三体系，照抄一遍就是五份复制粘贴，还容易漏一处——于是把形状抽出来：
+
+```kotlin
+internal data class ExtraSystem(
+    val system: String,
+    val always: Boolean,   // second_system_setting == 1：不等本体系四级
+    val fuse: Boolean,     // action[0]：合成关键词 + 出售/合成保护
+    val buy: Boolean,      // action[1]
+    val enhance: Boolean,  // action[3]
+)
+```
+
+`ShopPlan.extraSystems` 是按配置顺序排的表，第二/第三体系只是键名前缀不同（`secondSystem` / `thirdSystem`），`ShopPlan.extras()` 用同一段代码解析。第三位 `second_system_choose` 在 AALC 的 Python 里没有任何使用点，所以没有对应字段。
+
+脚本侧五处改成遍历：
+
+- **购买**（`in_shop.py:256`）：`extra.buy && (extra.always || fuseIvDone)`；
+- **出售保护**（`:423`/`:811`）：`plan.fuseExtras` 里每个体系的 `level_IV` 图标位置都进 protect 列表；
+- **普通合成保护**（`:525`）：同上，按坐标半径排除；
+- **合成关键词**（`:886`）：本体系四级已到手、`afterIv == SECOND`、还在激进模式时，取第一个"四级还没到手"的额外体系换关键词；
+- **升级**（`:1093`）：`extra.enhance` 且它的四级图标在场就强化一次，各自记 `extraIvDone`。
+
+状态从 `fuseSecondIvDone: Boolean` 改成 `fuseExtraIvDone: MutableSet<String>`：合成本体系四级时顺手扫描每个额外体系四级图标在不在场（`in_shop.py:373-382` 的 `fuse_second_IV`），在就记下，之后追下一个体系时跳过它。
+
+**默认值这一版全部对齐 AALC**（`config_typing.py` TeamSetting）：`do_not_sell=False`（出售默认开启）、`max_normal_refresh=1`、`shop_strategy=0`（商店默认只出售，即 `shop_fuse_mode=off`）、`use_starlight=False`（默认把星光换成经费）。之前这几项为了"不碰玩家库存"刻意保守，结果与电脑版行为不一致——用户要求以 AALC 为准，所以改回来了，风险说明保留在选项描述里。
+
